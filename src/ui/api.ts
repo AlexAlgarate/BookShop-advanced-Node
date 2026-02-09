@@ -1,0 +1,22 @@
+import express, { json } from 'express';
+import bookRouter from './routes/book-routes';
+import authenticationRouter from './routes/authentication-routes';
+import { errorHandlerMiddleware } from './middlewares/error-handler-middleware';
+import { environmentService } from '@infrastructure/services/environment-service';
+
+const { API_PORT } = environmentService.get();
+
+export const app = express();
+
+app.use(json());
+
+app.use('/books', bookRouter);
+app.use('/authentication', authenticationRouter);
+
+app.use(errorHandlerMiddleware);
+
+export const startHttpApi = (): void => {
+  app.listen(API_PORT, () => {
+    console.log(`Up & running on port: ${API_PORT}`);
+  });
+};
