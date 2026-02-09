@@ -4,8 +4,6 @@ import authenticationRouter from './routes/authentication-routes';
 import { errorHandlerMiddleware } from './middlewares/error-handler-middleware';
 import { environmentService } from '@infrastructure/services/environment-service';
 
-const { API_PORT } = environmentService.get();
-
 export const app = express();
 
 app.use(json());
@@ -16,6 +14,7 @@ app.use('/authentication', authenticationRouter);
 app.use(errorHandlerMiddleware);
 
 export const startHttpApi = (): void => {
+  const { API_PORT } = environmentService.get();
   app.listen(API_PORT, () => {
     console.log(`Up & running on port: ${API_PORT}`);
   });
