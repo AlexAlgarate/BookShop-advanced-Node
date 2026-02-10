@@ -39,16 +39,4 @@ describe('POST /authentication/signup', () => {
     });
     expect(response.status).toBe(201);
   });
-
-  test.skip('The password must be hashed when the user is created', async () => {
-    const email = faker.internet.email();
-    const password = faker.internet.password();
-
-    const response = await request(app).post(AUTHENTICATION_URL).send({
-      email,
-      password,
-    });
-
-    expect(response.body.content.password).not.toMatch(password);
-  });
 });
