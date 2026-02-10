@@ -1,4 +1,4 @@
-export interface UserCreationQuery {
+export interface LoginUserQuery {
   email: string;
   password: string;
 }
