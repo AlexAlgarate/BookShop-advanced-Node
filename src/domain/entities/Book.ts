@@ -14,9 +14,9 @@ export class Book extends Entity {
     description,
     price,
     author,
-    status,
+    status = 'PUBLISHED',
     ownerId,
-    soldAt,
+    soldAt = null,
     id,
     createdAt,
   }: {
@@ -24,9 +24,9 @@ export class Book extends Entity {
     description: string;
     price: number;
     author: string;
-    status: 'PUBLISHED' | 'SOLD';
+    status?: 'PUBLISHED' | 'SOLD';
     ownerId: string;
-    soldAt: Date | null;
+    soldAt?: Date | null;
     id: string;
     createdAt: Date;
   }) {
@@ -38,5 +38,11 @@ export class Book extends Entity {
     this.status = status;
     this.ownerId = ownerId;
     this.soldAt = soldAt;
+
+    if (this.status === 'PUBLISHED' && this.soldAt !== null)
+      throw new Error('soldAt must be null when status is PUBLISHED');
+
+    if (this.status === 'SOLD' && this.soldAt === null)
+      throw new Error('soldAt must have a date when status is SOLD');
   }
 }

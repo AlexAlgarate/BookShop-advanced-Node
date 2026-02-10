@@ -2,7 +2,7 @@ import request from 'supertest';
 import { faker } from '@faker-js/faker';
 
 import { app } from '@ui/api';
-import { signupAndLogin } from 'tests/authentication/helpers';
+import { signupAndLogin } from '../authentication/helpers';
 
 export const createRandomBook = async () => {
   const token = await signupAndLogin();

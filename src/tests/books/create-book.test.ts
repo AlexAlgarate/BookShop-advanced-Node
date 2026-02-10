@@ -1,6 +1,5 @@
 import request from 'supertest';
 import { createRandomBook } from './helper';
-import { signupAndLogin } from 'tests/authentication/helpers';
 import { app } from '@ui/api';
 import { faker } from '@faker-js/faker';
 
