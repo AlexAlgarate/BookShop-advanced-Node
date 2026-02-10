@@ -72,7 +72,7 @@ describe('POST /authentication/signin', () => {
     });
     expect(response.status).toBe(200);
     expect(response.body.content).toBeDefined();
-    expect(typeof response.body.content.token).toBe('string');
+    expect(typeof response.body.content).toBe('string');
   });
 
   test('Should not expose sensitive user data', async () => {

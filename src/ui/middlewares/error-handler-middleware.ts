@@ -20,12 +20,12 @@ export const errorHandlerMiddleware = (
 ) => {
   if (error instanceof DomainError) {
     const statusCode = domainErrorToHttpStatusCode[error.name] ?? status.INTERNAL_SERVER_ERROR;
-    response.status(statusCode).json({ message: error.message });
+    return response.status(statusCode).json({ message: error.message });
   }
 
   if (error instanceof z.ZodError) {
     const errorMessage = z.flattenError(error).fieldErrors;
-    response.status(status.BAD_REQUEST).json({ message: errorMessage });
+    return response.status(status.BAD_REQUEST).json({ message: errorMessage });
   }
 
   Sentry.captureException(error, {
@@ -35,5 +35,5 @@ export const errorHandlerMiddleware = (
       user: request.user?.id,
     },
   });
-  response.status(status.INTERNAL_SERVER_ERROR).json({ message: JSON.stringify(error) });
+  return response.status(status.INTERNAL_SERVER_ERROR).json({ message: JSON.stringify(error) });
 };
