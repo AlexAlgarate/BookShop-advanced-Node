@@ -39,11 +39,23 @@ describe('POST /authentication/signin', () => {
     expect(response.status).toBe(400);
   });
 
+  test('Should return 404 if user not found', async () => {
+    const response = await request(app)
+      .post(SIGNIN_URL)
+      .send({ email: faker.internet.email(), password: faker.internet.password() });
+
+    expect(response.status).toBe(404);
+  });
+
   test('Should return 401 if credentials are invalid', async () => {
-    const response = await request(app).post(SIGNIN_URL).send({
-      email: faker.internet.email(),
-      password: faker.internet.password(),
-    });
+    const email = faker.internet.email();
+    const password = faker.internet.password();
+
+    await request(app).post('/authentication/signup').send({ email, password });
+
+    const response = await request(app)
+      .post(SIGNIN_URL)
+      .send({ email, password: 'wrong-password' });
 
     expect(response.status).toBe(401);
   });
