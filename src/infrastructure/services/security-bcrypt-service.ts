@@ -1,0 +1,49 @@
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+
+import { User } from '@domain/entities/User';
+import { SecurityService } from '@domain/services/SecurityService';
+import { environmentService } from './environment-service';
+import { UnauthorizatedError } from '@domain/types/errors';
+
+export class SecurityBcryptService implements SecurityService {
+  private readonly jwtSecret: string;
+
+  constructor() {
+    const { JWT_SECRET } = environmentService.get();
+    this.jwtSecret = JWT_SECRET;
+  }
+
+  async comparePasswords(incomingPassword: string, userPassword: string): Promise<boolean> {
+    const isMatch = await bcrypt.compare(incomingPassword, userPassword);
+
+    if (!isMatch) throw new UnauthorizatedError('Password is incorrect');
+
+    return isMatch;
+  }
+
+  generateJWT(user: User): string {
+    try {
+      const token = jwt.sign({ userId: user.id }, this.jwtSecret, { expiresIn: '1h' });
+      return token;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'jwt.sign error';
+      throw new UnauthorizatedError(`Error generating JWT: ${errorMessage}`);
+    }
+  }
+  async hashPassword(password: string): Promise<string> {
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    return hashedPassword;
+  }
+
+  verifyJWT(token: string): { userId: string } {
+    try {
+      const data = jwt.verify(token, this.jwtSecret) as { userId: string };
+      return data;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'jwt.verify error';
+      throw new UnauthorizatedError(`Error verifying JWT: ${errorMessage}`);
+    }
+  }
+}
