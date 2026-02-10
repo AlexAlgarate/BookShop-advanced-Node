@@ -22,7 +22,7 @@ const connectMongoDb = async (): Promise<void> => {
   const { MONGO_USER, MONGO_PASSWORD, MONGO_HOST } = environmentService.get();
 
   await mongoose.connect(
-    `mongodb://${MONGO_USER}:${MONGO_PASSWORD}@${MONGO_HOST}/db?authSource=admin`
+    `mongodb://${MONGO_USER}:${MONGO_PASSWORD}@${MONGO_HOST}/db_project?authSource=admin`
   );
   console.log('Mongodb connected!');
 };

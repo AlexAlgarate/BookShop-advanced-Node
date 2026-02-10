@@ -1,7 +1,7 @@
-import { UserCreationQuery } from '@domain/types/user/UserCreationQuery';
+import { LoginUserQuery } from '@domain/types/user/LoginUserQuery';
 
 export class LoginUserUseCase {
-  async execute(query: UserCreationQuery) {
+  async execute(query: LoginUserQuery) {
     // Check if the user exists
     // Check received password is the saved one
     // generate jwt
