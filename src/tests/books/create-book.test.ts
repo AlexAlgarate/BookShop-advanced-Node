@@ -51,16 +51,22 @@ describe('POST /books', () => {
   });
 
   test('Book should be created, returning 201', async () => {
-    const { newRandomBook, token } = await createRandomBook();
+    const { token } = await createRandomBook();
+
+    const newBook = {
+      title: faker.book.title(),
+      description: faker.commerce.productDescription(),
+      price: parseInt(faker.commerce.price(), 10),
+      author: faker.book.author(),
+    };
 
     const response = await request(app)
       .post(BOOKS_URL)
       .set('Authorization', `Bearer ${token}`)
-      .send({ newRandomBook });
+      .send(newBook);
 
     expect(response.status).toBe(201);
-
-    expect(response.body.content.title).toBe(newRandomBook.body.title);
+    expect(response.body.content.title).toBe(newBook.title);
     //!
   });
 
