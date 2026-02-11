@@ -26,18 +26,20 @@ export class BookMongoRepository implements BookRepository {
     const searchQuery: QueryFilter<BookMongoDb> = {
       status: 'PUBLISHED',
     };
-    if (query.author) {
-      searchQuery.author = { $regex: query.author, $options: 'i' };
-    }
 
-    if (query.title) {
-      searchQuery.title = { $regex: query.title, $options: 'i' };
-    }
     if (query.search) {
       searchQuery.$or = [
         { title: { $regex: query.search, $options: 'i' } },
         { author: { $regex: query.search, $options: 'i' } },
       ];
+    } else {
+      if (query.author) {
+        searchQuery.author = { $regex: query.author, $options: 'i' };
+      }
+
+      if (query.title) {
+        searchQuery.title = { $regex: query.title, $options: 'i' };
+      }
     }
     if (query.ownerId) {
       searchQuery.ownerId = {
@@ -53,12 +55,12 @@ export class BookMongoRepository implements BookRepository {
     ]);
 
     return {
-      content: mongoBooks.map(mongoBook => this.restoreBook(mongoBook)),
       meta: {
         page: query.page,
         limit: query.limit,
         total,
       },
+      content: mongoBooks.map(mongoBook => this.restoreBook(mongoBook)),
     };
   }
 
