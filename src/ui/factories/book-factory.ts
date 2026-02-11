@@ -1,4 +1,4 @@
-import { BookMongoRepository } from '@infrastructure/repositories/product-mongo-repository';
+import { BookMongoRepository } from '@infrastructure/repositories/book-mongo-repository';
 
 export class BookFactory {
   static createRepository(): BookMongoRepository {

@@ -8,15 +8,17 @@ const findBooksValidator = z.object({
   page: z.coerce.number().min(1).default(1).catch(1),
   limit: z.coerce.number().min(1).max(100).default(10).catch(10),
   search: z.string().optional(),
+  author: z.string().optional(),
+  title: z.string().optional(),
 });
 
 export const findBooksController = async (request: Request, response: Response) => {
-  const { page, limit, search } = findBooksValidator.parse(request.query);
+  const { page, limit, search, author, title } = findBooksValidator.parse(request.query);
 
   const bookRepository = BookFactory.createRepository();
   const findBookUseCase = new FindBooksUseCase(bookRepository);
 
-  const paginatedBooks = await findBookUseCase.execute({ page, limit, search });
+  const paginatedBooks = await findBookUseCase.execute({ page, limit, search, author, title });
 
   response.json(paginatedBooks);
 };

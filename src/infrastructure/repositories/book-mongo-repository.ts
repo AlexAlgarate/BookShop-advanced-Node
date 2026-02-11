@@ -26,7 +26,13 @@ export class BookMongoRepository implements BookRepository {
     const searchQuery: QueryFilter<BookMongoDb> = {
       status: 'PUBLISHED',
     };
+    if (query.author) {
+      searchQuery.author = { $regex: query.author, $options: 'i' };
+    }
 
+    if (query.title) {
+      searchQuery.title = { $regex: query.title, $options: 'i' };
+    }
     if (query.search) {
       searchQuery.$or = [
         { title: { $regex: query.search, $options: 'i' } },
