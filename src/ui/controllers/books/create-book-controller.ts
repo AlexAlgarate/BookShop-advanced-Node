@@ -4,10 +4,7 @@ import { BookFactory } from '@ui/factories/book-factory';
 import { authenticatedUserSchema, createBookBodySchema } from '@ui/validators/book-validators';
 import { Request, Response } from 'express';
 
-export const createProductController = async (
-  request: Request,
-  response: Response
-): Promise<void> => {
+export const createBookController = async (request: Request, response: Response): Promise<void> => {
   const validateBody = createBookBodySchema.parse(request.body);
 
   const { id: userId } = authenticatedUserSchema.parse(request.user);
