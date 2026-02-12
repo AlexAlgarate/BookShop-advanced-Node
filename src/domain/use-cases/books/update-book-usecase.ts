@@ -11,18 +11,18 @@ export class UpdateBookUseCase {
   }
 
   public async execute(
-    productId: string,
+    bookId: string,
     query: UpdateBookQuery,
     userId: string
   ): Promise<Book | null> {
-    const bookToUpdate = await this.bookRepository.findById(productId);
+    const bookToUpdate = await this.bookRepository.findById(bookId);
 
-    if (!bookToUpdate) throw new EntityNotFoundError('Book', productId);
+    if (!bookToUpdate) throw new EntityNotFoundError('Book', bookId);
 
     if (userId !== bookToUpdate.ownerId)
       throw new ForbiddenOperation('Only owner of the book can update this book');
 
-    const updatedBook = await this.bookRepository.updateOne(productId, query);
+    const updatedBook = await this.bookRepository.updateOne(bookId, query);
 
     return updatedBook;
   }

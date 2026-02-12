@@ -14,11 +14,11 @@ export const updateBookController = async (request: Request, response: Response)
 
   const bookRepository = BookFactory.createRepository();
   const updateBookUseCase = new UpdateBookUseCase(bookRepository);
-  const updateProduct = await updateBookUseCase.execute(
+  const updateBook = await updateBookUseCase.execute(
     bookId,
     { title, description, author, price },
     userId
   );
 
-  response.json({ content: updateProduct });
+  response.json({ content: updateBook });
 };

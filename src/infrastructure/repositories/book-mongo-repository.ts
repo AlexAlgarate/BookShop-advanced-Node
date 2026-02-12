@@ -65,16 +65,16 @@ export class BookMongoRepository implements BookRepository {
     };
   }
 
-  async updateOne(productId: string, query: UpdateBookQuery): Promise<Book | null> {
-    const updateData = await BookModel.findByIdAndUpdate(productId, query, { new: true });
+  async updateOne(bookId: string, query: UpdateBookQuery): Promise<Book | null> {
+    const updateData = await BookModel.findByIdAndUpdate(bookId, query, { new: true });
 
     if (!updateData) return null;
 
     return this.restoreBook(updateData);
   }
 
-  async findById(productId: string): Promise<Book | null> {
-    const mongoBook = await BookModel.findById(productId);
+  async findById(bookId: string): Promise<Book | null> {
+    const mongoBook = await BookModel.findById(bookId);
 
     if (!mongoBook) return null;
 
