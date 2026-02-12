@@ -27,7 +27,7 @@ export const updateBookBodySchema = z
     description: z
       .string()
       .min(10, 'Description must be at least 10 characters')
-      .max(150, 'Description must be at most 150 characters')
+      .max(1500, 'Description must be at most 150 characters')
       .optional(),
     price: z
       .number()
