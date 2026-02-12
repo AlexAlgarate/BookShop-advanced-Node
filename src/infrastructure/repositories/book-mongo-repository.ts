@@ -2,6 +2,7 @@ import { Book } from '@domain/entities/Book';
 import { BookRepository } from '@domain/repositories/BookRepository';
 import { BookFindQuery } from '@domain/types/book/BookFindQuery';
 import { CreateBookQuery } from '@domain/types/book/CreateBookQuery';
+import { UpdateBookQuery } from '@domain/types/book/UpdateBookQuery';
 import { PaginatedResponse } from '@domain/types/pagination';
 import { BookModel, BookMongoDb } from '@infrastructure/models/book-model';
 import { QueryFilter } from 'mongoose';
@@ -62,6 +63,22 @@ export class BookMongoRepository implements BookRepository {
       },
       content: mongoBooks.map(mongoBook => this.restoreBook(mongoBook)),
     };
+  }
+
+  async updateOne(productId: string, query: UpdateBookQuery): Promise<Book | null> {
+    const updateData = await BookModel.findByIdAndUpdate(productId, query, { new: true });
+
+    if (!updateData) return null;
+
+    return this.restoreBook(updateData);
+  }
+
+  async findById(productId: string): Promise<Book | null> {
+    const mongoBook = await BookModel.findById(productId);
+
+    if (!mongoBook) return null;
+
+    return this.restoreBook(mongoBook);
   }
 
   private restoreBook(mongoBook: BookMongoDb): Book {
