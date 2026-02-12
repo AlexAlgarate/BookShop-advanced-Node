@@ -97,5 +97,7 @@ describe('PATCH /books/:bookId', () => {
 
     expect(response.status).toBe(400);
     expect(typeof response.body.content?.ownerId).toBe('undefined');
+    expect(response.body.message).toEqual('Validation failed');
+    expect(response.body.errors.formErrors[0]).toBe('Unrecognized key: \"ownerId\"');
   });
 });

@@ -24,8 +24,15 @@ export const errorHandlerMiddleware = (
   }
 
   if (error instanceof z.ZodError) {
-    const errorMessage = z.flattenError(error).fieldErrors;
-    return response.status(status.BAD_REQUEST).json({ message: errorMessage });
+    const flattenedError = z.flattenError(error);
+
+    return response.status(status.BAD_REQUEST).json({
+      message: 'Validation failed',
+      errors: {
+        formErrors: flattenedError.formErrors,
+        fieldErrors: flattenedError.fieldErrors,
+      },
+    });
   }
 
   Sentry.captureException(error, {
