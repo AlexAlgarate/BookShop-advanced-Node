@@ -1,3 +1,4 @@
+import { faker } from '@faker-js/faker';
 import { app } from '@ui/api';
 import request from 'supertest';
 import * as z from 'zod';
@@ -7,7 +8,7 @@ const loginResponseSchema = z.object({
 });
 
 export const signupAndLogin = async (
-  email: string = 'example@example.com',
+  email: string = faker.internet.email(),
   password: string = '1234'
 ): Promise<string> => {
   await request(app).post('/authentication/signup').send({ email, password });

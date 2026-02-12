@@ -4,8 +4,8 @@ import { faker } from '@faker-js/faker';
 import { app } from '@ui/api';
 import { signupAndLogin } from '../authentication/helpers';
 
-export const createRandomBook = async (overrides?: Partial<any>) => {
-  const token = await signupAndLogin();
+export const createRandomBook = async (email?: string, overrides?: Partial<any>) => {
+  const token = await signupAndLogin(email);
 
   const randomBook = {
     title: faker.book.title(),
