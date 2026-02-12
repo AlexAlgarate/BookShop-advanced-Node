@@ -42,6 +42,15 @@ export const updateBookBodySchema = z
   })
   .strict();
 
+export const findBooksBodySchema = z.object({
+  page: z.coerce.number().min(1).default(1).catch(1).transform(Math.floor),
+  limit: z.coerce.number().min(1).max(100).default(10).catch(10).transform(Math.floor),
+  search: z.string().optional(),
+  author: z.string().optional(),
+  title: z.string().optional(),
+});
+
+export type FindBookQuery = z.infer<typeof findBooksBodySchema>;
 export type CreateBookBody = z.infer<typeof createBookBodySchema>;
 export type AuthenticatedUser = z.infer<typeof authenticatedUserSchema>;
 export type BookIdParams = z.infer<typeof bookIdParamsSchema>;
