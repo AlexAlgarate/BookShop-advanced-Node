@@ -30,11 +30,10 @@ describe('PATCH /books/:bookId', () => {
   });
 
   test('Given a non existing product, return a 404 status code', async () => {
-    const { token, newRandomBook } = await createRandomBook();
-    const bookId = newRandomBook.body.content.id;
+    const { token } = await createRandomBook();
 
     const response = await request(app)
-      .patch(`${BOOKS_URL}/${bookId}`)
+      .patch(`${BOOKS_URL}/${'6979054b067bd17c70d31fbf'}`)
       .set('Authorization', `Bearer ${token}`)
       .send({});
 
@@ -72,7 +71,7 @@ describe('PATCH /books/:bookId', () => {
       .send({ title: 'new-title' });
 
     expect(response.status).toBe(403);
-    expect(response.body).toStrictEqual({ message: 'Only the user can update this book' });
+    expect(response.body).toStrictEqual({ message: 'Only owner of the book can update this book' });
   });
 
   test('Given an invalid payload, should return a 400', async () => {
@@ -97,5 +96,6 @@ describe('PATCH /books/:bookId', () => {
       .send({ ownerId: 'new-Owner-Id' });
 
     expect(response.status).toBe(400);
+    expect(typeof response.body.content?.ownerId).toBe('undefined');
   });
 });
