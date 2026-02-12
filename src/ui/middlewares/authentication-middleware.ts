@@ -1,18 +1,22 @@
 import { Request, Response, NextFunction } from 'express';
 import { AuthenticationFactory } from '@ui/factories/authentication-factory';
-import { UnauthorizatedError } from '@domain/types/errors';
+import { UnauthorizedError } from '@domain/types/errors';
 
-export const authenticationMiddleware = (request: Request, _response: Response, next: NextFunction): void => {
+export const authenticationMiddleware = (
+  request: Request,
+  _response: Response,
+  next: NextFunction
+): void => {
   const authorizationHeader = request.headers.authorization;
 
   if (!authorizationHeader) {
-    throw new UnauthorizatedError('Authorization header is required');
+    throw new UnauthorizedError('Authorization header is required');
   }
 
   const [scheme, token] = authorizationHeader.split(' ');
 
   if (scheme !== 'Bearer' || !token) {
-    throw new UnauthorizatedError('Invalid authorization header format');
+    throw new UnauthorizedError('Invalid authorization header format');
   }
 
   try {
@@ -21,6 +25,6 @@ export const authenticationMiddleware = (request: Request, _response: Response, 
     request.user = { id: userId };
     next();
   } catch {
-    throw new UnauthorizatedError('Invalid token');
+    throw new UnauthorizedError('Invalid token');
   }
 };

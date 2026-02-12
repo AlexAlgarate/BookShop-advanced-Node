@@ -1,4 +1,4 @@
 export * from './BusinessConflictError';
-export * from './UnauthorizatedError';
+export * from './UnauthorizedError';
 export * from './ForbiddenOperation';
 export * from './EntityNotFoundError';

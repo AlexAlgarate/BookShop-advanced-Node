@@ -1,6 +1,6 @@
 import { UserRepository } from '@domain/repositories/UserRepository';
 import { SecurityService } from '@domain/services/SecurityService';
-import { EntityNotFoundError, UnauthorizatedError } from '@domain/types/errors';
+import { EntityNotFoundError, UnauthorizedError } from '@domain/types/errors';
 import { LoginUserQuery } from '@domain/types/user/LoginUserQuery';
 
 export class LoginUserUseCase {
@@ -30,7 +30,7 @@ export class LoginUserUseCase {
       const token = this.securityService.generateJWT(existingUser);
       return { token };
     } else {
-      throw new UnauthorizatedError('Wrong password');
+      throw new UnauthorizedError('Wrong password');
     }
   }
 }

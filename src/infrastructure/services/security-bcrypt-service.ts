@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import { User } from '@domain/entities/User';
 import { SecurityService } from '@domain/services/SecurityService';
 import { environmentService } from './environment-service';
-import { UnauthorizatedError } from '@domain/types/errors';
+import { UnauthorizedError } from '@domain/types/errors';
 
 export class SecurityBcryptService implements SecurityService {
   private readonly jwtSecret: string;
@@ -17,7 +17,7 @@ export class SecurityBcryptService implements SecurityService {
   async comparePasswords(incomingPassword: string, userPassword: string): Promise<boolean> {
     const isMatch = await bcrypt.compare(incomingPassword, userPassword);
 
-    if (!isMatch) throw new UnauthorizatedError('Password is incorrect');
+    if (!isMatch) throw new UnauthorizedError('Password is incorrect');
 
     return isMatch;
   }
@@ -28,7 +28,7 @@ export class SecurityBcryptService implements SecurityService {
       return token;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'jwt.sign error';
-      throw new UnauthorizatedError(`Error generating JWT: ${errorMessage}`);
+      throw new UnauthorizedError(`Error generating JWT: ${errorMessage}`);
     }
   }
   async hashPassword(password: string): Promise<string> {
@@ -43,7 +43,7 @@ export class SecurityBcryptService implements SecurityService {
       return data;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'jwt.verify error';
-      throw new UnauthorizatedError(`Error verifying JWT: ${errorMessage}`);
+      throw new UnauthorizedError(`Error verifying JWT: ${errorMessage}`);
     }
   }
 }
