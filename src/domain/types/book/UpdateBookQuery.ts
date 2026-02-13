@@ -3,4 +3,6 @@ export interface UpdateBookQuery {
   description?: string;
   price?: number;
   author?: string;
+  status?: 'PUBLISHED' | 'SOLD';
+  soldAt?: Date;
 }
