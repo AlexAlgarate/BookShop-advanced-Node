@@ -2,6 +2,7 @@ import request from 'supertest';
 import { faker } from '@faker-js/faker';
 
 import { app } from '@ui/api';
+import { type SigninResponse, signinResponseSchema } from '../schemas/test-schemas';
 
 describe('POST /authentication/signin', () => {
   const SIGNIN_URL = '/authentication/signin';
@@ -70,9 +71,12 @@ describe('POST /authentication/signin', () => {
       email,
       password,
     });
+
     expect(response.status).toBe(200);
-    expect(response.body.content).toBeDefined();
-    expect(typeof response.body.content).toBe('string');
+
+    const validateResponse: SigninResponse = signinResponseSchema.parse(response.body);
+    expect(validateResponse.content).toBeDefined();
+    expect(typeof validateResponse.content).toBe('string');
   });
 
   test('Should not expose sensitive user data', async () => {
@@ -86,7 +90,13 @@ describe('POST /authentication/signin', () => {
       password,
     });
 
-    expect(response.body.password).toBeUndefined();
-    expect(response.body.user).toBeUndefined();
+    const validateResponse = signinResponseSchema.parse(response.body);
+
+    expect(validateResponse.content).toBeDefined();
+
+    expect(response.body).not.toHaveProperty('password');
+    expect(response.body).not.toHaveProperty('user');
+    expect(response.body).not.toHaveProperty('hashedPassword');
+    expect(response.body).not.toHaveProperty('_id');
   });
 });

@@ -1,3 +1,4 @@
+import { User } from '@domain/entities/User';
 import { UserRepository } from '@domain/repositories/UserRepository';
 import { SecurityService } from '@domain/services/SecurityService';
 import { BusinessConflictError } from '@domain/types/errors';
@@ -11,7 +12,7 @@ export class CreateUserUseCase {
     this.userRepository = userRepository;
     this.securityService = securityService;
   }
-  async execute(query: CreateUserQuery) {
+  async execute(query: CreateUserQuery): Promise<User> {
     // User does not exist
     const user = await this.userRepository.findByEmail(query.email);
 
