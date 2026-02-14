@@ -79,6 +79,7 @@ describe('POST /authentication/signup', () => {
     const validateResponse = signupResponseSchema.parse(response.body);
 
     expect(validateResponse.content).not.toHaveProperty('password');
+    expect(validateResponse.content).toBe('User created successfully');
   });
 
   test('Password should be hashed before storing', async () => {

@@ -2,13 +2,17 @@ import request from 'supertest';
 import { createRandomBook } from './helper';
 import { app } from '@ui/api';
 import { signupAndLogin } from '../authentication/helpers';
-import { errorResponseSchema, updateBookResponseSchema } from '../schemas/test-schemas';
+import {
+  createBookResponseSchema,
+  errorResponseSchema,
+  updateBookResponseSchema,
+} from '../schemas/test-schemas';
 
 describe('PATCH /books/:bookId', () => {
   const BOOKS_URL = '/books';
   test('Given no authorization header, endpoint should return 401 status code', async () => {
     const { newRandomBook } = await createRandomBook();
-    const validateBookId = updateBookResponseSchema.parse(newRandomBook.body);
+    const validateBookId = createBookResponseSchema.parse(newRandomBook.body);
     const bookId = validateBookId.content.id;
 
     const response = await request(app)
@@ -21,7 +25,7 @@ describe('PATCH /books/:bookId', () => {
 
   test('Given an invalid token, endpoint should return a 401 status code', async () => {
     const { newRandomBook } = await createRandomBook();
-    const validateBookId = updateBookResponseSchema.parse(newRandomBook.body);
+    const validateBookId = createBookResponseSchema.parse(newRandomBook.body);
     const bookId = validateBookId.content.id;
 
     const response = await request(app)
@@ -45,7 +49,7 @@ describe('PATCH /books/:bookId', () => {
 
   test('Given an existing product, should return 200 and updated product', async () => {
     const { token, newRandomBook } = await createRandomBook();
-    const validateBookId = updateBookResponseSchema.parse(newRandomBook.body);
+    const validateBookId = createBookResponseSchema.parse(newRandomBook.body);
     const bookId = validateBookId.content.id;
 
     const updatedPayload = {
@@ -67,7 +71,7 @@ describe('PATCH /books/:bookId', () => {
 
   test('Given an user that is not the product owner, return a 403 status code', async () => {
     const { newRandomBook } = await createRandomBook();
-    const validateBookId = updateBookResponseSchema.parse(newRandomBook.body);
+    const validateBookId = createBookResponseSchema.parse(newRandomBook.body);
     const bookId = validateBookId.content.id;
 
     const tokenFromAnotherUser = await signupAndLogin('other-user@test.com', 'other-password');
@@ -77,17 +81,17 @@ describe('PATCH /books/:bookId', () => {
       .set('Authorization', `Bearer ${tokenFromAnotherUser}`)
       .send({ title: 'new-title' });
 
-    const validateResponse = updateBookResponseSchema.parse(response.body);
+    const validateErrorResponse = errorResponseSchema.parse(response.body);
 
     expect(response.status).toBe(403);
-    expect(validateResponse).toStrictEqual({
+    expect(validateErrorResponse).toStrictEqual({
       message: 'Only owner of the book can update this book',
     });
   });
 
   test('Given an invalid payload, should return a 400', async () => {
     const { newRandomBook, token } = await createRandomBook();
-    const validateBookId = updateBookResponseSchema.parse(newRandomBook.body);
+    const validateBookId = createBookResponseSchema.parse(newRandomBook.body);
     const bookId = validateBookId.content.id;
 
     const response = await request(app)
@@ -100,7 +104,7 @@ describe('PATCH /books/:bookId', () => {
 
   test('Should not allow updating immutable fields as id, ownerId', async () => {
     const { newRandomBook, token } = await createRandomBook();
-    const validateBookId = updateBookResponseSchema.parse(newRandomBook.body);
+    const validateBookId = createBookResponseSchema.parse(newRandomBook.body);
     const bookId = validateBookId.content.id;
 
     const response = await request(app)
@@ -108,12 +112,9 @@ describe('PATCH /books/:bookId', () => {
       .set('Authorization', `Bearer ${token}`)
       .send({ ownerId: 'new-Owner-Id' });
 
-    const validateResponse = updateBookResponseSchema.parse(response.body);
-
     const validateErrorResponse = errorResponseSchema.parse(response.body);
 
     expect(response.status).toBe(400);
-    expect(typeof validateResponse.content?.ownerId).toBe('undefined');
     expect(validateErrorResponse.message).toEqual('Validation failed');
     expect(validateErrorResponse.errors?.formErrors?.[0]).toBe('Unrecognized key: "ownerId"');
   });

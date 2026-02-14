@@ -3,7 +3,7 @@ import { createRandomBook } from './helper';
 import { app } from '@ui/api';
 import { faker } from '@faker-js/faker';
 import { signupAndLogin } from '../authentication/helpers';
-import { getUserBooksResponseSchema } from '../schemas/test-schemas';
+import { createBookResponseSchema, getUserBooksResponseSchema } from '../schemas/test-schemas';
 
 describe('GET /me/books', () => {
   const ME_BOOKS_URL = '/me/books';
@@ -55,8 +55,8 @@ describe('GET /me/books', () => {
   test('Should returning only books belonging to the authorizated user', async () => {
     const { token: tokenUserA, newRandomBook: bookUserA } =
       await createRandomBook('userA@test.com');
-    const validateTitleA = getUserBooksResponseSchema.parse(bookUserA.body as unknown);
-    const titleA = validateTitleA.content[0]?.title;
+    const validateTitleA = createBookResponseSchema.parse(bookUserA.body as unknown);
+    const titleA = validateTitleA.content.title;
     const book2Payload = {
       title: faker.book.title(),
       description: faker.commerce.productDescription(),
@@ -70,8 +70,8 @@ describe('GET /me/books', () => {
       .send(book2Payload);
 
     const { newRandomBook: bookUserB } = await createRandomBook('userB@test.com');
-    const validateTitleB = getUserBooksResponseSchema.parse(bookUserB.body as unknown);
-    const titleB = validateTitleB.content[0]?.title;
+    const validateTitleB = createBookResponseSchema.parse(bookUserB.body as unknown);
+    const titleB = validateTitleB.content.title;
 
     const response = await request(app)
       .get(ME_BOOKS_URL)

@@ -1,7 +1,7 @@
 import request from 'supertest';
 import { createRandomBook } from './helper';
 import { app } from '@ui/api';
-import { findBooksResponseSchema } from '../schemas/test-schemas';
+import { createBookResponseSchema, findBooksResponseSchema } from '../schemas/test-schemas';
 
 describe('GET /books', () => {
   const BOOKS_URL = '/books';
@@ -39,8 +39,8 @@ describe('GET /books', () => {
 
   test('Should allow searching by title', async () => {
     const { newRandomBook } = await createRandomBook();
-    const validateTitle = findBooksResponseSchema.parse(newRandomBook.body as unknown);
-    const title = validateTitle.content[0]?.title ?? '';
+    const validateTitle = createBookResponseSchema.parse(newRandomBook.body as unknown);
+    const title = validateTitle.content.title;
 
     const response = await request(app).get(`${BOOKS_URL}/?search=${title}`);
 
@@ -52,8 +52,8 @@ describe('GET /books', () => {
 
   test('Should allow searching by author', async () => {
     const { newRandomBook } = await createRandomBook();
-    const validateAuthor = findBooksResponseSchema.parse(newRandomBook.body as unknown);
-    const author = validateAuthor.content[0]?.author ?? '';
+    const validateAuthor = createBookResponseSchema.parse(newRandomBook.body as unknown);
+    const author = validateAuthor.content.author;
 
     const response = await request(app).get(`${BOOKS_URL}/?search=${author}`);
     const validateResponse = findBooksResponseSchema.parse(response.body);
