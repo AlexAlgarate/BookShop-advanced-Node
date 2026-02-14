@@ -22,7 +22,7 @@ export class UpdateBookUseCase {
     if (userId !== bookToUpdate.ownerId)
       throw new ForbiddenOperation('Only owner of the book can update this book');
 
-    const updatedBook = await this.bookRepository.updateOne(bookId, query);
+    const updatedBook = await this.bookRepository.updateBookDetails(bookId, query);
 
     return updatedBook;
   }
