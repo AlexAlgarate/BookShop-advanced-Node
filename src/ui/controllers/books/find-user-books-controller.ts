@@ -1,4 +1,4 @@
-import { FindBooksUseCase } from '@domain/use-cases/books/find-books-usecase';
+import { FindUserBooksUseCase } from '@domain/use-cases/books/find-user-book-usecase';
 import { BookFactory } from '@ui/factories/book-factory';
 import { authenticatedUserSchema, findBooksBodySchema } from '@ui/validators/book-validators';
 import { Request, Response } from 'express';
@@ -11,7 +11,7 @@ export const findUserBooksController = async (
   const { id: userId } = authenticatedUserSchema.parse(request.user);
 
   const bookRepository = BookFactory.createRepository();
-  const findUserBooksUseCase = new FindBooksUseCase(bookRepository);
+  const findUserBooksUseCase = new FindUserBooksUseCase(bookRepository);
 
   const paginatedUserBooks = await findUserBooksUseCase.execute({
     page,
