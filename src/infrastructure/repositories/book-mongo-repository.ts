@@ -24,9 +24,11 @@ export class BookMongoRepository implements BookRepository {
   }
 
   async findMany(query: BookFindQuery): Promise<PaginatedResponse<Book>> {
-    const searchQuery: QueryFilter<BookMongoDb> = {
-      status: 'PUBLISHED',
-    };
+    const searchQuery: QueryFilter<BookMongoDb> = {};
+
+    if (!query.ownerId) {
+      searchQuery.status = 'PUBLISHED';
+    }
 
     if (query.search) {
       searchQuery.$or = [

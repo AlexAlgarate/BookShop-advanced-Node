@@ -16,15 +16,20 @@ describe('GET /books', () => {
   test('Should return 200 and a list of books', async () => {
     await createRandomBook();
     await createRandomBook();
+    await createRandomBook(undefined, { status: 'SOLD', soldAt: new Date().toISOString() });
 
     const response = await request(app).get(BOOKS_URL);
-    const validateResponse = findBooksResponseSchema.parse(response.body);
-
     expect(response.status).toBe(200);
-    expect(validateResponse.content.length).toBe(2);
+
+    const validateResponse = findBooksResponseSchema.parse(response.body);
+    const books = validateResponse.content;
+
+    expect(books.length).toBe(3);
+    expect(books.every(book => book.status === 'PUBLISHED')).toBe(true);
+    expect(books.some(book => book.status === 'SOLD')).toBe(false);
   });
 
-  test('Should return onlye PUBLISHED books', async () => {
+  test('Should return only PUBLISHED books', async () => {
     await createRandomBook();
     await createRandomBook();
 
