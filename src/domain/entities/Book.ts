@@ -1,3 +1,4 @@
+import { BusinessConflictError, ForbiddenOperation } from '@domain/types/errors';
 import { Entity } from './Entity';
 
 export class Book extends Entity {
@@ -44,5 +45,26 @@ export class Book extends Entity {
 
     if (this.status === 'SOLD' && this.soldAt === null)
       throw new Error('soldAt must have a date when status is SOLD');
+  }
+
+  sellTo(buyerId: string): Book {
+    if (this.ownerId === buyerId) {
+      throw new ForbiddenOperation('You cannot buy your own book');
+    }
+
+    if (this.status !== 'PUBLISHED') {
+      throw new BusinessConflictError('Book is not available for purchase');
+    }
+    return new Book({
+      title: this.title,
+      description: this.description,
+      price: this.price,
+      author: this.author,
+      status: 'SOLD',
+      ownerId: buyerId,
+      soldAt: new Date(),
+      id: this.id,
+      createdAt: this.createdAt,
+    });
   }
 }

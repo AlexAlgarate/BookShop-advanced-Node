@@ -1,10 +1,6 @@
 import { Book } from '@domain/entities/Book';
 import { BookRepository } from '@domain/repositories/BookRepository';
-import {
-  BusinessConflictError,
-  EntityNotFoundError,
-  ForbiddenOperation,
-} from '@domain/types/errors';
+import { EntityNotFoundError } from '@domain/types/errors';
 interface BuyBookRequest {
   bookId: string;
   buyerId: string;
@@ -23,18 +19,9 @@ export class BuyBookUseCase {
       throw new EntityNotFoundError('Book', bookId);
     }
 
-    if (book.ownerId === buyerId) {
-      throw new ForbiddenOperation('You cannot buy your own book');
-    }
+    const soldBook = book.sellTo(buyerId);
 
-    if (book.status !== 'PUBLISHED') {
-      throw new BusinessConflictError('Book is not available for purchase');
-    }
-
-    const updatedBook = await this.bookRepository.updateOne(bookId, {
-      status: 'SOLD',
-      soldAt: new Date(),
-    });
+    const updatedBook = await this.bookRepository.markAsSold(bookId, buyerId, soldBook.soldAt!);
 
     return updatedBook;
   }

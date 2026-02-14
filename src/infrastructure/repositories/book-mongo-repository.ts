@@ -65,7 +65,7 @@ export class BookMongoRepository implements BookRepository {
     };
   }
 
-  async updateOne(bookId: string, query: UpdateBookQuery): Promise<Book | null> {
+  async updateBookDetails(bookId: string, query: UpdateBookQuery): Promise<Book | null> {
     const updateData = await BookModel.findByIdAndUpdate(bookId, query, { new: true });
 
     if (!updateData) return null;
@@ -79,6 +79,24 @@ export class BookMongoRepository implements BookRepository {
     if (!mongoBook) return null;
 
     return this.restoreBook(mongoBook);
+  }
+
+  async markAsSold(bookId: string, buyerId: string, soldAt: Date): Promise<Book | null> {
+    const updated = await BookModel.findByIdAndUpdate(
+      bookId,
+      {
+        $set: {
+          ownerId: buyerId,
+          status: 'SOLD',
+          soldAt,
+        },
+      },
+      { new: true }
+    );
+
+    if (!updated) return null;
+
+    return this.restoreBook(updated);
   }
 
   private restoreBook(mongoBook: BookMongoDb): Book {

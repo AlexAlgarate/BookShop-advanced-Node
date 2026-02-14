@@ -24,6 +24,10 @@ export const bookSchema = z.object({
   createdAt: z.iso.datetime(),
 });
 
+export const buyBookResponseSchema = z.object({
+  content: bookSchema,
+});
+
 export const createBookResponseSchema = z.object({
   content: bookSchema,
 });
@@ -65,5 +69,6 @@ export type CreateBookResponse = z.infer<typeof createBookResponseSchema>;
 export type UpdateBookResponse = z.infer<typeof updateBookResponseSchema>;
 export type FindBooksResponse = z.infer<typeof findBooksResponseSchema>;
 export type GetUserBooksResponse = z.infer<typeof getUserBooksResponseSchema>;
+export type BuyBookResponse = z.infer<typeof buyBookResponseSchema>;
 export type PaginationMeta = z.infer<typeof paginationMetaSchema>;
 export type ErrorResponse = z.infer<typeof errorResponseSchema>;

@@ -7,6 +7,7 @@ import { PaginatedResponse } from '@domain/types/pagination';
 export interface BookRepository {
   createOne(query: CreateBookQuery): Promise<Book>;
   findMany(query: BookFindQuery): Promise<PaginatedResponse<Book>>;
-  updateOne(bookId: string, query: UpdateBookQuery): Promise<Book | null>;
+  updateBookDetails(bookId: string, query: UpdateBookQuery): Promise<Book | null>;
   findById(bookId: string): Promise<Book | null>;
+  markAsSold(bookId: string, buyerId: string, soldAt: Date): Promise<Book | null>;
 }
