@@ -3,8 +3,8 @@ import * as z from 'zod';
 export const signupResponseSchema = z.object({
   content: z.object({
     id: z.string(),
-    email: z.string().email(),
-    createdAt: z.string().datetime(),
+    email: z.email(),
+    createdAt: z.iso.datetime(),
   }),
 });
 

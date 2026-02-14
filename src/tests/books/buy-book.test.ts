@@ -3,8 +3,7 @@ import { createRandomBook } from './helper';
 import { app } from '@ui/api';
 import { faker } from '@faker-js/faker';
 import { signupAndLogin } from '../authentication/helpers';
-import { buyBookResponseSchema } from '../schemas/test-schemas';
-// import { faker } from '@faker-js/faker';
+import { buyBookResponseSchema, errorResponseSchema } from '../schemas/test-schemas';
 
 describe('POST /books/:bookId/buy', () => {
   test('Should return 401 if user is not authenticated', async () => {
@@ -24,8 +23,12 @@ describe('POST /books/:bookId/buy', () => {
       .post(`/books/${fakeBookId}/buy`)
       .set('Authorization', `Bearer ${token}`);
 
+    const validateErrorResponse = errorResponseSchema.parse(response.body);
+
     expect(response.status).toBe(404);
-    expect(response.body.message).toContain(`Book with id ${fakeBookId} could not be found`);
+    expect(validateErrorResponse.message).toContain(
+      `Book with id ${fakeBookId} could not be found`
+    );
   });
 
   test('Should return 403 if user tries to buy theis own books', async () => {
@@ -38,8 +41,10 @@ describe('POST /books/:bookId/buy', () => {
       .post(`/books/${bookId}/buy`)
       .set('Authorization', `Bearer ${token}`);
 
+    const validateErrorResponse = errorResponseSchema.parse(response.body);
+
     expect(response.status).toBe(403);
-    expect(response.body.message).toBe('You cannot buy your own book');
+    expect(validateErrorResponse.message).toBe('You cannot buy your own book');
   });
 
   test('The book is successfully buyed', async () => {
@@ -87,8 +92,10 @@ describe('POST /books/:bookId/buy', () => {
       .post(`/books/${bookId}/buy`)
       .set('Authorization', `Bearer ${secondBuyerToken}`);
 
+    const validateErrorResponse = errorResponseSchema.parse(response.body);
+
     expect(response.status).toBe(409);
-    expect(response.body.message).toBe('Book is not available for purchase');
+    expect(validateErrorResponse.message).toBe('Book is not available for purchase');
   });
 
   test('Should update book status from PUBLISHED to SOLD', async () => {

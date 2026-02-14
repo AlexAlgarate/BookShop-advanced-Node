@@ -1,4 +1,4 @@
-import { NextFunction, Response, Request } from 'express';
+import { Response, Request, NextFunction } from 'express';
 import { status } from 'http-status';
 import * as z from 'zod';
 import * as Sentry from '@sentry/node';
@@ -16,8 +16,9 @@ export const errorHandlerMiddleware = (
   error: Error,
   request: Request,
   response: Response,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _next: NextFunction
-) => {
+): Response => {
   if (error instanceof DomainError) {
     const statusCode = domainErrorToHttpStatusCode[error.name] ?? status.INTERNAL_SERVER_ERROR;
     return response.status(statusCode).json({ message: error.message });

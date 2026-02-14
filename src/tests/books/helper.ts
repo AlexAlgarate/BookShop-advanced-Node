@@ -3,8 +3,23 @@ import { faker } from '@faker-js/faker';
 
 import { app } from '@ui/api';
 import { signupAndLogin } from '../authentication/helpers';
+import * as z from 'zod';
+import { bookSchema } from '../schemas/test-schemas';
 
-export const createRandomBook = async (email?: string, overrides?: Partial<any>) => {
+type Book = z.infer<typeof bookSchema>;
+
+type CreateRandomBookOverrides = Partial<
+  Pick<Book, 'title' | 'description' | 'price' | 'author' | 'status' | 'soldAt'>
+>;
+
+export const createRandomBook = async (
+  email?: string,
+  overrides?: CreateRandomBookOverrides
+): Promise<{
+  newRandomBook: request.Response;
+  token: string;
+  randomBook: CreateRandomBookOverrides;
+}> => {
   const token = await signupAndLogin(email);
 
   const randomBook = {

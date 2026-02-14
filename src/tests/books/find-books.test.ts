@@ -1,6 +1,7 @@
 import request from 'supertest';
 import { createRandomBook } from './helper';
 import { app } from '@ui/api';
+import { findBooksResponseSchema } from '../schemas/test-schemas';
 
 describe('GET /books', () => {
   const BOOKS_URL = '/books';
@@ -8,7 +9,8 @@ describe('GET /books', () => {
   test('Sould return an empty array when there are no books', async () => {
     const response = await request(app).get(BOOKS_URL);
 
-    expect(response.body.content.length).toBe(0);
+    const validateResponse = findBooksResponseSchema.parse(response.body);
+    expect(validateResponse.content.length).toBe(0);
   });
 
   test('Should return 200 and a list of books', async () => {
@@ -16,9 +18,10 @@ describe('GET /books', () => {
     await createRandomBook();
 
     const response = await request(app).get(BOOKS_URL);
+    const validateResponse = findBooksResponseSchema.parse(response.body);
 
     expect(response.status).toBe(200);
-    expect(response.body.content.length).toBe(2);
+    expect(validateResponse.content.length).toBe(2);
   });
 
   test('Should return onlye PUBLISHED books', async () => {
@@ -26,58 +29,60 @@ describe('GET /books', () => {
     await createRandomBook();
 
     const response = await request(app).get(BOOKS_URL);
-
     expect(response.status).toBe(200);
 
-    const books = response.body.content;
+    const validateResponse = findBooksResponseSchema.parse(response.body);
+    const books = validateResponse.content;
     expect(books.length).toBeGreaterThan(0);
-    expect(books.every((book: any) => book.status === 'PUBLISHED')).toBe(true);
+    expect(books.every(book => book.status === 'PUBLISHED')).toBe(true);
   });
 
   test('Should allow searching by title', async () => {
     const { newRandomBook } = await createRandomBook();
+    const validateTitle = findBooksResponseSchema.parse(newRandomBook.body as unknown);
+    const title = validateTitle.content[0]?.title ?? '';
 
-    const response = await request(app).get(
-      `${BOOKS_URL}/?search=${newRandomBook.body.content.title}`
-    );
+    const response = await request(app).get(`${BOOKS_URL}/?search=${title}`);
+
+    const validateResponse = findBooksResponseSchema.parse(response.body);
 
     expect(response.status).toBe(200);
-    expect(
-      response.body.content.some((book: any) =>
-        book.title.includes(newRandomBook.body.content.title)
-      )
-    ).toBe(true);
+    expect(validateResponse.content.some(book => book.title.includes(title))).toBe(true);
   });
 
   test('Should allow searching by author', async () => {
     const { newRandomBook } = await createRandomBook();
-    const author = newRandomBook.body.content.author;
+    const validateAuthor = findBooksResponseSchema.parse(newRandomBook.body as unknown);
+    const author = validateAuthor.content[0]?.author ?? '';
 
     const response = await request(app).get(`${BOOKS_URL}/?search=${author}`);
+    const validateResponse = findBooksResponseSchema.parse(response.body);
 
     expect(response.status).toBe(200);
-    expect(response.body.content.some((book: any) => book.author.includes(author))).toBe(true);
+    expect(validateResponse.content.some(book => book.author.includes(author))).toBe(true);
   });
 
   test('Should return paginated results (default pagination)', async () => {
     const response = await request(app).get(BOOKS_URL);
+    const validateResponse = findBooksResponseSchema.parse(response.body);
 
     expect(response.status).toBe(200);
-    expect(response.body.meta).toBeDefined();
-    expect(response.body.meta.page).toBeDefined();
-    expect(response.body.meta.limit).toBeDefined();
-    expect(response.body.meta.total).toBeDefined();
+    expect(validateResponse.meta).toBeDefined();
+    expect(validateResponse.meta.page).toBeDefined();
+    expect(validateResponse.meta.limit).toBeDefined();
+    expect(validateResponse.meta.total).toBeDefined();
   });
 
   test('Should respect page and limit query params', async () => {
     await Promise.all(Array.from({ length: 12 }).map(() => createRandomBook()));
 
     const response = await request(app).get(`${BOOKS_URL}?page=1&limit=5`);
+    const validateResponse = findBooksResponseSchema.parse(response.body);
 
     expect(response.status).toBe(200);
-    expect(response.body.content.length).toBeLessThanOrEqual(5);
-    expect(response.body.meta.page).toBe(1);
-    expect(response.body.meta.limit).toBe(5);
+    expect(validateResponse.content.length).toBeLessThanOrEqual(5);
+    expect(validateResponse.meta.page).toBe(1);
+    expect(validateResponse.meta.limit).toBe(5);
   });
 
   test('Should not require authentication', async () => {
@@ -90,10 +95,11 @@ describe('GET /books', () => {
     await createRandomBook();
 
     const response = await request(app).get(BOOKS_URL);
+    const validateResponse = findBooksResponseSchema.parse(response.body);
 
     expect(response.status).toBe(200);
 
-    const book = response.body.content[0];
+    const book = validateResponse.content[0];
 
     expect(book).toHaveProperty('id');
     expect(book).toHaveProperty('title');
@@ -110,15 +116,17 @@ describe('GET /books', () => {
     await createRandomBook();
 
     const response = await request(app).get(`${BOOKS_URL}?page=999&limit=5`);
+    const validateResponse = findBooksResponseSchema.parse(response.body);
 
     expect(response.status).toBe(200);
-    expect(response.body.content.length).toBe(0);
+    expect(validateResponse.content.length).toBe(0);
   });
 
   test('Should fallback to defaults when page or limit is invalid', async () => {
     const response = await request(app).get(`${BOOKS_URL}?page=-1&limit=abc`);
+    const validateResponse = findBooksResponseSchema.parse(response.body);
 
     expect(response.status).toBe(200);
-    expect(response.body.meta.page).toBeGreaterThan(0);
+    expect(validateResponse.meta.page).toBeGreaterThan(0);
   });
 });

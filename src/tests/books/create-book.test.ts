@@ -2,6 +2,7 @@ import request from 'supertest';
 import { createRandomBook } from './helper';
 import { app } from '@ui/api';
 import { faker } from '@faker-js/faker';
+import { createBookResponseSchema } from '../schemas/test-schemas';
 
 describe('POST /books', () => {
   const BOOKS_URL = '/books';
@@ -65,8 +66,10 @@ describe('POST /books', () => {
       .set('Authorization', `Bearer ${token}`)
       .send(newBook);
 
+    const validateResponse = createBookResponseSchema.parse(response.body);
+
     expect(response.status).toBe(201);
-    expect(response.body.content.title).toBe(newBook.title);
+    expect(validateResponse.content.title).toBe(newBook.title);
     //!
   });
 

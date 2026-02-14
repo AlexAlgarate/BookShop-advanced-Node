@@ -2,12 +2,14 @@ import request from 'supertest';
 import { createRandomBook } from './helper';
 import { app } from '@ui/api';
 import { signupAndLogin } from '../authentication/helpers';
+import { errorResponseSchema, updateBookResponseSchema } from '../schemas/test-schemas';
 
 describe('PATCH /books/:bookId', () => {
   const BOOKS_URL = '/books';
   test('Given no authorization header, endpoint should return 401 status code', async () => {
     const { newRandomBook } = await createRandomBook();
-    const bookId = newRandomBook.body.content.id;
+    const validateBookId = updateBookResponseSchema.parse(newRandomBook.body);
+    const bookId = validateBookId.content.id;
 
     const response = await request(app)
       .patch(`${BOOKS_URL}/${bookId}`)
@@ -19,7 +21,8 @@ describe('PATCH /books/:bookId', () => {
 
   test('Given an invalid token, endpoint should return a 401 status code', async () => {
     const { newRandomBook } = await createRandomBook();
-    const bookId = newRandomBook.body.content.id;
+    const validateBookId = updateBookResponseSchema.parse(newRandomBook.body);
+    const bookId = validateBookId.content.id;
 
     const response = await request(app)
       .patch(`${BOOKS_URL}/${bookId}`)
@@ -42,7 +45,8 @@ describe('PATCH /books/:bookId', () => {
 
   test('Given an existing product, should return 200 and updated product', async () => {
     const { token, newRandomBook } = await createRandomBook();
-    const bookId = newRandomBook.body.content.id;
+    const validateBookId = updateBookResponseSchema.parse(newRandomBook.body);
+    const bookId = validateBookId.content.id;
 
     const updatedPayload = {
       title: 'Updated title',
@@ -54,14 +58,17 @@ describe('PATCH /books/:bookId', () => {
       .set('Authorization', `Bearer ${token}`)
       .send(updatedPayload);
 
+    const validateResponse = updateBookResponseSchema.parse(response.body);
+
     expect(response.status).toBe(200);
-    expect(response.body.content.title).toBe('Updated title');
-    expect(response.body.content.price).toBe(150);
+    expect(validateResponse.content.title).toBe('Updated title');
+    expect(validateResponse.content.price).toBe(150);
   });
 
   test('Given an user that is not the product owner, return a 403 status code', async () => {
     const { newRandomBook } = await createRandomBook();
-    const bookId = newRandomBook.body.content.id;
+    const validateBookId = updateBookResponseSchema.parse(newRandomBook.body);
+    const bookId = validateBookId.content.id;
 
     const tokenFromAnotherUser = await signupAndLogin('other-user@test.com', 'other-password');
 
@@ -70,13 +77,18 @@ describe('PATCH /books/:bookId', () => {
       .set('Authorization', `Bearer ${tokenFromAnotherUser}`)
       .send({ title: 'new-title' });
 
+    const validateResponse = updateBookResponseSchema.parse(response.body);
+
     expect(response.status).toBe(403);
-    expect(response.body).toStrictEqual({ message: 'Only owner of the book can update this book' });
+    expect(validateResponse).toStrictEqual({
+      message: 'Only owner of the book can update this book',
+    });
   });
 
   test('Given an invalid payload, should return a 400', async () => {
     const { newRandomBook, token } = await createRandomBook();
-    const bookId = newRandomBook.body.content.id;
+    const validateBookId = updateBookResponseSchema.parse(newRandomBook.body);
+    const bookId = validateBookId.content.id;
 
     const response = await request(app)
       .patch(`${BOOKS_URL}/${bookId}`)
@@ -88,16 +100,21 @@ describe('PATCH /books/:bookId', () => {
 
   test('Should not allow updating immutable fields as id, ownerId', async () => {
     const { newRandomBook, token } = await createRandomBook();
-    const bookId = newRandomBook.body.content.id;
+    const validateBookId = updateBookResponseSchema.parse(newRandomBook.body);
+    const bookId = validateBookId.content.id;
 
     const response = await request(app)
       .patch(`${BOOKS_URL}/${bookId}`)
       .set('Authorization', `Bearer ${token}`)
       .send({ ownerId: 'new-Owner-Id' });
 
+    const validateResponse = updateBookResponseSchema.parse(response.body);
+
+    const validateErrorResponse = errorResponseSchema.parse(response.body);
+
     expect(response.status).toBe(400);
-    expect(typeof response.body.content?.ownerId).toBe('undefined');
-    expect(response.body.message).toEqual('Validation failed');
-    expect(response.body.errors.formErrors[0]).toBe('Unrecognized key: \"ownerId\"');
+    expect(typeof validateResponse.content?.ownerId).toBe('undefined');
+    expect(validateErrorResponse.message).toEqual('Validation failed');
+    expect(validateErrorResponse.errors?.formErrors?.[0]).toBe('Unrecognized key: "ownerId"');
   });
 });

@@ -3,6 +3,7 @@ import { createRandomBook } from './helper';
 import { app } from '@ui/api';
 import { faker } from '@faker-js/faker';
 import { signupAndLogin } from '../authentication/helpers';
+import { getUserBooksResponseSchema } from '../schemas/test-schemas';
 
 describe('GET /me/books', () => {
   const ME_BOOKS_URL = '/me/books';
@@ -44,17 +45,18 @@ describe('GET /me/books', () => {
     const token = await signupAndLogin('test@test.com', '1234');
 
     const response = await request(app).get(ME_BOOKS_URL).set('Authorization', `Bearer ${token}`);
+    const validateResponse = getUserBooksResponseSchema.parse(response.body);
 
     expect(response.status).toBe(200);
-    expect(Array.isArray(response.body.content)).toBe(true);
-    expect(response.body.content).toHaveLength(0);
+    expect(Array.isArray(validateResponse.content)).toBe(true);
+    expect(validateResponse.content).toHaveLength(0);
   });
 
   test('Should returning only books belonging to the authorizated user', async () => {
     const { token: tokenUserA, newRandomBook: bookUserA } =
       await createRandomBook('userA@test.com');
-    const titleA = bookUserA.body.content.title;
-
+    const validateTitleA = getUserBooksResponseSchema.parse(bookUserA.body as unknown);
+    const titleA = validateTitleA.content[0]?.title;
     const book2Payload = {
       title: faker.book.title(),
       description: faker.commerce.productDescription(),
@@ -68,16 +70,18 @@ describe('GET /me/books', () => {
       .send(book2Payload);
 
     const { newRandomBook: bookUserB } = await createRandomBook('userB@test.com');
-    const titleB = bookUserB.body.content.title;
+    const validateTitleB = getUserBooksResponseSchema.parse(bookUserB.body as unknown);
+    const titleB = validateTitleB.content[0]?.title;
 
     const response = await request(app)
       .get(ME_BOOKS_URL)
       .set('Authorization', `Bearer ${tokenUserA}`);
+    const validateResponse = getUserBooksResponseSchema.parse(response.body);
 
     expect(response.status).toBe(200);
-    expect(response.body.content).toHaveLength(2);
+    expect(validateResponse.content).toHaveLength(2);
 
-    const titles = response.body.content.map((b: any) => b.title);
+    const titles = validateResponse.content.map(b => b.title);
     expect(titles).toContain(titleA);
     expect(titles).toContain(book2Payload.title);
 
@@ -88,8 +92,9 @@ describe('GET /me/books', () => {
     const { token } = await createRandomBook();
 
     const response = await request(app).get(ME_BOOKS_URL).set('Authorization', `Bearer ${token}`);
+    const validateResponse = getUserBooksResponseSchema.parse(response.body);
 
-    const book = response.body.content[0];
+    const book = validateResponse.content[0];
 
     expect(response.status).toBe(200);
     expect(book).toHaveProperty('id');
@@ -107,10 +112,11 @@ describe('GET /me/books', () => {
     const { token } = await createRandomBook();
 
     const response = await request(app).get(ME_BOOKS_URL).set('Authorization', `Bearer ${token}`);
+    const validateResponse = getUserBooksResponseSchema.parse(response.body);
 
     expect(response.status).toBe(200);
 
-    const book = response.body.content[0];
+    const book = validateResponse.content[0];
     expect(book).not.toHaveProperty('_id');
     expect(book).not.toHaveProperty('_v');
   });
@@ -133,10 +139,12 @@ describe('GET /me/books', () => {
       .get(`${ME_BOOKS_URL}?page=1&limit=10`)
       .set('Authorization', `Bearer ${token}`);
 
+    const validateResponse = getUserBooksResponseSchema.parse(response.body);
+
     expect(response.status).toBe(200);
-    expect(response.body.content).toHaveLength(10);
-    expect(response.body.meta.page).toBe(1);
-    expect(response.body.meta.total).toBe(24);
+    expect(validateResponse.content).toHaveLength(10);
+    expect(validateResponse.meta.page).toBe(1);
+    expect(validateResponse.meta.total).toBe(24);
   });
 
   test('Should handle negative page numbers successfully', async () => {
@@ -146,8 +154,10 @@ describe('GET /me/books', () => {
       .get(`${ME_BOOKS_URL}?page=-1`)
       .set('Authorization', `Bearer ${token}`);
 
+    const validateResponse = getUserBooksResponseSchema.parse(response.body);
+
     expect(response.status).toBe(200);
-    expect(response.body.meta.page).toEqual(1);
+    expect(validateResponse.meta.page).toEqual(1);
   });
 
   test('Should handle negative limit numbers successfully', async () => {
@@ -157,8 +167,10 @@ describe('GET /me/books', () => {
       .get(`${ME_BOOKS_URL}?limit=-10`)
       .set('Authorization', `Bearer ${token}`);
 
+    const validateResponse = getUserBooksResponseSchema.parse(response.body);
+
     expect(response.status).toBe(200);
-    expect(response.body.meta.limit).toEqual(10);
+    expect(validateResponse.meta.limit).toEqual(10);
   });
 
   test('Should cap limit at maximum value (100)', async () => {
@@ -168,8 +180,10 @@ describe('GET /me/books', () => {
       .get(`${ME_BOOKS_URL}?limit=9999`)
       .set('Authorization', `Bearer ${token}`);
 
+    const validateResponse = getUserBooksResponseSchema.parse(response.body);
+
     expect(response.status).toBe(200);
-    expect(response.body.meta.limit).toBeLessThanOrEqual(100);
+    expect(validateResponse.meta.limit).toBeLessThanOrEqual(100);
   });
 
   test('Should handle page=0 and limit=0 successfully', async () => {
@@ -199,8 +213,10 @@ describe('GET /me/books', () => {
       .get(`${ME_BOOKS_URL}?page=0.5&limit=0.5`)
       .set('Authorization', `Bearer ${token}`);
 
+    const validateResponse = getUserBooksResponseSchema.parse(response.body);
+
     expect(response.status).toBe(200);
-    expect(Number.isInteger(response.body.meta.page)).toBe(true);
-    expect(Number.isInteger(response.body.meta.limit)).toBe(true);
+    expect(Number.isInteger(validateResponse.meta.page)).toBe(true);
+    expect(Number.isInteger(validateResponse.meta.limit)).toBe(true);
   });
 });

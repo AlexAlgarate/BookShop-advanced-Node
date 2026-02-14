@@ -4,6 +4,7 @@ import { faker } from '@faker-js/faker';
 import bcrypt from 'bcryptjs';
 
 import { app } from '@ui/api';
+import { signupResponseSchema } from '../schemas/test-schemas';
 
 describe('POST /authentication/signup', () => {
   const AUTHENTICATION_URL = '/authentication/signup';
@@ -75,7 +76,9 @@ describe('POST /authentication/signup', () => {
       password: faker.internet.password(),
     });
 
-    expect(response.body.password).toBeUndefined();
+    const validateResponse = signupResponseSchema.parse(response.body);
+
+    expect(validateResponse.content).not.toHaveProperty('password');
   });
 
   test('Password should be hashed before storing', async () => {
