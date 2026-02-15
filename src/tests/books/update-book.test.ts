@@ -36,7 +36,7 @@ describe('PATCH /books/:bookId', () => {
     expect(response.status).toBe(401);
   });
 
-  test('Given a non existing product, return a 404 status code', async () => {
+  test('Given a non existing book, return a 404 status code', async () => {
     const { token } = await createRandomBook();
 
     const response = await request(app)
@@ -47,7 +47,7 @@ describe('PATCH /books/:bookId', () => {
     expect(response.status).toBe(404);
   });
 
-  test('Given an existing product, should return 200 and updated product', async () => {
+  test('Given an existing book, should return 200 and updated book', async () => {
     const { token, newRandomBook } = await createRandomBook();
     const validateBookId = createBookResponseSchema.parse(newRandomBook.body);
     const bookId = validateBookId.content.id;
@@ -69,7 +69,7 @@ describe('PATCH /books/:bookId', () => {
     expect(validateResponse.content.price).toBe(150);
   });
 
-  test('Given an user that is not the product owner, return a 403 status code', async () => {
+  test('Given an user that is not the book owner, return a 403 status code', async () => {
     const { newRandomBook } = await createRandomBook();
     const validateBookId = createBookResponseSchema.parse(newRandomBook.body);
     const bookId = validateBookId.content.id;

@@ -48,6 +48,10 @@ export const getUserBooksResponseSchema = z.object({
   meta: paginationMetaSchema,
 });
 
+export const deleteBookResponseSchema = z.object({
+  message: z.string(),
+});
+
 export const errorResponseSchema = z.object({
   message: z.string(),
   errors: z
@@ -68,3 +72,4 @@ export type GetUserBooksResponse = z.infer<typeof getUserBooksResponseSchema>;
 export type BuyBookResponse = z.infer<typeof buyBookResponseSchema>;
 export type PaginationMeta = z.infer<typeof paginationMetaSchema>;
 export type ErrorResponse = z.infer<typeof errorResponseSchema>;
+export type DeleteResponse = z.infer<typeof deleteBookResponseSchema>;
