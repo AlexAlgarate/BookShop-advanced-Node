@@ -3,11 +3,8 @@ import { BookRepository } from '@domain/repositories/BookRepository';
 import { EntityNotFoundError } from '@domain/types/errors';
 import { UserRepository } from '@domain/repositories/UserRepository';
 import { EmailService } from '@domain/services/EmailService';
+import { BuyBookQuery } from '@domain/types/book/BuyBookQuery';
 
-interface BuyBookRequest {
-  bookId: string;
-  buyerId: string;
-}
 export class BuyBookUseCase {
   private readonly bookRepository: BookRepository;
   private readonly userRepository: UserRepository;
@@ -23,7 +20,7 @@ export class BuyBookUseCase {
     this.emailService = emailService;
   }
 
-  public async execute({ bookId, buyerId }: BuyBookRequest): Promise<Book | null> {
+  public async execute({ bookId, buyerId }: BuyBookQuery): Promise<Book | null> {
     const book = await this.bookRepository.findById(bookId);
 
     if (!book) {
