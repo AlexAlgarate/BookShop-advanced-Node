@@ -2,18 +2,16 @@ import { UserMongoRepository } from '@infrastructure/repositories/user-mongo-rep
 import { MailtrapService } from '@infrastructure/services/mailtrap-email-service';
 import { SecurityBcryptService } from '@infrastructure/services/security-bcrypt-service';
 
-interface AuthenticationDependencies {
-  userRepository: UserMongoRepository;
-  securityService: SecurityBcryptService;
-  emailService: MailtrapService;
-}
-
 export class AuthenticationFactory {
-  static createDependencies(): AuthenticationDependencies {
-    const userRepository = new UserMongoRepository();
-    const securityService = new SecurityBcryptService();
-    const emailService = new MailtrapService();
+  static createUserRepository(): UserMongoRepository {
+    return new UserMongoRepository();
+  }
 
-    return { userRepository, securityService, emailService };
+  static createEmailService(): MailtrapService {
+    return new MailtrapService();
+  }
+
+  static createSecurityService(): SecurityBcryptService {
+    return new SecurityBcryptService();
   }
 }

@@ -9,7 +9,8 @@ export const buyBookController = async (request: Request, response: Response): P
   const { id: buyerId } = authenticatedUserSchema.parse(request.user);
 
   const bookRepository = BookFactory.createRepository();
-  const { userRepository, emailService } = AuthenticationFactory.createDependencies();
+  const userRepository = AuthenticationFactory.createUserRepository();
+  const emailService = AuthenticationFactory.createEmailService();
 
   const buyBookUseCase = new BuyBookUseCase(bookRepository, userRepository, emailService);
 

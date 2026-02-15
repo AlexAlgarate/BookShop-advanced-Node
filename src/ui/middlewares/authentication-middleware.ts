@@ -20,7 +20,7 @@ export const authenticationMiddleware = (
   }
 
   try {
-    const { securityService } = AuthenticationFactory.createDependencies();
+    const securityService = AuthenticationFactory.createSecurityService();
     const { userId } = securityService.verifyJWT(token);
     request.user = { id: userId };
     next();
