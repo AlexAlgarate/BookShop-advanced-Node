@@ -1,38 +1,17 @@
-import mongoose from 'mongoose';
-import * as Sentry from '@sentry/node';
-
+import { connectToMongoDb } from '@infrastructure/database/mongo-connection';
 import { startHttpApi } from './ui/api';
 import { environmentService } from '@infrastructure/services/environment-service';
 import { startCronJobs } from '@ui/cron';
-
-const loadEnvironment = (): void => {
-  console.log('...loading environment');
-  environmentService.load();
-  console.log('environment loaded...');
-};
-
-const initializeSentry = (): void => {
-  const { SENTRY_DSN, ENVIRONMENT } = environmentService.get();
-
-  Sentry.init({
-    dsn: SENTRY_DSN,
-    environment: ENVIRONMENT,
-  });
-};
-const connectMongoDb = async (): Promise<void> => {
-  const { MONGO_USER, MONGO_PASSWORD, MONGO_HOST } = environmentService.get();
-
-  await mongoose.connect(
-    `mongodb://${MONGO_USER}:${MONGO_PASSWORD}@${MONGO_HOST}/db_project?authSource=admin`
-  );
-  console.log('Mongodb connected!');
-};
+import { initializeSentry } from '@infrastructure/monitoring/sentry.initializer';
 
 const executeApp = async (): Promise<void> => {
   try {
-    loadEnvironment();
+    console.log('-- Starting application --');
+    console.log('...loading environment');
+    environmentService.load();
+
     initializeSentry();
-    await connectMongoDb();
+    await connectToMongoDb();
     startCronJobs();
     startHttpApi();
   } catch (error) {
