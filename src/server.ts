@@ -3,6 +3,7 @@ import * as Sentry from '@sentry/node';
 
 import { startHttpApi } from './ui/api';
 import { environmentService } from '@infrastructure/services/environment-service';
+import { startCronJobs } from '@ui/cron';
 
 const loadEnvironment = (): void => {
   console.log('...loading environment');
@@ -32,6 +33,7 @@ const executeApp = async (): Promise<void> => {
     loadEnvironment();
     initializeSentry();
     await connectMongoDb();
+    startCronJobs();
     startHttpApi();
   } catch (error) {
     console.log('Unable to start application', error);
