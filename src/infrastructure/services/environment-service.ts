@@ -25,7 +25,10 @@ class EnvironmentService {
     const currentEnvironment = process.env.NODE_ENV ?? '';
     const environmentFile = this.getEnvironmentFile(currentEnvironment);
 
-    const variables: dotenv.DotenvConfigOutput = config({ path: environmentFile });
+    const variables: dotenv.DotenvConfigOutput = config({
+      path: environmentFile,
+      quiet: true,
+    });
 
     if (variables.error) {
       throw new Error(`Error reading environment variables: ${variables.error.message}`);
