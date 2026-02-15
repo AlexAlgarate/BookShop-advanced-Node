@@ -17,24 +17,17 @@ export class UserMongoRepository implements UserRepository {
 
   async find(): Promise<User[]> {
     const usersDb = await UserModel.find();
-
     return usersDb.map(userDb => this.restoreUser(userDb));
   }
 
   async findByEmail(email: string): Promise<User | null> {
     const userDb = await UserModel.findOne({ email });
-
-    if (!userDb) return null;
-
-    return this.restoreUser(userDb);
+    return userDb ? this.restoreUser(userDb) : null;
   }
 
   async findById(id: string): Promise<User | null> {
     const userDb = await UserModel.findById(id);
-
-    if (!userDb) return null;
-
-    return this.restoreUser(userDb);
+    return userDb ? this.restoreUser(userDb) : null;
   }
 
   private restoreUser(userDb: UserMongoDb): User {
