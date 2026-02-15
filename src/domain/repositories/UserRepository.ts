@@ -5,4 +5,5 @@ export interface UserRepository {
   createOne(query: CreateUserQuery): Promise<User>;
   findByEmail(email: string): Promise<User | null>;
   find(): Promise<User[]>;
+  findById(id: string): Promise<User | null>;
 }

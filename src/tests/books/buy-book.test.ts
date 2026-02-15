@@ -47,7 +47,7 @@ describe('POST /books/:bookId/buy', () => {
     expect(validateErrorResponse.message).toBe('You cannot buy your own book');
   });
 
-  test('The book is successfully buyed', async () => {
+  test('The book is successfully purchased', async () => {
     const sellerEmail = faker.internet.email();
     const { newRandomBook } = await createRandomBook(sellerEmail);
 
