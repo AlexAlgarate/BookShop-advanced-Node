@@ -32,6 +32,7 @@ const BookSchema = new mongoose.Schema<BookMongoDb>(
     author: {
       type: String,
       required: true,
+      index: true,
     },
     status: {
       type: String,

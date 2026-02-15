@@ -24,63 +24,33 @@ export class BookMongoRepository implements BookRepository {
   }
 
   async findMany(query: BookFindQuery): Promise<PaginatedResponse<Book>> {
-    const searchQuery: QueryFilter<BookMongoDb> = {};
+    const searchQuery = this.buildSearchQuery(query);
 
-    if (!query.ownerId) {
-      searchQuery.status = 'PUBLISHED';
-    }
+    const { skip, limit } = this.buildPagination(query);
 
-    if (query.search) {
-      searchQuery.$or = [
-        { title: { $regex: query.search, $options: 'i' } },
-        { author: { $regex: query.search, $options: 'i' } },
-      ];
-    } else {
-      if (query.author) {
-        searchQuery.author = { $regex: query.author, $options: 'i' };
-      }
-
-      if (query.title) {
-        searchQuery.title = { $regex: query.title, $options: 'i' };
-      }
-    }
-    if (query.ownerId) {
-      searchQuery.ownerId = {
-        $eq: query.ownerId,
-      };
-    }
-
-    const skip = (query.page - 1) * query.limit;
-
-    const [mongoBooks, total] = await Promise.all([
-      BookModel.find(searchQuery).skip(skip).limit(query.limit),
+    const [books, total] = await Promise.all([
+      BookModel.find(searchQuery).skip(skip).limit(limit),
       BookModel.countDocuments(searchQuery),
     ]);
 
     return {
       meta: {
         page: query.page,
-        limit: query.limit,
+        limit: limit,
         total,
       },
-      content: mongoBooks.map(mongoBook => this.restoreBook(mongoBook)),
+      content: books.map(book => this.restoreBook(book)),
     };
   }
 
   async updateBookDetails(bookId: string, query: UpdateBookQuery): Promise<Book | null> {
     const updateData = await BookModel.findByIdAndUpdate(bookId, query, { new: true });
-
-    if (!updateData) return null;
-
-    return this.restoreBook(updateData);
+    return updateData ? this.restoreBook(updateData) : null;
   }
 
   async findById(bookId: string): Promise<Book | null> {
-    const mongoBook = await BookModel.findById(bookId);
-
-    if (!mongoBook) return null;
-
-    return this.restoreBook(mongoBook);
+    const book = await BookModel.findById(bookId);
+    return book ? this.restoreBook(book) : null;
   }
 
   async markAsSold(bookId: string, buyerId: string, soldAt: Date): Promise<Book | null> {
@@ -96,15 +66,50 @@ export class BookMongoRepository implements BookRepository {
       { new: true }
     );
 
-    if (!updated) return null;
-
-    return this.restoreBook(updated);
+    return updated ? this.restoreBook(updated) : null;
   }
 
   async deleteBook(bookId: string): Promise<boolean> {
     const deleteBook = await BookModel.findByIdAndDelete(bookId);
-
     return !!deleteBook;
+  }
+
+  private buildSearchQuery(query: BookFindQuery): QueryFilter<BookMongoDb> {
+    const searchQuery: QueryFilter<BookMongoDb> = {};
+
+    if (!query.ownerId) {
+      searchQuery.status = 'PUBLISHED';
+    }
+
+    if (query.search) {
+      searchQuery.$or = [
+        { title: { $regex: query.search, $options: 'i' } },
+        { author: { $regex: query.search, $options: 'i' } },
+      ];
+      return searchQuery;
+    }
+    if (query.author) {
+      searchQuery.author = { $regex: query.author, $options: 'i' };
+    }
+
+    if (query.title) {
+      searchQuery.title = { $regex: query.title, $options: 'i' };
+    }
+
+    if (query.ownerId) {
+      searchQuery.ownerId = query.ownerId;
+    }
+
+    return searchQuery;
+  }
+  private buildPagination(query: BookFindQuery): {
+    limit: number;
+    skip: number;
+  } {
+    const limit = query.limit;
+    const skip = (query.page - 1) * query.limit;
+
+    return { limit, skip };
   }
 
   private restoreBook(mongoBook: BookMongoDb): Book {
