@@ -101,6 +101,12 @@ export class BookMongoRepository implements BookRepository {
     return this.restoreBook(updated);
   }
 
+  async deleteBook(bookId: string): Promise<boolean> {
+    const deleteBook = await BookModel.findByIdAndDelete(bookId);
+
+    return !!deleteBook;
+  }
+
   private restoreBook(mongoBook: BookMongoDb): Book {
     return new Book({
       id: mongoBook._id.toString(),

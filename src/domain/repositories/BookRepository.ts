@@ -10,4 +10,5 @@ export interface BookRepository {
   updateBookDetails(bookId: string, query: UpdateBookQuery): Promise<Book | null>;
   findById(bookId: string): Promise<Book | null>;
   markAsSold(bookId: string, buyerId: string, soldAt: Date): Promise<Book | null>;
+  deleteBook(bookId: string): Promise<boolean>;
 }
