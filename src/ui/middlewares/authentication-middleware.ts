@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { AuthenticationFactory } from '@ui/factories/authentication-factory';
 import { UnauthorizedError } from '@domain/types/errors';
+import { ServiceFactories } from '@ui/factories/service-factories';
 
 export const authenticationMiddleware = (
   request: Request,
@@ -20,7 +20,7 @@ export const authenticationMiddleware = (
   }
 
   try {
-    const securityService = AuthenticationFactory.createSecurityService();
+    const securityService = ServiceFactories.createSecurityService();
     const { userId } = securityService.verifyJWT(token);
     request.user = { id: userId };
     next();
