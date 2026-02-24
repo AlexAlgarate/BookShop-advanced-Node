@@ -1,3 +1,4 @@
+import { BookStatus } from '@domain/entities/Book';
 import mongoose, { Types } from 'mongoose';
 
 export interface BookMongoDb {
@@ -5,7 +6,7 @@ export interface BookMongoDb {
   description: string;
   price: number;
   author: string;
-  status: 'PUBLISHED' | 'SOLD';
+  status: BookStatus;
   soldAt: null | Date;
   createdAt: Date;
   updatedAt: Date;
@@ -37,7 +38,7 @@ const BookSchema = new mongoose.Schema<BookMongoDb>(
     status: {
       type: String,
       enum: ['PUBLISHED', 'SOLD'],
-      default: 'PUBLISHED',
+      default: BookStatus.PUBLISHED,
       required: true,
     },
     ownerId: {

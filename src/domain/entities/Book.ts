@@ -1,12 +1,17 @@
 import { BusinessConflictError, ForbiddenOperation } from '@domain/types/errors';
 import { Entity } from './Entity';
 
+export enum BookStatus {
+  PUBLISHED = 'PUBLISHED',
+  SOLD = 'SOLD',
+}
+
 export class Book extends Entity {
   readonly title: string;
   readonly description: string;
   readonly price: number;
   readonly author: string;
-  readonly status: 'PUBLISHED' | 'SOLD';
+  readonly status: BookStatus;
   readonly ownerId: string;
   readonly soldAt: Date | null;
 
@@ -15,7 +20,7 @@ export class Book extends Entity {
     description,
     price,
     author,
-    status = 'PUBLISHED',
+    status = BookStatus.PUBLISHED,
     ownerId,
     soldAt = null,
     id,
@@ -25,7 +30,7 @@ export class Book extends Entity {
     description: string;
     price: number;
     author: string;
-    status?: 'PUBLISHED' | 'SOLD';
+    status?: BookStatus;
     ownerId: string;
     soldAt?: Date | null;
     id: string;
@@ -40,10 +45,10 @@ export class Book extends Entity {
     this.ownerId = ownerId;
     this.soldAt = soldAt;
 
-    if (this.status === 'PUBLISHED' && this.soldAt !== null)
+    if (this.status === BookStatus.PUBLISHED && this.soldAt !== null)
       throw new Error('soldAt must be null when status is PUBLISHED');
 
-    if (this.status === 'SOLD' && this.soldAt === null)
+    if (this.status === BookStatus.SOLD && this.soldAt === null)
       throw new Error('soldAt must have a date when status is SOLD');
   }
 
@@ -52,7 +57,7 @@ export class Book extends Entity {
       throw new ForbiddenOperation('You cannot buy your own book');
     }
 
-    if (this.status !== 'PUBLISHED') {
+    if (this.status !== BookStatus.PUBLISHED) {
       throw new BusinessConflictError('Book is not available for purchase');
     }
     return new Book({
@@ -60,7 +65,7 @@ export class Book extends Entity {
       description: this.description,
       price: this.price,
       author: this.author,
-      status: 'SOLD',
+      status: BookStatus.SOLD,
       ownerId: buyerId,
       soldAt: new Date(),
       id: this.id,

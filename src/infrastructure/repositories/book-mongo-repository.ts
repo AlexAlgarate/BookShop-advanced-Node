@@ -1,4 +1,4 @@
-import { Book } from '@domain/entities/Book';
+import { Book, BookStatus } from '@domain/entities/Book';
 import { BookRepository } from '@domain/repositories/BookRepository';
 import { BookFindQuery } from '@domain/types/book/BookFindQuery';
 import { CreateBookQuery } from '@domain/types/book/CreateBookQuery';
@@ -14,9 +14,7 @@ export class BookMongoRepository implements BookRepository {
       description: query.description,
       price: query.price,
       author: query.author,
-      status: 'PUBLISHED',
       ownerId: query.ownerId,
-      soldAt: null,
     });
 
     const createdBook = await newBook.save();
@@ -59,7 +57,7 @@ export class BookMongoRepository implements BookRepository {
       {
         $set: {
           ownerId: buyerId,
-          status: 'SOLD',
+          status: BookStatus.SOLD,
           soldAt,
         },
       },
@@ -76,10 +74,6 @@ export class BookMongoRepository implements BookRepository {
 
   private buildSearchQuery(query: BookFindQuery): QueryFilter<BookMongoDb> {
     const searchQuery: QueryFilter<BookMongoDb> = {};
-
-    if (!query.ownerId) {
-      searchQuery.status = 'PUBLISHED';
-    }
 
     if (query.search) {
       searchQuery.$or = [

@@ -1,4 +1,4 @@
-import { Book } from '@domain/entities/Book';
+import { Book, BookStatus } from '@domain/entities/Book';
 import { BookRepository } from '@domain/repositories/BookRepository';
 import { CreateBookQuery } from '@domain/types/book/CreateBookQuery';
 import { BusinessConflictError } from '@domain/types/errors';
@@ -13,7 +13,11 @@ export class CreateBookUseCase {
   public async execute(query: CreateBookQuery): Promise<Book> {
     this.validateBookCreationRules(query);
 
-    const createdBook = await this.bookRepository.createOne(query);
+    const createdBook = await this.bookRepository.createOne({
+      ...query,
+      status: BookStatus.PUBLISHED,
+      soldAt: null,
+    });
 
     return createdBook;
   }
