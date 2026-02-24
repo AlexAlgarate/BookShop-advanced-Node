@@ -4,7 +4,7 @@ import { BookRepository } from '@domain/repositories/BookRepository';
 import { UserRepository } from '@domain/repositories/UserRepository';
 import { EmailService } from '@domain/services/EmailService';
 import { User } from '@domain/entities/User';
-import { Book } from '@domain/entities/Book';
+import { Book, BookStatus } from '@domain/entities/Book';
 
 describe('SendPriceReductionSuggestionUseCase', () => {
   let useCase: SendPriceReductionSuggestionUseCase;
@@ -123,7 +123,7 @@ describe('SendPriceReductionSuggestionUseCase', () => {
     test('should not send email when books have non-PUBLISHED status', async () => {
       // Arrange
       const user = createMockUser('user@example.com');
-      const soldBook = createMockBook('1', 'Sold Book', 15.0, user.id, 10, 'SOLD');
+      const soldBook = createMockBook('1', 'Sold Book', 15.0, user.id, 10, BookStatus.SOLD);
 
       userRepositoryMock.find.mockResolvedValue([user]);
       bookRepositoryMock.findMany.mockResolvedValue({
@@ -299,12 +299,12 @@ describe('SendPriceReductionSuggestionUseCase', () => {
     price: number,
     ownerId: string,
     daysOld: number,
-    status: 'PUBLISHED' | 'SOLD' = 'PUBLISHED'
+    status: BookStatus = BookStatus.PUBLISHED
   ): Book {
     const createdAt = new Date();
     createdAt.setDate(createdAt.getDate() - daysOld);
 
-    const soldAt = status === 'SOLD' ? new Date() : null;
+    const soldAt = status === BookStatus.SOLD ? new Date() : null;
 
     return new Book({
       id,
