@@ -1,5 +1,4 @@
-import { UpdateBookUseCase } from '@domain/use-cases/books/update-book-usecase';
-import { BookFactory } from '@ui/factories/book-factory';
+import { useCases } from '@di/use-case-resolver';
 import {
   authenticatedUserSchema,
   bookIdParamsSchema,
@@ -12,13 +11,9 @@ export const updateBookController = async (request: Request, response: Response)
   const { title, description, author, price } = updateBookBodySchema.parse(request.body);
   const { id: userId } = authenticatedUserSchema.parse(request.user);
 
-  const bookRepository = BookFactory.createRepository();
-  const updateBookUseCase = new UpdateBookUseCase(bookRepository);
-  const updateBook = await updateBookUseCase.execute(
-    bookId,
-    { title, description, author, price },
-    userId
-  );
+  const updateBook = await useCases
+    .updateBook()
+    .execute(bookId, { title, description, author, price }, userId);
 
   response.json({ content: updateBook });
 };

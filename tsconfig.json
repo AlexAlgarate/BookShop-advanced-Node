@@ -30,7 +30,8 @@
     "paths": {
       "@domain/*": ["domain/*"],
       "@infrastructure/*": ["infrastructure/*"],
-      "@ui/*": ["ui/*"]
+      "@ui/*": ["ui/*"],
+      "@di/*": ["di/*"]
     }
   },
   "include": ["src/**/*.ts"],

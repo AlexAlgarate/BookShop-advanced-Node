@@ -1,5 +1,4 @@
-import { CreateBookUseCase } from '@domain/use-cases/books/create-book-usecase';
-import { BookFactory } from '@ui/factories/book-factory';
+import { useCases } from '@di/use-case-resolver';
 
 import { authenticatedUserSchema, createBookBodySchema } from '@ui/validators/book-validators';
 import { Request, Response } from 'express';
@@ -9,10 +8,7 @@ export const createBookController = async (request: Request, response: Response)
 
   const { id: userId } = authenticatedUserSchema.parse(request.user);
 
-  const bookRepository = BookFactory.createRepository();
-  const createBookUseCase = new CreateBookUseCase(bookRepository);
-
-  const createdBook = await createBookUseCase.execute({
+  const createdBook = await useCases.createBook().execute({
     title: validateBody.title,
     description: validateBody.description,
     price: validateBody.price,

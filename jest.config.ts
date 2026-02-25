@@ -11,6 +11,7 @@ const config: Config = {
     '^@domain/(.*)$': '<rootDir>/src/domain/$1',
     '^@infrastructure/(.*)$': '<rootDir>/src/infrastructure/$1',
     '^@ui/(.*)$': '<rootDir>/src/ui/$1',
+    '^@di/(.*)$': '<rootDir>/src/di/$1',
   },
   transform: {
     '^.+\\.tsx?$': [
