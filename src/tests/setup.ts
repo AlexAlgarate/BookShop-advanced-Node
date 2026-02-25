@@ -1,11 +1,16 @@
 import { environmentService } from '@infrastructure/services/environment-service';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
+import { registerInfrastructureBindings } from '@di/infrastructure-bindings';
+import { registerUseCaseBindings } from '@di/usecase-bindings';
 
 let mongo: MongoMemoryServer;
 
 beforeAll(async () => {
   environmentService.load();
+  registerInfrastructureBindings();
+  registerUseCaseBindings();
+
   mongo = await MongoMemoryServer.create();
   const uri = mongo.getUri();
 
