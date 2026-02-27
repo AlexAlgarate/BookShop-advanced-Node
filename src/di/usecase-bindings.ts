@@ -14,6 +14,7 @@ import {
   USER_REPOSITORY,
   EMAIL_SERVICE,
   SECURITY_SERVICE,
+  NOTIFICATION_TEMPLATE_SERVICE,
   CREATE_BOOK_USE_CASE,
   FIND_BOOKS_USE_CASE,
   FIND_USER_BOOKS_USE_CASE,
@@ -52,7 +53,8 @@ export function registerUseCaseBindings(): void {
       new BuyBookUseCase(
         container.resolve(BOOK_REPOSITORY),
         container.resolve(USER_REPOSITORY),
-        container.resolve(EMAIL_SERVICE)
+        container.resolve(EMAIL_SERVICE),
+        container.resolve(NOTIFICATION_TEMPLATE_SERVICE)
       )
   );
   container.register(
@@ -61,7 +63,8 @@ export function registerUseCaseBindings(): void {
       new SendPriceReductionSuggestionUseCase(
         container.resolve(BOOK_REPOSITORY),
         container.resolve(USER_REPOSITORY),
-        container.resolve(EMAIL_SERVICE)
+        container.resolve(EMAIL_SERVICE),
+        container.resolve(NOTIFICATION_TEMPLATE_SERVICE)
       )
   );
   container.register(

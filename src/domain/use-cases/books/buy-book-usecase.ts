@@ -3,21 +3,25 @@ import { BookRepository } from '@domain/repositories/BookRepository';
 import { EntityNotFoundError } from '@domain/types/errors';
 import { UserRepository } from '@domain/repositories/UserRepository';
 import { EmailService } from '@domain/services/EmailService';
+import { NotificationTemplateService } from '@domain/services/NotificationTemplateService';
 import { BuyBookQuery } from '@domain/types/book/BuyBookQuery';
 
 export class BuyBookUseCase {
   private readonly bookRepository: BookRepository;
   private readonly userRepository: UserRepository;
   private readonly emailService: EmailService;
+  private readonly templateService: NotificationTemplateService;
 
   constructor(
     bookRepository: BookRepository,
     userRepository: UserRepository,
-    emailService: EmailService
+    emailService: EmailService,
+    templateService: NotificationTemplateService
   ) {
     this.bookRepository = bookRepository;
     this.userRepository = userRepository;
     this.emailService = emailService;
+    this.templateService = templateService;
   }
 
   public async execute({ bookId, buyerId }: BuyBookQuery): Promise<Book | null> {
@@ -46,13 +50,9 @@ export class BuyBookUseCase {
     const seller = await this.userRepository.findById(sellerId);
 
     if (seller) {
-      const subject = '¡Tu libro ha sido vendido!';
-      const message = `
-        ¡Felicidades! Tu libro "${bookTitle}" ha sido vendido.
-        En los próximos días recibirás el dinero (${bookPrice}) en tu cuenta.
-      `;
+      const { subject, body } = this.templateService.getBookSoldTemplate(bookTitle, bookPrice);
 
-      await this.emailService.sendEmailToSeller(seller.email, message, subject);
+      await this.emailService.sendEmailToSeller(seller.email, body, subject);
     }
   }
 }

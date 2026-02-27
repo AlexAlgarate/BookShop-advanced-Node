@@ -3,6 +3,7 @@ import { SendPriceReductionSuggestionUseCase } from '@domain/use-cases/books/sen
 import { BookRepository } from '@domain/repositories/BookRepository';
 import { UserRepository } from '@domain/repositories/UserRepository';
 import { EmailService } from '@domain/services/EmailService';
+import { NotificationTemplateService } from '@domain/services/NotificationTemplateService';
 import { User } from '@domain/entities/User';
 import { Book, BookStatus } from '@domain/entities/Book';
 
@@ -11,6 +12,7 @@ describe('SendPriceReductionSuggestionUseCase', () => {
   let bookRepositoryMock: jest.Mocked<BookRepository>;
   let userRepositoryMock: jest.Mocked<UserRepository>;
   let emailServiceMock: jest.Mocked<EmailService>;
+  let templateServiceMock: jest.Mocked<NotificationTemplateService>;
 
   beforeEach(() => {
     bookRepositoryMock = {
@@ -33,11 +35,31 @@ describe('SendPriceReductionSuggestionUseCase', () => {
       sendEmailToSeller: jest.fn(),
     } as unknown as jest.Mocked<EmailService>;
 
+    templateServiceMock = {
+      getBookSoldTemplate: jest.fn().mockReturnValue({
+        subject: '¡Tu libro ha sido vendido!',
+        body: '¡Felicidades! Tu libro "Test" ha sido vendido.',
+      }),
+      getPriceReductionSuggestionTemplate: jest.fn(),
+    } as unknown as jest.Mocked<NotificationTemplateService>;
+
+    templateServiceMock.getPriceReductionSuggestionTemplate.mockImplementation(
+      (booksCount: number, limitDays: number, bookDetails: string) => {
+        const bookLabel = booksCount === 1 ? 'libro' : 'libros';
+        const publishedLabel = booksCount === 1 ? 'publicado' : 'publicados';
+        return {
+          subject: `${booksCount} ${bookLabel}`,
+          body: `Tienes ${booksCount} ${publishedLabel} desde hace más de ${limitDays} días:\n\n${bookDetails}\n\n¿Y si les bajamos el precio?`,
+        };
+      }
+    );
+
     useCase = new SendPriceReductionSuggestionUseCase(
       bookRepositoryMock,
       userRepositoryMock,
       emailServiceMock,
-      7 // 7 days limit
+      templateServiceMock,
+      7
     );
   });
 

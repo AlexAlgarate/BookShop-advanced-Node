@@ -2,7 +2,7 @@ import { Entity } from './Entity';
 
 export class User extends Entity {
   readonly email: string;
-  readonly password: string;
+  private readonly _password: string;
 
   constructor({
     email,
@@ -17,6 +17,10 @@ export class User extends Entity {
   }) {
     super(id, createdAt);
     this.email = email;
-    this.password = password;
+    this._password = password;
+  }
+
+  get password(): string {
+    return this._password;
   }
 }

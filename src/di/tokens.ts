@@ -2,6 +2,7 @@ export const BOOK_REPOSITORY = Symbol('BookRepository');
 export const USER_REPOSITORY = Symbol('UserRepository');
 export const EMAIL_SERVICE = Symbol('EmailService');
 export const SECURITY_SERVICE = Symbol('SecurityService');
+export const NOTIFICATION_TEMPLATE_SERVICE = Symbol('NotificationTemplateService');
 
 export const CREATE_BOOK_USE_CASE = Symbol('CreateBookUseCase');
 export const FIND_BOOKS_USE_CASE = Symbol('FindBooksUseCase');

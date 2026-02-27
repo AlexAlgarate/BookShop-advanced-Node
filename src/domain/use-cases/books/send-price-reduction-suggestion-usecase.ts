@@ -2,22 +2,26 @@ import { Book, BookStatus } from '@domain/entities/Book';
 import { BookRepository } from '@domain/repositories/BookRepository';
 import { UserRepository } from '@domain/repositories/UserRepository';
 import { EmailService } from '@domain/services/EmailService';
+import { NotificationTemplateService } from '@domain/services/NotificationTemplateService';
 
 export class SendPriceReductionSuggestionUseCase {
   private readonly bookRepository: BookRepository;
   private readonly userRepository: UserRepository;
   private readonly emailService: EmailService;
+  private readonly templateService: NotificationTemplateService;
   private readonly limitDays: number;
 
   constructor(
     bookRepository: BookRepository,
     userRepository: UserRepository,
     emailService: EmailService,
+    templateService: NotificationTemplateService,
     limitDays = 7
   ) {
     this.bookRepository = bookRepository;
     this.userRepository = userRepository;
     this.emailService = emailService;
+    this.templateService = templateService;
     this.limitDays = limitDays;
   }
 
@@ -63,17 +67,11 @@ export class SendPriceReductionSuggestionUseCase {
       .map(book => ` - "${book.title}" (Precio actual: ${book.price} €)`)
       .join('\n');
 
-    const subject = `Sugerencia para que bajes el precio de ${oldBooks.length} ${oldBooks.length === 1 ? 'libro' : 'libros'}`;
-
-    const body = `
-      Tienes ${oldBooks.length} publicado${oldBooks.length === 1 ? '' : 's'} desde hace más de ${this.limitDays} días:
-
-      ${bookList}
-
-      ¿Y si les bajamos el precio?  
-    `.trim();
-
-    return { subject, body };
+    return this.templateService.getPriceReductionSuggestionTemplate(
+      oldBooks.length,
+      this.limitDays,
+      bookList
+    );
   }
 
   private async sendSuggestionEmail(email: string, body: string, subject: string): Promise<void> {
