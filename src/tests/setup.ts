@@ -11,11 +11,15 @@ beforeAll(async () => {
   registerInfrastructureBindings();
   registerUseCaseBindings();
 
-  mongo = await MongoMemoryServer.create();
+  mongo = await MongoMemoryServer.create({
+    binary: {
+      version: '7.0.11',
+    },
+  });
   const uri = mongo.getUri();
 
   await mongoose.connect(uri);
-});
+}, 120000);
 
 afterEach(async () => {
   const collections = (await mongoose.connection.db?.collections()) ?? [];
@@ -27,5 +31,7 @@ afterEach(async () => {
 
 afterAll(async () => {
   await mongoose.connection.close();
-  await mongo.stop();
+  if (mongo) {
+    await mongo.stop();
+  }
 });
