@@ -37,7 +37,7 @@ const BookSchema = new mongoose.Schema<BookMongoDb>(
     },
     status: {
       type: String,
-      enum: ['PUBLISHED', 'SOLD'],
+      enum: [BookStatus.PUBLISHED, BookStatus.SOLD],
       default: BookStatus.PUBLISHED,
       required: true,
     },

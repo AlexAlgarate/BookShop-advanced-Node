@@ -1,4 +1,4 @@
-import { Book } from '@domain/entities/Book';
+import { Book, BookStatus } from '@domain/entities/Book';
 import { BookRepository } from '@domain/repositories/BookRepository';
 import { UserRepository } from '@domain/repositories/UserRepository';
 import { EmailService } from '@domain/services/EmailService';
@@ -51,7 +51,7 @@ export class SendPriceReductionSuggestionUseCase {
     });
 
     return response.content.filter(book => {
-      return book.status === 'PUBLISHED' && book.createdAt < limitDate;
+      return book.status === BookStatus.PUBLISHED && book.createdAt < limitDate;
     });
   }
 
