@@ -1,6 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { UnauthorizedError } from '@domain/types/errors';
-import { ServiceFactories } from '@ui/factories/service-factories';
+import { container } from '@di/container';
+import { SecurityService } from '@domain/services/SecurityService';
+import { SECURITY_SERVICE } from '@di/tokens';
 
 export const authenticationMiddleware = (
   request: Request,
@@ -20,7 +22,7 @@ export const authenticationMiddleware = (
   }
 
   try {
-    const securityService = ServiceFactories.createSecurityService();
+    const securityService = container.resolve<SecurityService>(SECURITY_SERVICE);
     const { userId } = securityService.verifyJWT(token);
     request.user = { id: userId };
     next();
