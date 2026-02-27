@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/unbound-method */
+/* eslint-disable @typescript-eslint/require-await */
 import { describe, jest, beforeEach, test, expect } from '@jest/globals';
 import { SendPriceReductionSuggestionUseCase } from '@domain/use-cases/books/send-price-reduction-suggestion-usecase';
 import { BookRepository } from '@domain/repositories/BookRepository';
@@ -6,6 +8,43 @@ import { EmailService } from '@domain/services/EmailService';
 import { NotificationTemplateService } from '@domain/services/NotificationTemplateService';
 import { User } from '@domain/entities/User';
 import { Book, BookStatus } from '@domain/entities/Book';
+
+let userCounter = 0;
+
+function createMockUser(email: string): User {
+  return new User({
+    id: `user-${Date.now()}-${userCounter++}`,
+    email,
+    password: 'hashed-password',
+    createdAt: new Date(),
+  });
+}
+
+function createMockBook(
+  id: string,
+  title: string,
+  price: number,
+  ownerId: string,
+  daysOld: number,
+  status: BookStatus = BookStatus.PUBLISHED
+): Book {
+  const createdAt = new Date();
+  createdAt.setDate(createdAt.getDate() - daysOld);
+
+  const soldAt = status === BookStatus.SOLD ? new Date() : null;
+
+  return new Book({
+    id,
+    title,
+    description: 'Test description',
+    price,
+    author: 'Test Author',
+    ownerId,
+    status,
+    createdAt,
+    soldAt,
+  });
+}
 
 describe('SendPriceReductionSuggestionUseCase', () => {
   let useCase: SendPriceReductionSuggestionUseCase;
@@ -65,7 +104,6 @@ describe('SendPriceReductionSuggestionUseCase', () => {
 
   describe('execute', () => {
     test('should send email when user has old published books', async () => {
-      // Arrange
       const user = createMockUser('user@example.com');
       const oldBook = createMockBook('1', 'Old Book', 9.99, user.id, 15);
       const oldBook2 = createMockBook('2', 'Another Old Book', 19.99, user.id, 10);
@@ -81,10 +119,8 @@ describe('SendPriceReductionSuggestionUseCase', () => {
       });
       emailServiceMock.sendEmailToSeller.mockResolvedValue(undefined);
 
-      // Act
       await useCase.execute();
 
-      // Assert
       expect(userRepositoryMock.find).toHaveBeenCalledTimes(1);
       expect(bookRepositoryMock.findMany).toHaveBeenCalledWith({
         ownerId: user.id,
@@ -100,7 +136,6 @@ describe('SendPriceReductionSuggestionUseCase', () => {
     });
 
     test('should not send email when user has no books', async () => {
-      // Arrange
       const user = createMockUser('user@example.com');
 
       userRepositoryMock.find.mockResolvedValue([user]);
@@ -113,15 +148,12 @@ describe('SendPriceReductionSuggestionUseCase', () => {
         },
       });
 
-      // Act
       await useCase.execute();
 
-      // Assert
       expect(emailServiceMock.sendEmailToSeller).not.toHaveBeenCalled();
     });
 
     test('should not send email when user has only recent books', async () => {
-      // Arrange
       const user = createMockUser('user@example.com');
       const recentBook = createMockBook('1', 'Recent Book', 25.0, user.id, 3);
 
@@ -135,15 +167,12 @@ describe('SendPriceReductionSuggestionUseCase', () => {
         },
       });
 
-      // Act
       await useCase.execute();
 
-      // Assert
       expect(emailServiceMock.sendEmailToSeller).not.toHaveBeenCalled();
     });
 
     test('should not send email when books have non-PUBLISHED status', async () => {
-      // Arrange
       const user = createMockUser('user@example.com');
       const soldBook = createMockBook('1', 'Sold Book', 15.0, user.id, 10, BookStatus.SOLD);
 
@@ -157,15 +186,12 @@ describe('SendPriceReductionSuggestionUseCase', () => {
         },
       });
 
-      // Act
       await useCase.execute();
 
-      // Assert
       expect(emailServiceMock.sendEmailToSeller).not.toHaveBeenCalled();
     });
 
     test('should handle multiple users with different scenarios', async () => {
-      // Arrange
       const userWithOldBooks = createMockUser('user1@example.com');
       const userWithRecentBooks = createMockUser('user2@example.com');
       const userWithNoBooks = createMockUser('user3@example.com');
@@ -179,11 +205,11 @@ describe('SendPriceReductionSuggestionUseCase', () => {
         userWithNoBooks,
       ]);
 
-      bookRepositoryMock.findMany.mockImplementation(async ({ ownerId }) => {
-        if (ownerId === userWithOldBooks.id) {
+      bookRepositoryMock.findMany.mockImplementation(async (query: { ownerId?: string }) => {
+        if (query.ownerId === userWithOldBooks.id) {
           return { content: [oldBook], meta: { page: 1, limit: 999, total: 1 } };
         }
-        if (ownerId === userWithRecentBooks.id) {
+        if (query.ownerId === userWithRecentBooks.id) {
           return { content: [recentBook], meta: { page: 1, limit: 999, total: 1 } };
         }
         return { content: [], meta: { page: 1, limit: 999, total: 0 } };
@@ -191,10 +217,8 @@ describe('SendPriceReductionSuggestionUseCase', () => {
 
       emailServiceMock.sendEmailToSeller.mockResolvedValue(undefined);
 
-      // Act
       await useCase.execute();
 
-      // Assert
       expect(bookRepositoryMock.findMany).toHaveBeenCalledTimes(3);
       expect(emailServiceMock.sendEmailToSeller).toHaveBeenCalledTimes(1);
       expect(emailServiceMock.sendEmailToSeller).toHaveBeenCalledWith(
@@ -205,7 +229,6 @@ describe('SendPriceReductionSuggestionUseCase', () => {
     });
 
     test('should send email with correct book information', async () => {
-      // Arrange
       const user = createMockUser('seller@example.com');
       const book1 = createMockBook('1', 'Book Title One', 12.5, user.id, 8);
       const book2 = createMockBook('2', 'Book Title Two', 25.99, user.id, 10);
@@ -221,10 +244,8 @@ describe('SendPriceReductionSuggestionUseCase', () => {
       });
       emailServiceMock.sendEmailToSeller.mockResolvedValue(undefined);
 
-      // Act
       await useCase.execute();
 
-      // Assert
       const callArgs = emailServiceMock.sendEmailToSeller.mock.calls[0];
       expect(callArgs).toBeDefined();
       expect(callArgs![0]).toBe(user.email);
@@ -235,7 +256,6 @@ describe('SendPriceReductionSuggestionUseCase', () => {
     });
 
     test('should continue processing users even if email service fails for one user', async () => {
-      // Arrange
       const user1 = createMockUser('user1@example.com');
       const user2 = createMockUser('user2@example.com');
       const oldBook1 = createMockBook('1', 'Old Book 1', 9.99, user1.id, 10);
@@ -243,8 +263,8 @@ describe('SendPriceReductionSuggestionUseCase', () => {
 
       userRepositoryMock.find.mockResolvedValue([user1, user2]);
 
-      bookRepositoryMock.findMany.mockImplementation(async ({ ownerId }) => {
-        if (ownerId === user1.id) {
+      bookRepositoryMock.findMany.mockImplementation(async (query: { ownerId?: string }) => {
+        if (query.ownerId === user1.id) {
           return { content: [oldBook1], meta: { page: 1, limit: 999, total: 1 } };
         }
         return { content: [oldBook2], meta: { page: 1, limit: 999, total: 1 } };
@@ -253,14 +273,10 @@ describe('SendPriceReductionSuggestionUseCase', () => {
       emailServiceMock.sendEmailToSeller.mockRejectedValueOnce(new Error('Email service failed'));
       emailServiceMock.sendEmailToSeller.mockResolvedValueOnce(undefined);
 
-      // Act & Assert
-      // This test expects the function to throw or handle the error
-      // Based on the current implementation, it might throw
       await expect(useCase.execute()).rejects.toThrow();
     });
 
     test('should use correct limit date calculation', async () => {
-      // Arrange
       const user = createMockUser('user@example.com');
       const bookExactly7DaysOld = createMockBook('1', 'Book', 10.0, user.id, 7);
       const bookMoreThan7DaysOld = createMockBook('2', 'Book', 10.0, user.id, 8);
@@ -277,12 +293,8 @@ describe('SendPriceReductionSuggestionUseCase', () => {
 
       emailServiceMock.sendEmailToSeller.mockResolvedValue(undefined);
 
-      // Act
       await useCase.execute();
 
-      // Assert
-      // The use case filters with `<` operator, so exactly 7 days should not be included
-      // Only books older than 7 days (8+ days) should be in the email
       expect(emailServiceMock.sendEmailToSeller).toHaveBeenCalledWith(
         user.email,
         expect.stringContaining('1 publicado desde hace más de 7 días'),
@@ -291,53 +303,12 @@ describe('SendPriceReductionSuggestionUseCase', () => {
     });
 
     test('should handle empty user list', async () => {
-      // Arrange
       userRepositoryMock.find.mockResolvedValue([]);
 
-      // Act
       await useCase.execute();
 
-      // Assert
       expect(bookRepositoryMock.findMany).not.toHaveBeenCalled();
       expect(emailServiceMock.sendEmailToSeller).not.toHaveBeenCalled();
     });
   });
-
-  // Helper functions
-  let userCounter = 0;
-
-  function createMockUser(email: string): User {
-    return new User({
-      id: `user-${Date.now()}-${userCounter++}`,
-      email,
-      password: 'hashed-password',
-      createdAt: new Date(),
-    });
-  }
-
-  function createMockBook(
-    id: string,
-    title: string,
-    price: number,
-    ownerId: string,
-    daysOld: number,
-    status: BookStatus = BookStatus.PUBLISHED
-  ): Book {
-    const createdAt = new Date();
-    createdAt.setDate(createdAt.getDate() - daysOld);
-
-    const soldAt = status === BookStatus.SOLD ? new Date() : null;
-
-    return new Book({
-      id,
-      title,
-      description: 'Test description',
-      price,
-      author: 'Test Author',
-      ownerId,
-      status,
-      createdAt,
-      soldAt,
-    });
-  }
 });
