@@ -25,7 +25,7 @@ export class SecurityBcryptService implements SecurityService {
 
   generateJWT(user: User): string {
     try {
-      const token = jwt.sign({ userId: user.id }, this.jwtSecret, { expiresIn: '1h' });
+      const token = jwt.sign({ userId: user.id }, this.jwtSecret, { expiresIn: '15Minutes' });
       return token;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'jwt.sign error';
@@ -33,14 +33,16 @@ export class SecurityBcryptService implements SecurityService {
     }
   }
   async hashPassword(password: string): Promise<string> {
-    const salt = await bcrypt.genSalt(10);
+    const salt = await bcrypt.genSalt(14);
     const hashedPassword = await bcrypt.hash(password, salt);
     return hashedPassword;
   }
 
   verifyJWT(token: string): { userId: string } {
     try {
-      const data = jwt.verify(token, this.jwtSecret) as { userId: string };
+      const data = jwt.verify(token, this.jwtSecret, { algorithms: ['HS256'] }) as {
+        userId: string;
+      };
       return data;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'jwt.verify error';
