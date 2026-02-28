@@ -33,7 +33,8 @@ export class SecurityBcryptService implements SecurityService {
     }
   }
   async hashPassword(password: string): Promise<string> {
-    const salt = await bcrypt.genSalt(14);
+    const rounds = process.env.NODE_ENV === 'test' ? 1 : 14;
+    const salt = await bcrypt.genSalt(rounds);
     const hashedPassword = await bcrypt.hash(password, salt);
     return hashedPassword;
   }
