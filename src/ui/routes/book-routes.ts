@@ -7,7 +7,7 @@ import { updateBookController } from '@ui/controllers/books/update-book-controll
 import { buyBookController } from '@ui/controllers/books/buy-book-controller';
 import { deleteBookController } from '@ui/controllers/books/delete-book-controller';
 
-const bookRouter = Router();
+const bookRouter: Router = Router();
 
 bookRouter.get('/', findBooksController);
 bookRouter.post('/', [authenticationMiddleware], createBookController);

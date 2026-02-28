@@ -2,7 +2,7 @@ import { signinController } from '@ui/controllers/authentication/signin-controll
 import { signupController } from '@ui/controllers/authentication/signup-controller';
 import { Router } from 'express';
 
-const authenticationRouter = Router();
+const authenticationRouter: Router = Router();
 
 authenticationRouter.post('/signup', signupController);
 authenticationRouter.post('/signin', signinController);
