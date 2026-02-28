@@ -12,18 +12,14 @@ beforeAll(async () => {
   registerUseCaseBindings();
 
   mongo = await MongoMemoryServer.create({
-    binary: {
-      version: '7.0.11',
-    },
+    binary: { version: '7.0.11' },
   });
-  const uri = mongo.getUri();
 
-  await mongoose.connect(uri);
+  await mongoose.connect(mongo.getUri());
 }, 120000);
 
 afterEach(async () => {
   const collections = (await mongoose.connection.db?.collections()) ?? [];
-
   for (const collection of collections) {
     await collection.deleteMany({});
   }
@@ -31,7 +27,5 @@ afterEach(async () => {
 
 afterAll(async () => {
   await mongoose.connection.close();
-  if (mongo) {
-    await mongo.stop();
-  }
+  await mongo?.stop();
 });

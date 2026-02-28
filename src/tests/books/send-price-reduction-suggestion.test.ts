@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/unbound-method */
-/* eslint-disable @typescript-eslint/require-await */
-import { describe, jest, beforeEach, test, expect } from '@jest/globals';
+import { vi, type Mocked } from 'vitest';
 import { SendPriceReductionSuggestionUseCase } from '@domain/use-cases/books/send-price-reduction-suggestion-usecase';
 import { BookRepository } from '@domain/repositories/BookRepository';
 import { UserRepository } from '@domain/repositories/UserRepository';
@@ -48,39 +46,39 @@ function createMockBook(
 
 describe('SendPriceReductionSuggestionUseCase', () => {
   let useCase: SendPriceReductionSuggestionUseCase;
-  let bookRepositoryMock: jest.Mocked<BookRepository>;
-  let userRepositoryMock: jest.Mocked<UserRepository>;
-  let emailServiceMock: jest.Mocked<EmailService>;
-  let templateServiceMock: jest.Mocked<NotificationTemplateService>;
+  let bookRepositoryMock: Mocked<BookRepository>;
+  let userRepositoryMock: Mocked<UserRepository>;
+  let emailServiceMock: Mocked<EmailService>;
+  let templateServiceMock: Mocked<NotificationTemplateService>;
 
   beforeEach(() => {
     bookRepositoryMock = {
-      createOne: jest.fn(),
-      findMany: jest.fn(),
-      updateBookDetails: jest.fn(),
-      findById: jest.fn(),
-      markAsSold: jest.fn(),
-      deleteBook: jest.fn(),
-    } as unknown as jest.Mocked<BookRepository>;
+      createOne: vi.fn(),
+      findMany: vi.fn(),
+      updateBookDetails: vi.fn(),
+      findById: vi.fn(),
+      markAsSold: vi.fn(),
+      deleteBook: vi.fn(),
+    } as unknown as Mocked<BookRepository>;
 
     userRepositoryMock = {
-      createOne: jest.fn(),
-      findByEmail: jest.fn(),
-      find: jest.fn(),
-      findById: jest.fn(),
-    } as unknown as jest.Mocked<UserRepository>;
+      createOne: vi.fn(),
+      findByEmail: vi.fn(),
+      find: vi.fn(),
+      findById: vi.fn(),
+    } as unknown as Mocked<UserRepository>;
 
     emailServiceMock = {
-      sendEmailToSeller: jest.fn(),
-    } as unknown as jest.Mocked<EmailService>;
+      sendEmailToSeller: vi.fn(),
+    } as unknown as Mocked<EmailService>;
 
     templateServiceMock = {
-      getBookSoldTemplate: jest.fn().mockReturnValue({
+      getBookSoldTemplate: vi.fn().mockReturnValue({
         subject: '¡Tu libro ha sido vendido!',
         body: '¡Felicidades! Tu libro "Test" ha sido vendido.',
       }),
-      getPriceReductionSuggestionTemplate: jest.fn(),
-    } as unknown as jest.Mocked<NotificationTemplateService>;
+      getPriceReductionSuggestionTemplate: vi.fn(),
+    } as unknown as Mocked<NotificationTemplateService>;
 
     templateServiceMock.getPriceReductionSuggestionTemplate.mockImplementation(
       (booksCount: number, limitDays: number, bookDetails: string) => {

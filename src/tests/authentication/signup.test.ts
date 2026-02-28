@@ -1,4 +1,4 @@
-import { describe, jest } from '@jest/globals';
+import { vi } from 'vitest';
 import request from 'supertest';
 import { faker } from '@faker-js/faker';
 import bcrypt from 'bcryptjs';
@@ -83,7 +83,7 @@ describe('POST /authentication/signup', () => {
   });
 
   test('Password should be hashed before storing', async () => {
-    const hashSpy = jest.spyOn(bcrypt, 'hash');
+    const hashSpy = vi.spyOn(bcrypt, 'hash');
 
     await request(app).post(AUTHENTICATION_URL).send({
       email: faker.internet.email(),
