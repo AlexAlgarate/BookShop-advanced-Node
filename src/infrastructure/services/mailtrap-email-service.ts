@@ -2,6 +2,7 @@ import { MailtrapClient } from 'mailtrap';
 
 import { EmailService } from '@domain/services/EmailService';
 import { environmentService } from './environment-service';
+import { EmailServiceError } from '@domain/types/errors';
 
 export class MailtrapService implements EmailService {
   private readonly mailtrapClient: MailtrapClient;
@@ -35,7 +36,7 @@ export class MailtrapService implements EmailService {
       });
       console.log(`Email sent to ${email} with subject "${subject}"`);
     } catch (error) {
-      console.error(`Failed to send email to ${email}:`, error);
+      throw new EmailServiceError(error instanceof Error ? error.message : 'Failed to send email');
     }
   }
 }

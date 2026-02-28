@@ -10,6 +10,7 @@ const domainErrorToHttpStatusCode: Record<string, number> = {
   UnauthorizatedError: status.UNAUTHORIZED,
   ForbiddenOperation: status.FORBIDDEN,
   BusinessConflictError: status.CONFLICT,
+  EmailServiceError: status.TOO_MANY_REQUESTS,
 };
 
 export const errorHandlerMiddleware = (

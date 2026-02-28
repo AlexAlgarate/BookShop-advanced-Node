@@ -1,6 +1,6 @@
 import { Book } from '@domain/entities/Book';
 import { BookRepository } from '@domain/repositories/BookRepository';
-import { EntityNotFoundError } from '@domain/types/errors';
+import { EmailServiceError, EntityNotFoundError } from '@domain/types/errors';
 import { UserRepository } from '@domain/repositories/UserRepository';
 import { EmailService } from '@domain/services/EmailService';
 import { NotificationTemplateService } from '@domain/services/NotificationTemplateService';
@@ -47,12 +47,20 @@ export class BuyBookUseCase {
     bookTitle: string,
     bookPrice: number
   ): Promise<void> {
-    const seller = await this.userRepository.findById(sellerId);
+    try {
+      const seller = await this.userRepository.findById(sellerId);
 
-    if (seller) {
-      const { subject, body } = this.templateService.getBookSoldTemplate(bookTitle, bookPrice);
+      if (seller) {
+        const { subject, body } = this.templateService.getBookSoldTemplate(bookTitle, bookPrice);
 
-      await this.emailService.sendEmailToSeller(seller.email, body, subject);
+        await this.emailService.sendEmailToSeller(seller.email, body, subject);
+      }
+    } catch (error) {
+      if (error instanceof EmailServiceError) {
+        console.warn(error.message);
+        return;
+      }
+      throw error;
     }
   }
 }
