@@ -42,7 +42,9 @@ export class BookMongoRepository implements BookRepository {
   }
 
   async updateBookDetails(bookId: string, query: UpdateBookQuery): Promise<Book | null> {
-    const updateData = await BookModel.findByIdAndUpdate(bookId, query, { new: true });
+    const updateData = await BookModel.findByIdAndUpdate(bookId, query, {
+      returnDocument: 'after',
+    });
     return updateData ? this.restoreBook(updateData) : null;
   }
 
@@ -61,7 +63,7 @@ export class BookMongoRepository implements BookRepository {
           soldAt,
         },
       },
-      { new: true }
+      { returnDocument: 'after' }
     );
 
     return updated ? this.restoreBook(updated) : null;
