@@ -14,19 +14,16 @@ export class LoginUserUseCase {
   async execute(query: LoginUserQuery): Promise<{
     token: string;
   }> {
-    // Check if the user exists
     const existingUser = await this.userRepository.findByEmail(query.email);
 
     if (!existingUser) throw new EntityNotFoundError('User', query.email);
 
-    // Check received password is the saved one
     const arePasswordEqual = await this.securityService.comparePasswords(
       query.password,
       existingUser.password
     );
 
     if (arePasswordEqual) {
-      // generate jwt
       const token = this.securityService.generateJWT(existingUser);
       return { token };
     } else {

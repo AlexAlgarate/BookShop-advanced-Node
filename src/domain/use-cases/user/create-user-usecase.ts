@@ -13,17 +13,14 @@ export class CreateUserUseCase {
     this.securityService = securityService;
   }
   async execute(query: CreateUserQuery): Promise<User> {
-    // User does not exist
     const user = await this.userRepository.findByEmail(query.email);
 
     if (user) {
       throw new BusinessConflictError('The user already exists');
     }
 
-    // hash password
     const hashedPassword = await this.securityService.hashPassword(query.password);
 
-    // create user
     const createdUser = await this.userRepository.createOne({
       email: query.email,
       password: hashedPassword,
