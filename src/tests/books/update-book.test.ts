@@ -74,7 +74,7 @@ describe('PATCH /books/:bookId', () => {
     const validateBookId = createBookResponseSchema.parse(newRandomBook.body);
     const bookId = validateBookId.content.id;
 
-    const tokenFromAnotherUser = await signupAndLogin('other-user@test.com', 'other-password');
+    const tokenFromAnotherUser = await signupAndLogin('other-user@test.com', 'OtherPassword123');
 
     const response = await request(app)
       .patch(`${BOOKS_URL}/${bookId}`)

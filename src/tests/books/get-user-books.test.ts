@@ -42,7 +42,7 @@ describe('GET /me/books', () => {
   });
 
   test('Should return empty array when user has no books', async () => {
-    const token = await signupAndLogin('test@test.com', '1234');
+    const token = await signupAndLogin('test@test.com', 'TestPassword123');
 
     const response = await request(app).get(ME_BOOKS_URL).set('Authorization', `Bearer ${token}`);
     const validateResponse = getUserBooksResponseSchema.parse(response.body);

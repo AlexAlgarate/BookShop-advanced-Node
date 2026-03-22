@@ -7,7 +7,7 @@ import { DomainError } from '@domain/types/errors/DomainError';
 
 const domainErrorToHttpStatusCode: Record<string, number> = {
   EntityNotFoundError: status.NOT_FOUND,
-  UnauthorizatedError: status.UNAUTHORIZED,
+  UnauthorizedError: status.UNAUTHORIZED,
   ForbiddenOperation: status.FORBIDDEN,
   BusinessConflictError: status.CONFLICT,
   EmailServiceError: status.TOO_MANY_REQUESTS,

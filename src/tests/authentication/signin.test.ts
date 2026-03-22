@@ -56,7 +56,7 @@ describe('POST /authentication/signin', () => {
 
     const response = await request(app)
       .post(SIGNIN_URL)
-      .send({ email, password: 'wrong-password' });
+      .send({ email, password: 'WrongPassword123' });
 
     expect(response.status).toBe(401);
   });

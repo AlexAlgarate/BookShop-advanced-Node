@@ -73,7 +73,7 @@ describe('DELETE /books/:bookId', () => {
     const { newRandomBook } = await createRandomBook();
     const createdBookUserA = createBookResponseSchema.parse(newRandomBook.body as unknown);
 
-    const tokenUserB = await signupAndLogin('other@email.com', 'Other-Password');
+    const tokenUserB = await signupAndLogin('other@email.com', 'OtherPassword123');
 
     const response = await request(app)
       .delete(`${BOOKS_URL}/${createdBookUserA.content.id}`)

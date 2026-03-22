@@ -1,9 +1,9 @@
 import { DomainError } from './DomainError';
 
 export class UnauthorizedError extends DomainError {
-  readonly name = 'UnauthorizatedError';
+  readonly name = 'UnauthorizedError';
 
-  constructor(message: string = 'unauthorizated error') {
+  constructor(message: string = 'unauthorized error') {
     super(message);
   }
 }

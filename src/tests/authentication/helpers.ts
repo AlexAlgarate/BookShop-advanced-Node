@@ -9,7 +9,7 @@ const loginResponseSchema = z.object({
 
 export const signupAndLogin = async (
   email: string = faker.internet.email(),
-  password: string = '1234'
+  password: string = 'Qwertyui1.'
 ): Promise<string> => {
   await request(app).post('/authentication/signup').send({ email, password });
 
