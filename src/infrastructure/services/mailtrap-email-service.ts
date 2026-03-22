@@ -34,7 +34,6 @@ export class MailtrapService implements EmailService {
         subject: subject,
         text: message,
       });
-      console.log(`Email sent to ${email} with subject "${subject}"`);
     } catch (error) {
       throw new EmailServiceError(error instanceof Error ? error.message : 'Failed to send email');
     }
