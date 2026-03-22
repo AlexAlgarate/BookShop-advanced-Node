@@ -1,7 +1,13 @@
 import { rateLimit } from 'express-rate-limit';
 
-export const rateLimitMiddleware = rateLimit({
+export const siginRateLimit = rateLimit({
   windowMs: 15 * 60 * 1000,
-  limit: 5,
-  message: 'Too many attempts, please try again later in 15 minutes.',
+  limit: 10,
+  message: 'Too many login attempts, please try again later in 15 minutes.',
+});
+
+export const sigupRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 3,
+  message: 'Too many accounts created, try again later in 15 minutes.',
 });
