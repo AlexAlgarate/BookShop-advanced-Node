@@ -5,9 +5,11 @@ A RESTful API for a book e-commerce platform built with Node.js, TypeScript and 
 ## Tech Stack
 
 - **Runtime**: Node.js with TypeScript
+- **Package Manager**: pnpm
 - **Framework**: Express.js
 - **Database**: MongoDB with Mongoose ODM
 - **Authentication**: JWT + bcryptjs
+- **Dependency Injection**: Custom DI Container
 - **Validation**: Zod
 - **Testing**: Jest with mongodb-memory-server
 - **Monitoring**: Sentry
@@ -20,25 +22,26 @@ The project follows Clean Architecture principles with three distinct layers:
 
 ```bash
 src/
-├── domain/           # Business logic layer
-│   ├── entities/     # Core business entities
-│   ├── repositories/ # Repository interfaces
-│   ├── services/     # Domain services
-│   ├── types/        # Type definitions
-│   └── use-cases/    # Business use cases
-├── infrastructure/  # External services layer
-│   ├── database/     # MongoDB connection
-│   ├── models/       # Mongoose models
-│   ├── monitoring/   # Sentry integration (Sentry)
-│   ├── repositories/ # Repository implementations
-│   └── services/     # External service implementations (bcrypt, dotenv, mailtrap)
-└── ui/               # Interface layer
-    ├── controllers/  # Request handlers
-    ├── cron/         # Scheduled jobs
-    ├── factories/    # Dependency injection factories
-    ├── middlewares/  # Express middlewares
-    ├── routes/       # API routes
-    └── validators/   # Request validation
+├── di/                  # Dependency injection container
+├── domain/              # Business logic layer
+│   ├── entities/        # Core business entities
+│   ├── repositories/    # Repository interfaces
+│   ├── services/        # Domain services
+│   ├── types/           # Type definitions
+│   └── use-cases/       # Business use cases
+├── infrastructure/      # External services layer
+│   ├── database/        # MongoDB connection
+│   ├── models/          # Mongoose models
+│   ├── monitoring/       # Sentry integration
+│   ├── repositories/    # Repository implementations
+│   └── services/        # External service implementations (bcrypt, dotenv, mailtrap)
+└── ui/                  # Interface layer
+    ├── controllers/     # Request handlers
+    ├── cron/           # Scheduled jobs
+    ├── factories/       # Dependency injection factories
+    ├── middlewares/     # Express middlewares
+    ├── routes/          # API routes
+    └── validators/      # Request validation
 ```
 
 ## Getting Started
@@ -47,12 +50,12 @@ src/
 
 - Node.js 22+
 - MongoDB (local or Atlas)
-- npm or yarn
+- pnpm
 
 ### Installation
 
 ```bash
-npm install
+pnpm install
 ```
 
 ### Environment Variables
@@ -71,7 +74,7 @@ API_PORT=3000
 
 # JWT
 JWT_SECRET=your-secret-key
-JWT_EXPIRES_IN=24h
+JWT_EXPIRES_IN=15m
 
 # Sentry (optional)
 SENTRY_DSN=
@@ -85,30 +88,39 @@ MAILTRAP_INBOX_ID=
 
 ```bash
 # Development
-npm start
+pnpm start
 
 # Staging
-npm run start:staging
+pnpm start:staging
 
 # Production
-npm run start:prod
+pnpm start:prod
 ```
 
 ### Running Tests
 
 ```bash
-npm run test:e2e
+pnpm test:e2e
 ```
 
 ### Linting & Formatting
 
 ```bash
 # Lint
-npm run lint
+pnpm lint
 
 # Format
-npm run format
+pnpm format
 ```
+
+## Security Features
+
+- JWT authentication with algorithm validation (`HS256`)
+- Bcrypt password hashing (14 rounds in production)
+- Rate limiting on authentication endpoints (5 requests/15 min)
+- Password strength validation (min 8 chars, uppercase, lowercase, numbers)
+- Input validation with Zod
+- Error handling with custom domain errors
 
 ## API Endpoints
 
@@ -141,6 +153,6 @@ npm run format
 - Full CRUD operations for books
 - Book purchase functionality
 - Scheduled price reduction suggestions (weekly cron job)
-- Error handling with custom domain errors
+- Dependency injection container
 - Input validation with Zod
 - Comprehensive test suite
