@@ -1,5 +1,7 @@
 # BookShop API
 
+[![CI](https://github.com/AlexAlgarate/BookShop-advanced-Node/actions/workflows/ci.yml/badge.svg)](https://github.com/AlexAlgarate/BookShop-advanced-Node/actions/workflows/ci.yml)
+
 A RESTful API for a book e-commerce platform built with Node.js, TypeScript and Clean Architecture.
 
 ## Tech Stack
