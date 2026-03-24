@@ -202,14 +202,17 @@ describe('SendPriceReductionSuggestionUseCase', () => {
         userWithNoBooks,
       ]);
 
-      bookRepositoryMock.findMany.mockImplementation(async (query: { ownerId?: string }) => {
+      bookRepositoryMock.findMany.mockImplementation((query: { ownerId?: string }) => {
         if (query.ownerId === userWithOldBooks.id) {
-          return { content: [oldBook], meta: { page: 1, limit: 999, total: 1 } };
+          return Promise.resolve({ content: [oldBook], meta: { page: 1, limit: 999, total: 1 } });
         }
         if (query.ownerId === userWithRecentBooks.id) {
-          return { content: [recentBook], meta: { page: 1, limit: 999, total: 1 } };
+          return Promise.resolve({
+            content: [recentBook],
+            meta: { page: 1, limit: 999, total: 1 },
+          });
         }
-        return { content: [], meta: { page: 1, limit: 999, total: 0 } };
+        return Promise.resolve({ content: [], meta: { page: 1, limit: 999, total: 0 } });
       });
 
       emailServiceMock.sendEmailToSeller.mockResolvedValue(undefined);
@@ -260,11 +263,11 @@ describe('SendPriceReductionSuggestionUseCase', () => {
 
       userRepositoryMock.find.mockResolvedValue([user1, user2]);
 
-      bookRepositoryMock.findMany.mockImplementation(async (query: { ownerId?: string }) => {
+      bookRepositoryMock.findMany.mockImplementation((query: { ownerId?: string }) => {
         if (query.ownerId === user1.id) {
-          return { content: [oldBook1], meta: { page: 1, limit: 999, total: 1 } };
+          return Promise.resolve({ content: [oldBook1], meta: { page: 1, limit: 999, total: 1 } });
         }
-        return { content: [oldBook2], meta: { page: 1, limit: 999, total: 1 } };
+        return Promise.resolve({ content: [oldBook2], meta: { page: 1, limit: 999, total: 1 } });
       });
 
       emailServiceMock.sendEmailToSeller.mockRejectedValueOnce(new Error('Email service failed'));
