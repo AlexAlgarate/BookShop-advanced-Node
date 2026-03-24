@@ -10,22 +10,22 @@ import { MailtrapService } from '@infrastructure/services/mailtrap-email-service
 import { SecurityBcryptService } from '@infrastructure/services/security-bcrypt-service';
 import { NotificationTemplateServiceImpl } from '@infrastructure/services/notification-template-service';
 
-import { container } from './container.js';
+import { container } from './container';
 import {
   BOOK_REPOSITORY,
   USER_REPOSITORY,
   EMAIL_SERVICE,
   SECURITY_SERVICE,
   NOTIFICATION_TEMPLATE_SERVICE,
-} from './tokens.js';
+} from './tokens';
 
 export function registerInfrastructureBindings(): void {
-  container.registerSingleton<BookRepository>(BOOK_REPOSITORY, () => new BookMongoRepository());
-  container.registerSingleton<UserRepository>(USER_REPOSITORY, () => new UserMongoRepository());
-  container.registerSingleton<EmailService>(EMAIL_SERVICE, () => new MailtrapService());
-  container.registerSingleton<SecurityService>(SECURITY_SERVICE, () => new SecurityBcryptService());
-  container.registerSingleton<NotificationTemplateService>(
-    NOTIFICATION_TEMPLATE_SERVICE,
-    () => new NotificationTemplateServiceImpl()
-  );
+  container.bind<BookRepository>(BOOK_REPOSITORY).to(BookMongoRepository).inSingletonScope();
+  container.bind<UserRepository>(USER_REPOSITORY).to(UserMongoRepository).inSingletonScope();
+  container.bind<EmailService>(EMAIL_SERVICE).to(MailtrapService).inSingletonScope();
+  container.bind<SecurityService>(SECURITY_SERVICE).to(SecurityBcryptService).inSingletonScope();
+  container
+    .bind<NotificationTemplateService>(NOTIFICATION_TEMPLATE_SERVICE)
+    .to(NotificationTemplateServiceImpl)
+    .inSingletonScope();
 }

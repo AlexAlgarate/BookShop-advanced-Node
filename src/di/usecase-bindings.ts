@@ -8,13 +8,14 @@ import { SendPriceReductionSuggestionUseCase } from '@domain/use-cases/books/sen
 import { CreateUserUseCase } from '@domain/use-cases/user/create-user-usecase';
 import { LoginUserUseCase } from '@domain/use-cases/user/login-user-usecase';
 
-import { container } from './container.js';
+import { BookRepository } from '@domain/repositories/BookRepository';
+import { UserRepository } from '@domain/repositories/UserRepository';
+import { EmailService } from '@domain/services/EmailService';
+import { SecurityService } from '@domain/services/SecurityService';
+import { NotificationTemplateService } from '@domain/services/NotificationTemplateService';
+
+import { container } from './container';
 import {
-  BOOK_REPOSITORY,
-  USER_REPOSITORY,
-  EMAIL_SERVICE,
-  SECURITY_SERVICE,
-  NOTIFICATION_TEMPLATE_SERVICE,
   CREATE_BOOK_USE_CASE,
   FIND_BOOKS_USE_CASE,
   FIND_USER_BOOKS_USE_CASE,
@@ -24,57 +25,64 @@ import {
   SEND_PRICE_REDUCTION_USE_CASE,
   CREATE_USER_USE_CASE,
   LOGIN_USER_USE_CASE,
-} from './tokens.js';
+  BOOK_REPOSITORY,
+  USER_REPOSITORY,
+  EMAIL_SERVICE,
+  SECURITY_SERVICE,
+  NOTIFICATION_TEMPLATE_SERVICE,
+} from './tokens';
 
 export function registerUseCaseBindings(): void {
-  container.register(
-    CREATE_BOOK_USE_CASE,
-    () => new CreateBookUseCase(container.resolve(BOOK_REPOSITORY))
-  );
-  container.register(
-    FIND_BOOKS_USE_CASE,
-    () => new FindBooksUseCase(container.resolve(BOOK_REPOSITORY))
-  );
-  container.register(
-    FIND_USER_BOOKS_USE_CASE,
-    () => new FindUserBooksUseCase(container.resolve(BOOK_REPOSITORY))
-  );
-  container.register(
-    UPDATE_BOOK_USE_CASE,
-    () => new UpdateBookUseCase(container.resolve(BOOK_REPOSITORY))
-  );
-  container.register(
-    DELETE_BOOK_USE_CASE,
-    () => new DeleteBookUseCase(container.resolve(BOOK_REPOSITORY))
-  );
-  container.register(
-    BUY_BOOK_USE_CASE,
-    () =>
-      new BuyBookUseCase(
-        container.resolve(BOOK_REPOSITORY),
-        container.resolve(USER_REPOSITORY),
-        container.resolve(EMAIL_SERVICE),
-        container.resolve(NOTIFICATION_TEMPLATE_SERVICE)
-      )
-  );
-  container.register(
-    SEND_PRICE_REDUCTION_USE_CASE,
-    () =>
-      new SendPriceReductionSuggestionUseCase(
-        container.resolve(BOOK_REPOSITORY),
-        container.resolve(USER_REPOSITORY),
-        container.resolve(EMAIL_SERVICE),
-        container.resolve(NOTIFICATION_TEMPLATE_SERVICE)
-      )
-  );
-  container.register(
-    CREATE_USER_USE_CASE,
-    () =>
-      new CreateUserUseCase(container.resolve(USER_REPOSITORY), container.resolve(SECURITY_SERVICE))
-  );
-  container.register(
-    LOGIN_USER_USE_CASE,
-    () =>
-      new LoginUserUseCase(container.resolve(USER_REPOSITORY), container.resolve(SECURITY_SERVICE))
-  );
+  container.bind(CREATE_BOOK_USE_CASE).toDynamicValue(context => {
+    const bookRepo = context.get<BookRepository>(BOOK_REPOSITORY);
+    return new CreateBookUseCase(bookRepo);
+  });
+
+  container.bind(FIND_BOOKS_USE_CASE).toDynamicValue(context => {
+    const bookRepo = context.get<BookRepository>(BOOK_REPOSITORY);
+    return new FindBooksUseCase(bookRepo);
+  });
+
+  container.bind(FIND_USER_BOOKS_USE_CASE).toDynamicValue(context => {
+    const bookRepo = context.get<BookRepository>(BOOK_REPOSITORY);
+    return new FindUserBooksUseCase(bookRepo);
+  });
+
+  container.bind(UPDATE_BOOK_USE_CASE).toDynamicValue(context => {
+    const bookRepo = context.get<BookRepository>(BOOK_REPOSITORY);
+    return new UpdateBookUseCase(bookRepo);
+  });
+
+  container.bind(DELETE_BOOK_USE_CASE).toDynamicValue(context => {
+    const bookRepo = context.get<BookRepository>(BOOK_REPOSITORY);
+    return new DeleteBookUseCase(bookRepo);
+  });
+
+  container.bind(BUY_BOOK_USE_CASE).toDynamicValue(context => {
+    const bookRepo = context.get<BookRepository>(BOOK_REPOSITORY);
+    const userRepo = context.get<UserRepository>(USER_REPOSITORY);
+    const emailSvc = context.get<EmailService>(EMAIL_SERVICE);
+    const templateSvc = context.get<NotificationTemplateService>(NOTIFICATION_TEMPLATE_SERVICE);
+    return new BuyBookUseCase(bookRepo, userRepo, emailSvc, templateSvc);
+  });
+
+  container.bind(SEND_PRICE_REDUCTION_USE_CASE).toDynamicValue(context => {
+    const bookRepo = context.get<BookRepository>(BOOK_REPOSITORY);
+    const userRepo = context.get<UserRepository>(USER_REPOSITORY);
+    const emailSvc = context.get<EmailService>(EMAIL_SERVICE);
+    const templateSvc = context.get<NotificationTemplateService>(NOTIFICATION_TEMPLATE_SERVICE);
+    return new SendPriceReductionSuggestionUseCase(bookRepo, userRepo, emailSvc, templateSvc);
+  });
+
+  container.bind(CREATE_USER_USE_CASE).toDynamicValue(context => {
+    const userRepo = context.get<UserRepository>(USER_REPOSITORY);
+    const securitySvc = context.get<SecurityService>(SECURITY_SERVICE);
+    return new CreateUserUseCase(userRepo, securitySvc);
+  });
+
+  container.bind(LOGIN_USER_USE_CASE).toDynamicValue(context => {
+    const userRepo = context.get<UserRepository>(USER_REPOSITORY);
+    const securitySvc = context.get<SecurityService>(SECURITY_SERVICE);
+    return new LoginUserUseCase(userRepo, securitySvc);
+  });
 }

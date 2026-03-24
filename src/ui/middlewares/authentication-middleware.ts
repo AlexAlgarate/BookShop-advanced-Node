@@ -22,7 +22,7 @@ export const authenticationMiddleware = (
   }
 
   try {
-    const securityService = container.resolve<SecurityService>(SECURITY_SERVICE);
+    const securityService = container.get<SecurityService>(SECURITY_SERVICE);
     const { userId } = securityService.verifyJWT(token);
     request.user = { id: userId };
     next();

@@ -1,3 +1,3 @@
-export { container, DIContainer } from './container.js';
-export { Container, Factory, ResolutionStrategy, Token } from './types.js';
-export * from './tokens.js';
+export { container } from './container';
+export { Container } from 'inversify';
+export * from './tokens';

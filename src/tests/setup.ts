@@ -1,3 +1,5 @@
+import 'reflect-metadata';
+
 import { environmentService } from '@infrastructure/services/environment-service';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';

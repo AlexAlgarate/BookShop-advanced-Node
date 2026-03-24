@@ -1,4 +1,4 @@
-import express, { json } from 'express';
+import express, { json, type Express } from 'express';
 
 import bookRouter from './routes/book-routes';
 import authenticationRouter from './routes/authentication-routes';
@@ -6,7 +6,7 @@ import { errorHandlerMiddleware } from './middlewares/error-handler-middleware';
 import { environmentService } from '@infrastructure/services/environment-service';
 import userBookRouter from './routes/user-book-routes';
 
-export const app = express();
+export const app: Express = express();
 
 app.use(json());
 

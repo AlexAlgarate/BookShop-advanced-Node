@@ -95,8 +95,7 @@ describe('SendPriceReductionSuggestionUseCase', () => {
       bookRepositoryMock,
       userRepositoryMock,
       emailServiceMock,
-      templateServiceMock,
-      7
+      templateServiceMock
     );
   });
 

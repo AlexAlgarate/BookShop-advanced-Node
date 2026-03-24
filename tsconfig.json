@@ -33,7 +33,9 @@
       "@infrastructure/*": ["infrastructure/*"],
       "@ui/*": ["ui/*"],
       "@di/*": ["di/*"]
-    }
+    },
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist"]

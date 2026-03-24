@@ -1,3 +1,5 @@
+import 'reflect-metadata';
+
 import { connectToMongoDb } from '@infrastructure/database/mongo-connection';
 import { startHttpApi } from './ui/api';
 import { environmentService } from '@infrastructure/services/environment-service';

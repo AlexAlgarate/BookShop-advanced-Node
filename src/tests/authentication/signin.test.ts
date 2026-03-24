@@ -6,6 +6,7 @@ import { type SigninResponse, signinResponseSchema } from '../schemas/test-schem
 
 describe('POST /authentication/signin', () => {
   const SIGNIN_URL = '/authentication/signin';
+  const SECURE_PASSWORD = 'Qwertyui1.';
 
   test('Should return 400 status code if email and password is missing', async () => {
     const response = await request(app).post(SIGNIN_URL).send({});
@@ -43,14 +44,14 @@ describe('POST /authentication/signin', () => {
   test('Should return 404 if user not found', async () => {
     const response = await request(app)
       .post(SIGNIN_URL)
-      .send({ email: faker.internet.email(), password: faker.internet.password() });
+      .send({ email: faker.internet.email(), password: SECURE_PASSWORD });
 
     expect(response.status).toBe(404);
   });
 
   test('Should return 401 if credentials are invalid', async () => {
     const email = faker.internet.email();
-    const password = faker.internet.password();
+    const password = SECURE_PASSWORD;
 
     await request(app).post('/authentication/signup').send({ email, password });
 
@@ -63,7 +64,7 @@ describe('POST /authentication/signin', () => {
 
   test('Should return token if credentials are valid', async () => {
     const email = faker.internet.email();
-    const password = faker.internet.password();
+    const password = SECURE_PASSWORD;
 
     await request(app).post('/authentication/signup').send({ email, password });
 
@@ -81,7 +82,7 @@ describe('POST /authentication/signin', () => {
 
   test('Should not expose sensitive user data', async () => {
     const email = faker.internet.email();
-    const password = faker.internet.password();
+    const password = SECURE_PASSWORD;
 
     await request(app).post('/authentication/signup').send({ email, password });
 

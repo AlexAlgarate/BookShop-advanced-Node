@@ -8,7 +8,7 @@ import type { SendPriceReductionSuggestionUseCase } from '@domain/use-cases/book
 import type { CreateUserUseCase } from '@domain/use-cases/user/create-user-usecase';
 import type { LoginUserUseCase } from '@domain/use-cases/user/login-user-usecase';
 
-import { container } from './container.js';
+import { container } from './container';
 import {
   CREATE_BOOK_USE_CASE,
   FIND_BOOKS_USE_CASE,
@@ -19,17 +19,17 @@ import {
   SEND_PRICE_REDUCTION_USE_CASE,
   CREATE_USER_USE_CASE,
   LOGIN_USER_USE_CASE,
-} from './tokens.js';
+} from './tokens';
 
 export const useCases = {
-  createBook: (): CreateBookUseCase => container.resolve(CREATE_BOOK_USE_CASE),
-  findBooks: (): FindBooksUseCase => container.resolve(FIND_BOOKS_USE_CASE),
-  findUserBooks: (): FindUserBooksUseCase => container.resolve(FIND_USER_BOOKS_USE_CASE),
-  updateBook: (): UpdateBookUseCase => container.resolve(UPDATE_BOOK_USE_CASE),
-  deleteBook: (): DeleteBookUseCase => container.resolve(DELETE_BOOK_USE_CASE),
-  buyBook: (): BuyBookUseCase => container.resolve(BUY_BOOK_USE_CASE),
+  createBook: (): CreateBookUseCase => container.get(CREATE_BOOK_USE_CASE),
+  findBooks: (): FindBooksUseCase => container.get(FIND_BOOKS_USE_CASE),
+  findUserBooks: (): FindUserBooksUseCase => container.get(FIND_USER_BOOKS_USE_CASE),
+  updateBook: (): UpdateBookUseCase => container.get(UPDATE_BOOK_USE_CASE),
+  deleteBook: (): DeleteBookUseCase => container.get(DELETE_BOOK_USE_CASE),
+  buyBook: (): BuyBookUseCase => container.get(BUY_BOOK_USE_CASE),
   sendPriceReduction: (): SendPriceReductionSuggestionUseCase =>
-    container.resolve(SEND_PRICE_REDUCTION_USE_CASE),
-  createUser: (): CreateUserUseCase => container.resolve(CREATE_USER_USE_CASE),
-  loginUser: (): LoginUserUseCase => container.resolve(LOGIN_USER_USE_CASE),
+    container.get(SEND_PRICE_REDUCTION_USE_CASE),
+  createUser: (): CreateUserUseCase => container.get(CREATE_USER_USE_CASE),
+  loginUser: (): LoginUserUseCase => container.get(LOGIN_USER_USE_CASE),
 };
