@@ -100,7 +100,7 @@ pnpm start:prod
 ### Running Tests
 
 ```bash
-pnpm test:e2e
+pnpm test
 ```
 
 ### Linting & Formatting

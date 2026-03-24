@@ -83,7 +83,9 @@ describe('POST /authentication/signup', () => {
   });
 
   test('Password should be hashed before storing', async () => {
-    const hashSpy = vi.spyOn(bcrypt, 'hash');
+    const originalHash = bcrypt.hash;
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    const hashSpy = vi.spyOn(bcrypt, 'hash').mockImplementation(originalHash);
 
     await request(app).post(AUTHENTICATION_URL).send({
       email: faker.internet.email(),
@@ -91,5 +93,6 @@ describe('POST /authentication/signup', () => {
     });
 
     expect(hashSpy).toHaveBeenCalled();
+    hashSpy.mockRestore();
   });
 });
