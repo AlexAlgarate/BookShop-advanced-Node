@@ -41,6 +41,21 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Create .env file
+        run: |
+          cat > .env << EOF
+          JWT_SECRET=${{ secrets.JWT_SECRET }}
+          API_PORT=3000
+          MONGO_USER=admin
+          MONGO_PASSWORD=admin123
+          ENVIRONMENT=local
+          MONGO_HOST=localhost:27017
+          SENTRY_DSN=${{ secrets.SENTRY_DSN }}
+          MAILTRAP_TOKEN=${{ secrets.MAILTRAP_TOKEN }}
+          INBOXID=${{ secrets.INBOXID }}
+          IS_SANDBOX=true
+          EOF
+
       - name: Run tests
         run: pnpm test
 
