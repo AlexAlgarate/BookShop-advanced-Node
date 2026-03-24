@@ -4,11 +4,7 @@ import { UpdateBookQuery } from '@domain/types/book/UpdateBookQuery';
 import { EntityNotFoundError, ForbiddenOperation } from '@domain/types/errors';
 
 export class UpdateBookUseCase {
-  private readonly bookRepository: BookRepository;
-
-  constructor(bookRepository: BookRepository) {
-    this.bookRepository = bookRepository;
-  }
+  constructor(private readonly bookRepository: BookRepository) {}
 
   public async execute(
     bookId: string,

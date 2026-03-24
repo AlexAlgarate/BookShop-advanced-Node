@@ -5,13 +5,10 @@ import { BusinessConflictError } from '@domain/types/errors';
 import { CreateUserQuery } from '@domain/types/user/CreateUserQuery';
 
 export class CreateUserUseCase {
-  private readonly userRepository: UserRepository;
-  private readonly securityService: SecurityService;
-
-  constructor(userRepository: UserRepository, securityService: SecurityService) {
-    this.userRepository = userRepository;
-    this.securityService = securityService;
-  }
+  constructor(
+    private readonly userRepository: UserRepository,
+    private readonly securityService: SecurityService
+  ) {}
   async execute(query: CreateUserQuery): Promise<User> {
     const user = await this.userRepository.findByEmail(query.email);
 

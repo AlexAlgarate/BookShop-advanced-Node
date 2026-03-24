@@ -4,13 +4,10 @@ import { EntityNotFoundError, UnauthorizedError } from '@domain/types/errors';
 import { LoginUserQuery } from '@domain/types/user/LoginUserQuery';
 
 export class LoginUserUseCase {
-  private readonly userRepository: UserRepository;
-  private readonly securityService: SecurityService;
-
-  constructor(userRepository: UserRepository, securityService: SecurityService) {
-    this.userRepository = userRepository;
-    this.securityService = securityService;
-  }
+  constructor(
+    private readonly userRepository: UserRepository,
+    private readonly securityService: SecurityService
+  ) {}
   async execute(query: LoginUserQuery): Promise<{
     token: string;
   }> {

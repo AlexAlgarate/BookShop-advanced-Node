@@ -5,25 +5,14 @@ import { EmailService } from '@domain/services/EmailService';
 import { NotificationTemplateService } from '@domain/services/NotificationTemplateService';
 
 export class SendPriceReductionSuggestionUseCase {
-  private readonly bookRepository: BookRepository;
-  private readonly userRepository: UserRepository;
-  private readonly emailService: EmailService;
-  private readonly templateService: NotificationTemplateService;
-  private readonly limitDays: number;
+  private readonly limitDays: number = 7;
 
   constructor(
-    bookRepository: BookRepository,
-    userRepository: UserRepository,
-    emailService: EmailService,
-    templateService: NotificationTemplateService,
-    limitDays = 7
-  ) {
-    this.bookRepository = bookRepository;
-    this.userRepository = userRepository;
-    this.emailService = emailService;
-    this.templateService = templateService;
-    this.limitDays = limitDays;
-  }
+    private readonly bookRepository: BookRepository,
+    private readonly userRepository: UserRepository,
+    private readonly emailService: EmailService,
+    private readonly templateService: NotificationTemplateService
+  ) {}
 
   public async execute(): Promise<void> {
     const users = await this.userRepository.find();

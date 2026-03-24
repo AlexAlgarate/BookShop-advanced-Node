@@ -4,11 +4,7 @@ import { CreateBookQuery } from '@domain/types/book/CreateBookQuery';
 import { BusinessConflictError } from '@domain/types/errors';
 
 export class CreateBookUseCase {
-  private readonly bookRepository: BookRepository;
-
-  constructor(bookRepository: BookRepository) {
-    this.bookRepository = bookRepository;
-  }
+  constructor(private readonly bookRepository: BookRepository) {}
 
   public async execute(query: CreateBookQuery): Promise<Book> {
     this.validateBookCreationRules(query);

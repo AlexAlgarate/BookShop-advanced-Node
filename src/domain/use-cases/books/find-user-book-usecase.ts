@@ -4,10 +4,7 @@ import { BookFindQuery } from '@domain/types/book/BookFindQuery';
 import { PaginatedResponse } from '@domain/types/pagination';
 
 export class FindUserBooksUseCase {
-  private readonly bookRepository: BookRepository;
-  constructor(bookRepository: BookRepository) {
-    this.bookRepository = bookRepository;
-  }
+  constructor(private readonly bookRepository: BookRepository) {}
 
   public async execute(query: BookFindQuery): Promise<PaginatedResponse<Book | null>> {
     const paginatedUserBooks = await this.bookRepository.findMany(query);

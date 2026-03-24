@@ -3,11 +3,7 @@ import { BookRepository } from '@domain/repositories/BookRepository';
 import { EntityNotFoundError, ForbiddenOperation } from '@domain/types/errors';
 
 export class DeleteBookUseCase {
-  private readonly bookRepository: BookRepository;
-
-  constructor(bookRepository: BookRepository) {
-    this.bookRepository = bookRepository;
-  }
+  constructor(private readonly bookRepository: BookRepository) {}
 
   public async execute(bookId: string, userId: string): Promise<void> {
     const bookToRemove = await this.getBookToRemove(bookId);
