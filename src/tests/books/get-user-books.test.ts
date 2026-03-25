@@ -1,6 +1,6 @@
 import request from 'supertest';
 import { createRandomBook } from './helper';
-import { app } from '@ui/api';
+import { getTestApp } from '../setup';
 import { faker } from '@faker-js/faker';
 import { signupAndLogin } from '../authentication/helpers';
 import { createBookResponseSchema, getUserBooksResponseSchema } from '../schemas/test-schemas';
@@ -9,7 +9,7 @@ describe('GET /me/books', () => {
   const ME_BOOKS_URL = '/me/books';
 
   test('Given no authorization header, should return 401 status code', async () => {
-    const response = await request(app).get(ME_BOOKS_URL);
+    const response = await request(getTestApp()).get(ME_BOOKS_URL);
 
     expect(response.status).toBe(401);
     expect(response.body).toHaveProperty('message');
@@ -18,7 +18,7 @@ describe('GET /me/books', () => {
   test('Given an invalid token, should return 401 status code', async () => {
     const invalidToken = '1234';
 
-    const response = await request(app)
+    const response = await request(getTestApp())
       .get(ME_BOOKS_URL)
       .set('Authorization', `Bearer ${invalidToken}`);
 
@@ -26,7 +26,7 @@ describe('GET /me/books', () => {
   });
 
   test('Given a malformed authorization header, should return 401 status code', async () => {
-    const response = await request(app)
+    const response = await request(getTestApp())
       .get(ME_BOOKS_URL)
       .set('Authorization', 'Invalid-header invalid-token');
 
@@ -36,15 +36,19 @@ describe('GET /me/books', () => {
   test('Given a valid token, should return 200 status code', async () => {
     const { token } = await createRandomBook();
 
-    const response = await request(app).get(ME_BOOKS_URL).set('Authorization', `Bearer ${token}`);
+    const response = await request(getTestApp())
+      .get(ME_BOOKS_URL)
+      .set('Authorization', `Bearer ${token}`);
 
     expect(response.status).toBe(200);
   });
 
   test('Should return empty array when user has no books', async () => {
-    const token = await signupAndLogin('test@test.com', 'TestPassword123');
+    const token = await signupAndLogin(faker.internet.email(), 'TestPassword123');
 
-    const response = await request(app).get(ME_BOOKS_URL).set('Authorization', `Bearer ${token}`);
+    const response = await request(getTestApp())
+      .get(ME_BOOKS_URL)
+      .set('Authorization', `Bearer ${token}`);
     const validateResponse = getUserBooksResponseSchema.parse(response.body);
 
     expect(response.status).toBe(200);
@@ -53,8 +57,9 @@ describe('GET /me/books', () => {
   });
 
   test('Should returning only books belonging to the authorizated user', async () => {
-    const { token: tokenUserA, newRandomBook: bookUserA } =
-      await createRandomBook('userA@test.com');
+    const { token: tokenUserA, newRandomBook: bookUserA } = await createRandomBook(
+      faker.internet.email()
+    );
     const validateTitleA = createBookResponseSchema.parse(bookUserA.body as unknown);
     const titleA = validateTitleA.content.title;
     const book2Payload = {
@@ -64,16 +69,16 @@ describe('GET /me/books', () => {
       author: faker.book.author(),
     };
 
-    await request(app)
+    await request(getTestApp())
       .post('/books')
       .set('Authorization', `Bearer ${tokenUserA}`)
       .send(book2Payload);
 
-    const { newRandomBook: bookUserB } = await createRandomBook('userB@test.com');
+    const { newRandomBook: bookUserB } = await createRandomBook(faker.internet.email());
     const validateTitleB = createBookResponseSchema.parse(bookUserB.body as unknown);
     const titleB = validateTitleB.content.title;
 
-    const response = await request(app)
+    const response = await request(getTestApp())
       .get(ME_BOOKS_URL)
       .set('Authorization', `Bearer ${tokenUserA}`);
     const validateResponse = getUserBooksResponseSchema.parse(response.body);
@@ -91,7 +96,9 @@ describe('GET /me/books', () => {
   test('Should return books with correct structure', async () => {
     const { token } = await createRandomBook();
 
-    const response = await request(app).get(ME_BOOKS_URL).set('Authorization', `Bearer ${token}`);
+    const response = await request(getTestApp())
+      .get(ME_BOOKS_URL)
+      .set('Authorization', `Bearer ${token}`);
     const validateResponse = getUserBooksResponseSchema.parse(response.body);
 
     const book = validateResponse.content[0];
@@ -111,7 +118,9 @@ describe('GET /me/books', () => {
   test('Should not expose sensitive information (_id)', async () => {
     const { token } = await createRandomBook();
 
-    const response = await request(app).get(ME_BOOKS_URL).set('Authorization', `Bearer ${token}`);
+    const response = await request(getTestApp())
+      .get(ME_BOOKS_URL)
+      .set('Authorization', `Bearer ${token}`);
     const validateResponse = getUserBooksResponseSchema.parse(response.body);
 
     expect(response.status).toBe(200);
@@ -132,10 +141,10 @@ describe('GET /me/books', () => {
     }));
 
     for (const book of booksToCreate) {
-      await request(app).post('/books').set('Authorization', `Bearer ${token}`).send(book);
+      await request(getTestApp()).post('/books').set('Authorization', `Bearer ${token}`).send(book);
     }
 
-    const response = await request(app)
+    const response = await request(getTestApp())
       .get(`${ME_BOOKS_URL}?page=1&limit=10`)
       .set('Authorization', `Bearer ${token}`);
 
@@ -150,7 +159,7 @@ describe('GET /me/books', () => {
   test('Should handle negative page numbers successfully', async () => {
     const { token } = await createRandomBook();
 
-    const response = await request(app)
+    const response = await request(getTestApp())
       .get(`${ME_BOOKS_URL}?page=-1`)
       .set('Authorization', `Bearer ${token}`);
 
@@ -163,7 +172,7 @@ describe('GET /me/books', () => {
   test('Should handle negative limit numbers successfully', async () => {
     const { token } = await createRandomBook();
 
-    const response = await request(app)
+    const response = await request(getTestApp())
       .get(`${ME_BOOKS_URL}?limit=-10`)
       .set('Authorization', `Bearer ${token}`);
 
@@ -176,7 +185,7 @@ describe('GET /me/books', () => {
   test('Should cap limit at maximum value (100)', async () => {
     const { token } = await createRandomBook();
 
-    const response = await request(app)
+    const response = await request(getTestApp())
       .get(`${ME_BOOKS_URL}?limit=9999`)
       .set('Authorization', `Bearer ${token}`);
 
@@ -189,7 +198,7 @@ describe('GET /me/books', () => {
   test('Should handle page=0 and limit=0 successfully', async () => {
     const { token } = await createRandomBook();
 
-    const response = await request(app)
+    const response = await request(getTestApp())
       .get(`${ME_BOOKS_URL}?page=0&limit=0`)
       .set('Authorization', `Bearer ${token}`);
 
@@ -199,7 +208,7 @@ describe('GET /me/books', () => {
   test('Should handle non-numeric page or limit parameters', async () => {
     const { token } = await createRandomBook();
 
-    const response = await request(app)
+    const response = await request(getTestApp())
       .get(`${ME_BOOKS_URL}?page=abc&limit=abc`)
       .set('Authorization', `Bearer ${token}`);
 
@@ -209,7 +218,7 @@ describe('GET /me/books', () => {
   test('Should handle decimals successfully', async () => {
     const { token } = await createRandomBook();
 
-    const response = await request(app)
+    const response = await request(getTestApp())
       .get(`${ME_BOOKS_URL}?page=0.5&limit=0.5`)
       .set('Authorization', `Bearer ${token}`);
 

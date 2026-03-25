@@ -1,12 +1,6 @@
-vi.mock('@infrastructure/services/mailtrap-email-service', () => ({
-  MailtrapService: vi.fn().mockImplementation(() => ({
-    sendEmailToSeller: vi.fn(),
-  })),
-}));
-
 import request from 'supertest';
 import { createRandomBook } from './helper';
-import { app } from '@ui/api';
+import { getTestApp } from '../setup';
 import { faker } from '@faker-js/faker';
 import { signupAndLogin } from '../authentication/helpers';
 import { buyBookResponseSchema, errorResponseSchema } from '../schemas/test-schemas';
@@ -16,7 +10,7 @@ describe('POST /books/:bookId/buy', () => {
     const { newRandomBook } = await createRandomBook();
     const validateResponseId = buyBookResponseSchema.parse(newRandomBook.body);
     const bookId = validateResponseId.content.id;
-    const response = await request(app).post(`/books/${bookId}/buy`);
+    const response = await request(getTestApp()).post(`/books/${bookId}/buy`);
 
     expect(response.status).toBe(401);
   });
@@ -25,7 +19,7 @@ describe('POST /books/:bookId/buy', () => {
     const { token } = await createRandomBook();
     const fakeBookId = '698f869c9d81e007ef244f4e';
 
-    const response = await request(app)
+    const response = await request(getTestApp())
       .post(`/books/${fakeBookId}/buy`)
       .set('Authorization', `Bearer ${token}`);
 
@@ -43,7 +37,7 @@ describe('POST /books/:bookId/buy', () => {
     const validateResponseId = buyBookResponseSchema.parse(newRandomBook.body);
     const bookId = validateResponseId.content.id;
 
-    const response = await request(app)
+    const response = await request(getTestApp())
       .post(`/books/${bookId}/buy`)
       .set('Authorization', `Bearer ${token}`);
 
@@ -63,7 +57,7 @@ describe('POST /books/:bookId/buy', () => {
     const buyerEmail = faker.internet.email();
     const buyerToken = await signupAndLogin(buyerEmail);
 
-    const response = await request(app)
+    const response = await request(getTestApp())
       .post(`/books/${bookId}/buy`)
       .set('Authorization', `Bearer ${buyerToken}`);
 
@@ -88,13 +82,13 @@ describe('POST /books/:bookId/buy', () => {
 
     const firstBuyerEmail = faker.internet.email();
     const firstBuyerToken = await signupAndLogin(firstBuyerEmail);
-    await request(app)
+    await request(getTestApp())
       .post(`/books/${bookId}/buy`)
       .set('Authorization', `Bearer ${firstBuyerToken}`);
 
     const secondBuyerEmail = faker.internet.email();
     const secondBuyerToken = await signupAndLogin(secondBuyerEmail);
-    const response = await request(app)
+    const response = await request(getTestApp())
       .post(`/books/${bookId}/buy`)
       .set('Authorization', `Bearer ${secondBuyerToken}`);
 
@@ -116,7 +110,7 @@ describe('POST /books/:bookId/buy', () => {
     const buyerEmail = faker.internet.email();
     const buyerToken = await signupAndLogin(buyerEmail);
 
-    const response = await request(app)
+    const response = await request(getTestApp())
       .post(`/books/${bookId}/buy`)
       .set('Authorization', `Bearer ${buyerToken}`);
 

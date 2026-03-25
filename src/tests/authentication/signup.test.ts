@@ -3,14 +3,14 @@ import request from 'supertest';
 import { faker } from '@faker-js/faker';
 import bcrypt from 'bcryptjs';
 
-import { app } from '@ui/api';
+import { getTestApp } from '../setup';
 import { signupResponseSchema } from '../schemas/test-schemas';
 
 describe('POST /authentication/signup', () => {
   const AUTHENTICATION_URL = '/authentication/signup';
   const VALID_PASSWORD = 'Qwertyui1.';
   test('Email and password should be mandatory', async () => {
-    const response = await request(app).post(AUTHENTICATION_URL).send({});
+    const response = await request(getTestApp()).post(AUTHENTICATION_URL).send({});
 
     expect(response.status).toBe(400);
   });
@@ -18,13 +18,13 @@ describe('POST /authentication/signup', () => {
   test('Email should be unique', async () => {
     const email = faker.internet.email();
 
-    const firstAttempResponse = await request(app).post(AUTHENTICATION_URL).send({
+    const firstAttempResponse = await request(getTestApp()).post(AUTHENTICATION_URL).send({
       email,
       password: VALID_PASSWORD,
     });
     expect(firstAttempResponse.status).toBe(201);
 
-    const secondAttempResponse = await request(app).post(AUTHENTICATION_URL).send({
+    const secondAttempResponse = await request(getTestApp()).post(AUTHENTICATION_URL).send({
       email,
       password: VALID_PASSWORD,
     });
@@ -32,7 +32,7 @@ describe('POST /authentication/signup', () => {
   });
 
   test('Should rejet invalid email format', async () => {
-    const response = await request(app).post(AUTHENTICATION_URL).send({
+    const response = await request(getTestApp()).post(AUTHENTICATION_URL).send({
       email: 'not-an-email',
       password: VALID_PASSWORD,
     });
@@ -41,7 +41,7 @@ describe('POST /authentication/signup', () => {
   });
 
   test('Should reject short passwords', async () => {
-    const response = await request(app).post(AUTHENTICATION_URL).send({
+    const response = await request(getTestApp()).post(AUTHENTICATION_URL).send({
       email: faker.internet.email(),
       password: '123',
     });
@@ -50,7 +50,7 @@ describe('POST /authentication/signup', () => {
   });
 
   test('Should reject empty password', async () => {
-    const response = await request(app).post(AUTHENTICATION_URL).send({
+    const response = await request(getTestApp()).post(AUTHENTICATION_URL).send({
       email: faker.internet.email(),
       password: '',
     });
@@ -62,7 +62,7 @@ describe('POST /authentication/signup', () => {
     const email = faker.internet.email();
     const password = VALID_PASSWORD;
 
-    const response = await request(app).post(AUTHENTICATION_URL).send({
+    const response = await request(getTestApp()).post(AUTHENTICATION_URL).send({
       email,
       password,
     });
@@ -70,7 +70,7 @@ describe('POST /authentication/signup', () => {
   });
 
   test('Should not return password in response body', async () => {
-    const response = await request(app).post(AUTHENTICATION_URL).send({
+    const response = await request(getTestApp()).post(AUTHENTICATION_URL).send({
       email: faker.internet.email(),
       password: VALID_PASSWORD,
     });
@@ -86,7 +86,7 @@ describe('POST /authentication/signup', () => {
     // eslint-disable-next-line @typescript-eslint/no-misused-promises
     const hashSpy = vi.spyOn(bcrypt, 'hash').mockImplementation(originalHash);
 
-    await request(app).post(AUTHENTICATION_URL).send({
+    await request(getTestApp()).post(AUTHENTICATION_URL).send({
       email: faker.internet.email(),
       password: VALID_PASSWORD,
     });

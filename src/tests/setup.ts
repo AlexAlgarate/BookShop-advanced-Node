@@ -4,16 +4,18 @@ import { environmentService } from '@infrastructure/services/environment-service
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 import { container } from '@di/container';
-import { registerInfrastructureBindings } from '@di/infrastructure-bindings';
-import { registerUseCaseBindings } from '@di/usecase-bindings';
 import { EMAIL_SERVICE } from '@di/tokens';
+
+import { Application } from 'express';
+import { registerTestBindings } from '@di/tests-bindings';
+import { createApp } from '@ui/api';
 
 let mongo: MongoMemoryServer;
 
+let testApp: Application;
 beforeAll(async () => {
   environmentService.load();
-  registerInfrastructureBindings();
-  registerUseCaseBindings();
+  registerTestBindings();
   container.rebind(EMAIL_SERVICE).toConstantValue({
     sendEmailToSeller: vi.fn(),
   });
@@ -22,13 +24,15 @@ beforeAll(async () => {
   });
 
   await mongoose.connect(mongo.getUri());
+  testApp = createApp();
 }, 120000);
 
-afterEach(async () => {
-  const db = mongoose.connection.db;
-  if (!db) return;
+export const getTestApp = (): Application => testApp;
 
-  await db.dropDatabase();
+afterEach(async () => {
+  const collections = (await mongoose.connection.db?.collections()) ?? [];
+  await Promise.all(collections.map(c => c.deleteMany({})));
+
   await mongoose.connection.syncIndexes();
   mongoose.deleteModel(/.*/);
 });

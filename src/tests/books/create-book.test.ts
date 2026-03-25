@@ -1,6 +1,6 @@
 import request from 'supertest';
 import { createRandomBook } from './helper';
-import { app } from '@ui/api';
+import { getTestApp } from '../setup';
 import { faker } from '@faker-js/faker';
 import { createBookResponseSchema } from '../schemas/test-schemas';
 
@@ -8,13 +8,13 @@ describe('POST /books', () => {
   const BOOKS_URL = '/books';
 
   test('Given no authorization header, sould return 401', async () => {
-    const response = await request(app).post(BOOKS_URL).send({});
+    const response = await request(getTestApp()).post(BOOKS_URL).send({});
 
     expect(response.status).toBe(401);
   });
 
   test('Given an invalid token, should return 401', async () => {
-    const response = await request(app)
+    const response = await request(getTestApp())
       .post(BOOKS_URL)
       .set('Authorization', 'Bearer invalid-token')
       .send({});
@@ -25,7 +25,7 @@ describe('POST /books', () => {
   test('Given not all book parameters, should return 400', async () => {
     const { token } = await createRandomBook();
 
-    const response = await request(app)
+    const response = await request(getTestApp())
       .post(BOOKS_URL)
       .set('Authorization', `Bearer ${token}`)
       .send({ title: faker.book.title() });
@@ -36,7 +36,7 @@ describe('POST /books', () => {
   test('Should return 400 if parameters have invalid types', async () => {
     const { token } = await createRandomBook();
 
-    const response = await request(app)
+    const response = await request(getTestApp())
       .post(BOOKS_URL)
       .set('Authorization', `Bearer ${token}`)
       .send({
@@ -61,7 +61,7 @@ describe('POST /books', () => {
       author: faker.book.author(),
     };
 
-    const response = await request(app)
+    const response = await request(getTestApp())
       .post(BOOKS_URL)
       .set('Authorization', `Bearer ${token}`)
       .send(newBook);
@@ -77,7 +77,7 @@ describe('POST /books', () => {
     const { newRandomBook, token } = await createRandomBook();
     const invalidBook = { ...newRandomBook, status: 'SOLD' };
 
-    const response = await request(app)
+    const response = await request(getTestApp())
       .post(BOOKS_URL)
       .set('Authorization', `Bearer ${token}`)
       .send(invalidBook);
@@ -90,7 +90,7 @@ describe('POST /books', () => {
 
     const invalidBook = { ...newRandomBook, soldAt: new Date() };
 
-    const response = await request(app)
+    const response = await request(getTestApp())
       .post(BOOKS_URL)
       .set('Authorization', `Bearer ${token}`)
       .send(invalidBook);
@@ -102,7 +102,7 @@ describe('POST /books', () => {
     const { newRandomBook, token } = await createRandomBook();
     const invalidBook = { ...newRandomBook, price: -10 };
 
-    const response = await request(app)
+    const response = await request(getTestApp())
       .post(BOOKS_URL)
       .set('Authorization', `Bearer ${token}`)
       .send(invalidBook);

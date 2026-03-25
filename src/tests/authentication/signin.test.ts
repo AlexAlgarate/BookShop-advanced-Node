@@ -1,7 +1,7 @@
 import request from 'supertest';
 import { faker } from '@faker-js/faker';
 
-import { app } from '@ui/api';
+import { getTestApp } from '../setup';
 import { type SigninResponse, signinResponseSchema } from '../schemas/test-schemas';
 
 describe('POST /authentication/signin', () => {
@@ -9,13 +9,13 @@ describe('POST /authentication/signin', () => {
   const VALID_PASSWORD = 'Qwertyui1.';
 
   test('Should return 400 status code if email and password is missing', async () => {
-    const response = await request(app).post(SIGNIN_URL).send({});
+    const response = await request(getTestApp()).post(SIGNIN_URL).send({});
 
     expect(response.status).toBe(400);
   });
 
   test('Should return 400 for invalid email format', async () => {
-    const response = await request(app).post(SIGNIN_URL).send({
+    const response = await request(getTestApp()).post(SIGNIN_URL).send({
       email: 'not-an-email',
       password: VALID_PASSWORD,
     });
@@ -24,7 +24,7 @@ describe('POST /authentication/signin', () => {
   });
 
   test('Should return 400 if the password is too short', async () => {
-    const response = await request(app).post(SIGNIN_URL).send({
+    const response = await request(getTestApp()).post(SIGNIN_URL).send({
       email: faker.internet.email(),
       password: '123',
     });
@@ -33,7 +33,7 @@ describe('POST /authentication/signin', () => {
   });
 
   test('Should return 400 if an empty password is given', async () => {
-    const response = await request(app).post(SIGNIN_URL).send({
+    const response = await request(getTestApp()).post(SIGNIN_URL).send({
       email: faker.internet.email(),
       password: '',
     });
@@ -42,7 +42,7 @@ describe('POST /authentication/signin', () => {
   });
 
   test('Should return 404 if user not found', async () => {
-    const response = await request(app)
+    const response = await request(getTestApp())
       .post(SIGNIN_URL)
       .send({ email: faker.internet.email(), password: VALID_PASSWORD });
 
@@ -53,9 +53,9 @@ describe('POST /authentication/signin', () => {
     const email = faker.internet.email();
     const password = VALID_PASSWORD;
 
-    await request(app).post('/authentication/signup').send({ email, password });
+    await request(getTestApp()).post('/authentication/signup').send({ email, password });
 
-    const response = await request(app)
+    const response = await request(getTestApp())
       .post(SIGNIN_URL)
       .send({ email, password: 'WrongPassword123' });
 
@@ -66,9 +66,9 @@ describe('POST /authentication/signin', () => {
     const email = faker.internet.email();
     const password = VALID_PASSWORD;
 
-    await request(app).post('/authentication/signup').send({ email, password });
+    await request(getTestApp()).post('/authentication/signup').send({ email, password });
 
-    const response = await request(app).post(SIGNIN_URL).send({
+    const response = await request(getTestApp()).post(SIGNIN_URL).send({
       email,
       password,
     });
@@ -84,9 +84,9 @@ describe('POST /authentication/signin', () => {
     const email = faker.internet.email();
     const password = VALID_PASSWORD;
 
-    await request(app).post('/authentication/signup').send({ email, password });
+    await request(getTestApp()).post('/authentication/signup').send({ email, password });
 
-    const response = await request(app).post(SIGNIN_URL).send({
+    const response = await request(getTestApp()).post(SIGNIN_URL).send({
       email,
       password,
     });

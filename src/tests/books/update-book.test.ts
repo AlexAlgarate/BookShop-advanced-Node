@@ -1,6 +1,6 @@
 import request from 'supertest';
 import { createRandomBook } from './helper';
-import { app } from '@ui/api';
+import { getTestApp } from '../setup';
 import { signupAndLogin } from '../authentication/helpers';
 import {
   createBookResponseSchema,
@@ -15,7 +15,7 @@ describe('PATCH /books/:bookId', () => {
     const validateBookId = createBookResponseSchema.parse(newRandomBook.body);
     const bookId = validateBookId.content.id;
 
-    const response = await request(app)
+    const response = await request(getTestApp())
       .patch(`${BOOKS_URL}/${bookId}`)
 
       .send({ title: 'new-title' });
@@ -28,7 +28,7 @@ describe('PATCH /books/:bookId', () => {
     const validateBookId = createBookResponseSchema.parse(newRandomBook.body);
     const bookId = validateBookId.content.id;
 
-    const response = await request(app)
+    const response = await request(getTestApp())
       .patch(`${BOOKS_URL}/${bookId}`)
       .set('Authorization', `Bearer invalid-token`)
       .send({ title: 'new-title' });
@@ -39,7 +39,7 @@ describe('PATCH /books/:bookId', () => {
   test('Given a non existing book, return a 404 status code', async () => {
     const { token } = await createRandomBook();
 
-    const response = await request(app)
+    const response = await request(getTestApp())
       .patch(`${BOOKS_URL}/${'6979054b067bd17c70d31fbf'}`)
       .set('Authorization', `Bearer ${token}`)
       .send({});
@@ -57,7 +57,7 @@ describe('PATCH /books/:bookId', () => {
       price: 150,
     };
 
-    const response = await request(app)
+    const response = await request(getTestApp())
       .patch(`${BOOKS_URL}/${bookId}`)
       .set('Authorization', `Bearer ${token}`)
       .send(updatedPayload);
@@ -76,7 +76,7 @@ describe('PATCH /books/:bookId', () => {
 
     const tokenFromAnotherUser = await signupAndLogin('other-user@test.com', 'OtherPassword123');
 
-    const response = await request(app)
+    const response = await request(getTestApp())
       .patch(`${BOOKS_URL}/${bookId}`)
       .set('Authorization', `Bearer ${tokenFromAnotherUser}`)
       .send({ title: 'new-title' });
@@ -94,7 +94,7 @@ describe('PATCH /books/:bookId', () => {
     const validateBookId = createBookResponseSchema.parse(newRandomBook.body);
     const bookId = validateBookId.content.id;
 
-    const response = await request(app)
+    const response = await request(getTestApp())
       .patch(`${BOOKS_URL}/${bookId}`)
       .set('Authorization', `Bearer ${token}`)
       .send({ price: -10 });
@@ -107,7 +107,7 @@ describe('PATCH /books/:bookId', () => {
     const validateBookId = createBookResponseSchema.parse(newRandomBook.body);
     const bookId = validateBookId.content.id;
 
-    const response = await request(app)
+    const response = await request(getTestApp())
       .patch(`${BOOKS_URL}/${bookId}`)
       .set('Authorization', `Bearer ${token}`)
       .send({ ownerId: 'new-Owner-Id' });

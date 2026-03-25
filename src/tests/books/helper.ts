@@ -1,7 +1,7 @@
 import request from 'supertest';
 import { faker } from '@faker-js/faker';
 
-import { app } from '@ui/api';
+import { getTestApp } from '../setup';
 import { signupAndLogin } from '../authentication/helpers';
 import * as z from 'zod';
 import { bookSchema } from '../schemas/test-schemas';
@@ -31,7 +31,7 @@ export const createRandomBook = async (
     soldAt: null,
     ...overrides,
   };
-  const newRandomBook = await request(app)
+  const newRandomBook = await request(getTestApp())
     .post('/books')
     .set('Authorization', `Bearer ${token}`)
     .send(randomBook);

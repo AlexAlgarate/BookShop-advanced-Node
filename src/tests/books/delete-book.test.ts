@@ -1,6 +1,6 @@
 import request from 'supertest';
 import { createRandomBook } from './helper';
-import { app } from '@ui/api';
+import { getTestApp } from '../setup';
 import { createBookResponseSchema, deleteBookResponseSchema } from '../schemas/test-schemas';
 import { signupAndLogin } from '../authentication/helpers';
 
@@ -10,7 +10,9 @@ describe('DELETE /books/:bookId', () => {
     const { newRandomBook } = await createRandomBook();
     const createdBook = createBookResponseSchema.parse(newRandomBook.body as unknown);
 
-    const response = await request(app).delete(`${BOOKS_URL}/${createdBook.content.id}`).send();
+    const response = await request(getTestApp())
+      .delete(`${BOOKS_URL}/${createdBook.content.id}`)
+      .send();
 
     expect(response.status).toBe(401);
   });
@@ -21,7 +23,7 @@ describe('DELETE /books/:bookId', () => {
     const invalidToken =
       'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30';
 
-    const response = await request(app)
+    const response = await request(getTestApp())
       .delete(`${BOOKS_URL}/${createdBook.content.id}`)
       .set('Authorization', invalidToken)
       .send();
@@ -32,7 +34,7 @@ describe('DELETE /books/:bookId', () => {
   test('Should return 404 when book does not exist', async () => {
     const { token } = await createRandomBook();
 
-    const response = await request(app)
+    const response = await request(getTestApp())
       .delete(`${BOOKS_URL}/6979054b067bd17c70d31fbf`)
       .set('Authorization', `Bearer ${token}`);
 
@@ -43,7 +45,7 @@ describe('DELETE /books/:bookId', () => {
     const { newRandomBook, token } = await createRandomBook();
     const createdBook = createBookResponseSchema.parse(newRandomBook.body as unknown);
 
-    const response = await request(app)
+    const response = await request(getTestApp())
       .delete(`${BOOKS_URL}/${createdBook.content.id}`)
       .set('Authorization', `Bearer ${token}`)
       .send();
@@ -59,12 +61,12 @@ describe('DELETE /books/:bookId', () => {
     const { newRandomBook, token } = await createRandomBook();
     const createdBook = createBookResponseSchema.parse(newRandomBook.body as unknown);
 
-    await request(app)
+    await request(getTestApp())
       .delete(`${BOOKS_URL}/${createdBook.content.id}`)
       .set('Authorization', `Bearer ${token}`)
       .send();
 
-    const getResponse = await request(app).get(`${BOOKS_URL}/${createdBook.content.id}`);
+    const getResponse = await request(getTestApp()).get(`${BOOKS_URL}/${createdBook.content.id}`);
 
     expect(getResponse.status).toBe(404);
   });
@@ -75,7 +77,7 @@ describe('DELETE /books/:bookId', () => {
 
     const tokenUserB = await signupAndLogin('other@email.com', 'OtherPassword123');
 
-    const response = await request(app)
+    const response = await request(getTestApp())
       .delete(`${BOOKS_URL}/${createdBookUserA.content.id}`)
       .set('Authorization', `Bearer ${tokenUserB}`)
       .send();
