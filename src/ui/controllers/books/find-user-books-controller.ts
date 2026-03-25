@@ -1,4 +1,4 @@
-import { useCases } from '@di/use-case-resolver';
+import { getControllers } from '@di/controller-factory';
 import { authenticatedUserSchema, findBooksBodySchema } from '@ui/validators/book-validators';
 import { Request, Response } from 'express';
 
@@ -9,7 +9,8 @@ export const findUserBooksController = async (
   const { page, limit, search, author, title } = findBooksBodySchema.parse(request.query);
   const { id: userId } = authenticatedUserSchema.parse(request.user);
 
-  const paginatedUserBooks = await useCases.findUserBooks().execute({
+  const { findUserBooksUseCase } = getControllers();
+  const paginatedUserBooks = await findUserBooksUseCase().execute({
     page,
     limit,
     search,
