@@ -1,3 +1,9 @@
+vi.mock('@infrastructure/services/mailtrap-email-service', () => ({
+  MailtrapService: vi.fn().mockImplementation(() => ({
+    sendEmailToSeller: vi.fn(),
+  })),
+}));
+
 import request from 'supertest';
 import { createRandomBook } from './helper';
 import { app } from '@ui/api';

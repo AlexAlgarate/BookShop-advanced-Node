@@ -8,7 +8,7 @@ import { signupResponseSchema } from '../schemas/test-schemas';
 
 describe('POST /authentication/signup', () => {
   const AUTHENTICATION_URL = '/authentication/signup';
-
+  const VALID_PASSWORD = 'Qwertyui1.';
   test('Email and password should be mandatory', async () => {
     const response = await request(app).post(AUTHENTICATION_URL).send({});
 
@@ -17,17 +17,16 @@ describe('POST /authentication/signup', () => {
 
   test('Email should be unique', async () => {
     const email = faker.internet.email();
-    const password = faker.internet.password();
 
     const firstAttempResponse = await request(app).post(AUTHENTICATION_URL).send({
       email,
-      password,
+      password: VALID_PASSWORD,
     });
     expect(firstAttempResponse.status).toBe(201);
 
     const secondAttempResponse = await request(app).post(AUTHENTICATION_URL).send({
       email,
-      password,
+      password: VALID_PASSWORD,
     });
     expect(secondAttempResponse.status).toBe(409);
   });
@@ -35,7 +34,7 @@ describe('POST /authentication/signup', () => {
   test('Should rejet invalid email format', async () => {
     const response = await request(app).post(AUTHENTICATION_URL).send({
       email: 'not-an-email',
-      password: faker.internet.password(),
+      password: VALID_PASSWORD,
     });
 
     expect(response.status).toBe(400);
@@ -61,7 +60,7 @@ describe('POST /authentication/signup', () => {
 
   test('Given a valid email and password, a new user is created', async () => {
     const email = faker.internet.email();
-    const password = faker.internet.password();
+    const password = VALID_PASSWORD;
 
     const response = await request(app).post(AUTHENTICATION_URL).send({
       email,
@@ -73,7 +72,7 @@ describe('POST /authentication/signup', () => {
   test('Should not return password in response body', async () => {
     const response = await request(app).post(AUTHENTICATION_URL).send({
       email: faker.internet.email(),
-      password: faker.internet.password(),
+      password: VALID_PASSWORD,
     });
 
     const validateResponse = signupResponseSchema.parse(response.body);
@@ -89,7 +88,7 @@ describe('POST /authentication/signup', () => {
 
     await request(app).post(AUTHENTICATION_URL).send({
       email: faker.internet.email(),
-      password: faker.internet.password(),
+      password: VALID_PASSWORD,
     });
 
     expect(hashSpy).toHaveBeenCalled();

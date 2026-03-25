@@ -18,5 +18,9 @@ export default defineConfig({
     testTimeout: 30000,
     pool: 'forks',
     fileParallelism: false,
+    sequence: {
+      concurrent: false,
+    },
+    isolate: true,
   },
 });

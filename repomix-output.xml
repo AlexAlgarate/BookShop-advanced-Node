@@ -1,0 +1,3538 @@
+This file is a merged representation of a subset of the codebase, containing specifically included files, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of a subset of the repository's contents that is considered the most important context.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Only files matching these patterns are included: vitest.config.ts, src/
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+src/
+  di/
+    container.ts
+    index.ts
+    infrastructure-bindings.ts
+    tokens.ts
+    use-case-resolver.ts
+    usecase-bindings.ts
+  domain/
+    entities/
+      Book.ts
+      Entity.ts
+      User.ts
+    repositories/
+      BookRepository.ts
+      UserRepository.ts
+    services/
+      EmailService.ts
+      NotificationTemplateService.ts
+      SecurityService.ts
+    types/
+      book/
+        BookFindQuery.ts
+        BuyBookQuery.ts
+        CreateBookQuery.ts
+        UpdateBookQuery.ts
+      errors/
+        BusinessConflictError.ts
+        DomainError.ts
+        EmailServiceError.ts
+        EntityNotFoundError.ts
+        ForbiddenOperation.ts
+        index.ts
+        UnauthorizedError.ts
+      user/
+        CreateUserQuery.ts
+        LoginUserQuery.ts
+      pagination.ts
+    use-cases/
+      books/
+        buy-book-usecase.ts
+        create-book-usecase.ts
+        delete-book-usecase.ts
+        find-books-usecase.ts
+        find-user-book-usecase.ts
+        send-price-reduction-suggestion-usecase.ts
+        update-book-usecase.ts
+      user/
+        create-user-usecase.ts
+        login-user-usecase.ts
+  infrastructure/
+    database/
+      mongo-connection.ts
+    models/
+      book-model.ts
+      user-model.ts
+    monitoring/
+      sentry.initializer.ts
+    repositories/
+      book-mongo-repository.ts
+      user-mongo-repository.ts
+    services/
+      environment-service.ts
+      mailtrap-email-service.ts
+      notification-template-service.ts
+      security-bcrypt-service.ts
+  tests/
+    authentication/
+      helpers.ts
+      signin.test.ts
+      signup.test.ts
+    books/
+      buy-book.test.ts
+      create-book.test.ts
+      delete-book.test.ts
+      find-books.test.ts
+      get-user-books.test.ts
+      helper.ts
+      send-price-reduction-suggestion.test.ts
+      update-book.test.ts
+    schemas/
+      test-schemas.ts
+    setup.ts
+  types/
+    express.d.ts
+  ui/
+    controllers/
+      authentication/
+        signin-controller.ts
+        signup-controller.ts
+      books/
+        buy-book-controller.ts
+        create-book-controller.ts
+        delete-book-controller.ts
+        find-books-controller.ts
+        find-user-books-controller.ts
+        update-book-controller.ts
+      jobs/
+        price-reduction-job-controller.ts
+    middlewares/
+      authentication-middleware.ts
+      error-handler-middleware.ts
+      rate-limit-middleware.ts
+    routes/
+      authentication-routes.ts
+      book-routes.ts
+      user-book-routes.ts
+    validators/
+      authentication-validators.ts
+      book-validators.ts
+    api.ts
+    cron.ts
+  server.ts
+vitest.config.ts
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="src/domain/entities/Entity.ts">
+export class Entity {
+  readonly id: string;
+  readonly createdAt: Date;
+
+  constructor(id: string, createdAt: Date) {
+    this.id = id;
+    this.createdAt = createdAt;
+  }
+}
+</file>
+
+<file path="src/domain/services/EmailService.ts">
+export interface EmailService {
+  sendEmailToSeller(email: string, message: string, subject: string): Promise<void>;
+}
+</file>
+
+<file path="src/domain/services/NotificationTemplateService.ts">
+export interface NotificationTemplateService {
+  getBookSoldTemplate(bookTitle: string, bookPrice: number): { subject: string; body: string };
+  getPriceReductionSuggestionTemplate(
+    booksCount: number,
+    limitDays: number,
+    bookDetails: string
+  ): { subject: string; body: string };
+}
+</file>
+
+<file path="src/domain/services/SecurityService.ts">
+import { User } from '@domain/entities/User';
+
+export interface SecurityService {
+  hashPassword(password: string): Promise<string>;
+  generateJWT(user: User): string;
+  comparePasswords(incomingPassword: string, userPassword: string): Promise<boolean>;
+  verifyJWT(token: string): { userId: string };
+}
+</file>
+
+<file path="src/domain/types/book/BuyBookQuery.ts">
+export interface BuyBookQuery {
+  bookId: string;
+  buyerId: string;
+}
+</file>
+
+<file path="src/domain/types/errors/BusinessConflictError.ts">
+import { DomainError } from './DomainError';
+
+export class BusinessConflictError extends DomainError {
+  readonly name = 'BusinessConflictError';
+
+  constructor(message: string = 'conflict') {
+    super(message);
+  }
+}
+</file>
+
+<file path="src/domain/types/errors/DomainError.ts">
+export abstract class DomainError extends Error {
+  abstract override readonly name: string;
+}
+</file>
+
+<file path="src/domain/types/errors/EmailServiceError.ts">
+import { DomainError } from './DomainError';
+
+export class EmailServiceError extends DomainError {
+  readonly name = 'EmailServiceError';
+
+  constructor(recipientEmail: string) {
+    super(`Failed to send email to ${recipientEmail}`);
+  }
+}
+</file>
+
+<file path="src/domain/types/errors/EntityNotFoundError.ts">
+import { DomainError } from './DomainError';
+
+export class EntityNotFoundError extends DomainError {
+  readonly name = 'EntityNotFoundError';
+
+  constructor(entity: string, id: string) {
+    super(`${entity} with id ${id} could not be found`);
+  }
+}
+</file>
+
+<file path="src/domain/types/errors/ForbiddenOperation.ts">
+import { DomainError } from './DomainError';
+
+export class ForbiddenOperation extends DomainError {
+  readonly name = 'ForbiddenOperation';
+
+  constructor(message: string = 'operation not allowed') {
+    super(message);
+  }
+}
+</file>
+
+<file path="src/domain/types/user/CreateUserQuery.ts">
+export interface CreateUserQuery {
+  email: string;
+  password: string;
+}
+</file>
+
+<file path="src/domain/types/user/LoginUserQuery.ts">
+export interface LoginUserQuery {
+  email: string;
+  password: string;
+}
+</file>
+
+<file path="src/domain/types/pagination.ts">
+export interface Pagination {
+  page: number;
+  limit: number;
+}
+
+export interface PaginatedResponse<T> {
+  content: T[];
+  meta: {
+    page: number;
+    limit: number;
+    total: number;
+  };
+}
+</file>
+
+<file path="src/infrastructure/models/user-model.ts">
+import mongoose, { Types } from 'mongoose';
+
+export interface UserMongoDb {
+  email: string;
+  password: string;
+  _id: Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+const UserSchema = new mongoose.Schema<UserMongoDb>(
+  {
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+  },
+  { timestamps: true }
+);
+
+export const UserModel = mongoose.model('User', UserSchema, 'Users');
+</file>
+
+<file path="src/infrastructure/monitoring/sentry.initializer.ts">
+import { environmentService } from '@infrastructure/services/environment-service';
+import * as Sentry from '@sentry/node';
+
+export const initializeSentry = (): void => {
+  const { SENTRY_DSN, ENVIRONMENT } = environmentService.get();
+
+  Sentry.init({
+    dsn: SENTRY_DSN,
+    environment: ENVIRONMENT,
+  });
+};
+</file>
+
+<file path="src/infrastructure/services/notification-template-service.ts">
+import { NotificationTemplateService } from '@domain/services/NotificationTemplateService';
+
+export class NotificationTemplateServiceImpl implements NotificationTemplateService {
+  getBookSoldTemplate(bookTitle: string, bookPrice: number): { subject: string; body: string } {
+    const subject = '¡Tu libro ha sido vendido!';
+    const body = `
+      ¡Felicidades! Tu libro "${bookTitle}" ha sido vendido.
+      En los próximos días recibirás el dinero (${bookPrice}) en tu cuenta.
+    `.trim();
+
+    return { subject, body };
+  }
+
+  getPriceReductionSuggestionTemplate(
+    booksCount: number,
+    limitDays: number,
+    bookDetails: string
+  ): { subject: string; body: string } {
+    const bookLabel = booksCount === 1 ? 'libro' : 'libros';
+    const publishedLabel = booksCount === 1 ? 'publicado' : 'publicados';
+
+    const subject = `Sugerencia para que bajes el precio de ${booksCount} ${bookLabel}`;
+
+    const body = `
+      Tienes ${booksCount} ${publishedLabel} desde hace más de ${limitDays} días:
+
+      ${bookDetails}
+
+      ¿Y si les bajamos el precio?  
+    `.trim();
+
+    return { subject, body };
+  }
+}
+</file>
+
+<file path="src/types/express.d.ts">
+declare global {
+  namespace Express {
+    interface Request {
+      user?: {
+        id: string;
+      };
+    }
+  }
+}
+
+export {};
+</file>
+
+<file path="src/ui/cron.ts">
+import { schedule } from 'node-cron';
+import { priceReductionJobController } from './controllers/jobs/price-reduction-job-controller';
+
+export const startCronJobs = (): void => {
+  const weeklyPriceReductionJob = '0 10 * * 1';
+  // const testPriceReductionJob = '* * * * *';
+
+  schedule(weeklyPriceReductionJob, async () => {
+    await priceReductionJobController();
+  });
+  console.log('Cron jobs started!');
+};
+</file>
+
+<file path="vitest.config.ts">
+import { defineConfig } from 'vitest/config';
+import path from 'path';
+
+export default defineConfig({
+  resolve: {
+    alias: {
+      '@domain': path.resolve(__dirname, './src/domain'),
+      '@infrastructure': path.resolve(__dirname, './src/infrastructure'),
+      '@ui': path.resolve(__dirname, './src/ui'),
+      '@di': path.resolve(__dirname, './src/di'),
+    },
+  },
+  test: {
+    globals: true,
+    environment: 'node',
+    setupFiles: ['./src/tests/setup.ts'],
+    include: ['src/**/*.test.ts'],
+    testTimeout: 30000,
+    pool: 'forks',
+    fileParallelism: false,
+    sequence: {
+      concurrent: false,
+    },
+    isolate: true,
+  },
+});
+</file>
+
+<file path="src/di/container.ts">
+import { Container } from 'inversify';
+
+export const container = new Container();
+</file>
+
+<file path="src/di/index.ts">
+export { container } from './container';
+export { Container } from 'inversify';
+export * from './tokens';
+</file>
+
+<file path="src/di/tokens.ts">
+export const BOOK_REPOSITORY = Symbol('BookRepository');
+export const USER_REPOSITORY = Symbol('UserRepository');
+export const EMAIL_SERVICE = Symbol('EmailService');
+export const SECURITY_SERVICE = Symbol('SecurityService');
+export const NOTIFICATION_TEMPLATE_SERVICE = Symbol('NotificationTemplateService');
+
+export const CREATE_BOOK_USE_CASE = Symbol('CreateBookUseCase');
+export const FIND_BOOKS_USE_CASE = Symbol('FindBooksUseCase');
+export const FIND_USER_BOOKS_USE_CASE = Symbol('FindUserBooksUseCase');
+export const UPDATE_BOOK_USE_CASE = Symbol('UpdateBookUseCase');
+export const DELETE_BOOK_USE_CASE = Symbol('DeleteBookUseCase');
+export const BUY_BOOK_USE_CASE = Symbol('BuyBookUseCase');
+export const SEND_PRICE_REDUCTION_USE_CASE = Symbol('SendPriceReductionSuggestionUseCase');
+export const CREATE_USER_USE_CASE = Symbol('CreateUserUseCase');
+export const LOGIN_USER_USE_CASE = Symbol('LoginUserUseCase');
+</file>
+
+<file path="src/di/use-case-resolver.ts">
+import type { CreateBookUseCase } from '@domain/use-cases/books/create-book-usecase';
+import type { FindBooksUseCase } from '@domain/use-cases/books/find-books-usecase';
+import type { FindUserBooksUseCase } from '@domain/use-cases/books/find-user-book-usecase';
+import type { UpdateBookUseCase } from '@domain/use-cases/books/update-book-usecase';
+import type { DeleteBookUseCase } from '@domain/use-cases/books/delete-book-usecase';
+import type { BuyBookUseCase } from '@domain/use-cases/books/buy-book-usecase';
+import type { SendPriceReductionSuggestionUseCase } from '@domain/use-cases/books/send-price-reduction-suggestion-usecase';
+import type { CreateUserUseCase } from '@domain/use-cases/user/create-user-usecase';
+import type { LoginUserUseCase } from '@domain/use-cases/user/login-user-usecase';
+
+import { container } from './container';
+import {
+  CREATE_BOOK_USE_CASE,
+  FIND_BOOKS_USE_CASE,
+  FIND_USER_BOOKS_USE_CASE,
+  UPDATE_BOOK_USE_CASE,
+  DELETE_BOOK_USE_CASE,
+  BUY_BOOK_USE_CASE,
+  SEND_PRICE_REDUCTION_USE_CASE,
+  CREATE_USER_USE_CASE,
+  LOGIN_USER_USE_CASE,
+} from './tokens';
+
+export const useCases = {
+  createBook: (): CreateBookUseCase => container.get(CREATE_BOOK_USE_CASE),
+  findBooks: (): FindBooksUseCase => container.get(FIND_BOOKS_USE_CASE),
+  findUserBooks: (): FindUserBooksUseCase => container.get(FIND_USER_BOOKS_USE_CASE),
+  updateBook: (): UpdateBookUseCase => container.get(UPDATE_BOOK_USE_CASE),
+  deleteBook: (): DeleteBookUseCase => container.get(DELETE_BOOK_USE_CASE),
+  buyBook: (): BuyBookUseCase => container.get(BUY_BOOK_USE_CASE),
+  sendPriceReduction: (): SendPriceReductionSuggestionUseCase =>
+    container.get(SEND_PRICE_REDUCTION_USE_CASE),
+  createUser: (): CreateUserUseCase => container.get(CREATE_USER_USE_CASE),
+  loginUser: (): LoginUserUseCase => container.get(LOGIN_USER_USE_CASE),
+};
+</file>
+
+<file path="src/domain/entities/User.ts">
+import { Entity } from './Entity';
+
+export class User extends Entity {
+  readonly email: string;
+  private readonly _password: string;
+
+  constructor({
+    email,
+    password,
+    id,
+    createdAt,
+  }: {
+    email: string;
+    password: string;
+    id: string;
+    createdAt: Date;
+  }) {
+    super(id, createdAt);
+    this.email = email;
+    this._password = password;
+  }
+
+  get password(): string {
+    return this._password;
+  }
+}
+</file>
+
+<file path="src/domain/types/book/BookFindQuery.ts">
+import { BookStatus } from '@domain/entities/Book';
+import { Pagination } from '../pagination';
+
+export interface BookFindQuery extends Pagination {
+  title?: string;
+  author?: string;
+  search?: string;
+  ownerId?: string;
+  status?: BookStatus;
+}
+</file>
+
+<file path="src/domain/types/book/CreateBookQuery.ts">
+import { BookStatus } from '@domain/entities/Book';
+
+export interface CreateBookQuery {
+  title: string;
+  description: string;
+  price: number;
+  author: string;
+  ownerId: string;
+  status?: BookStatus;
+  soldAt?: Date | null;
+}
+</file>
+
+<file path="src/domain/types/errors/UnauthorizedError.ts">
+import { DomainError } from './DomainError';
+
+export class UnauthorizedError extends DomainError {
+  readonly name = 'UnauthorizedError';
+
+  constructor(message: string = 'unauthorized error') {
+    super(message);
+  }
+}
+</file>
+
+<file path="src/domain/use-cases/books/delete-book-usecase.ts">
+import { Book } from '@domain/entities/Book';
+import { BookRepository } from '@domain/repositories/BookRepository';
+import { EntityNotFoundError, ForbiddenOperation } from '@domain/types/errors';
+
+export class DeleteBookUseCase {
+  constructor(private readonly bookRepository: BookRepository) {}
+
+  public async execute(bookId: string, userId: string): Promise<void> {
+    const bookToRemove = await this.getBookToRemove(bookId);
+
+    this.ensureUserIsOwner(userId, bookToRemove.ownerId);
+
+    const isRemoved = await this.bookRepository.deleteBook(bookId);
+
+    if (!isRemoved) {
+      throw new EntityNotFoundError('Book', bookId);
+    }
+  }
+
+  private async getBookToRemove(bookId: string): Promise<Book> {
+    const book = await this.bookRepository.findById(bookId);
+
+    if (!book) {
+      throw new EntityNotFoundError('Book', bookId);
+    }
+
+    return book;
+  }
+
+  private ensureUserIsOwner(userId: string, ownerId: string): void {
+    if (userId !== ownerId) {
+      throw new ForbiddenOperation('Forbidden operation');
+    }
+  }
+}
+</file>
+
+<file path="src/domain/use-cases/books/find-user-book-usecase.ts">
+import { Book } from '@domain/entities/Book';
+import { BookRepository } from '@domain/repositories/BookRepository';
+import { BookFindQuery } from '@domain/types/book/BookFindQuery';
+import { PaginatedResponse } from '@domain/types/pagination';
+
+export class FindUserBooksUseCase {
+  constructor(private readonly bookRepository: BookRepository) {}
+
+  public async execute(query: BookFindQuery): Promise<PaginatedResponse<Book | null>> {
+    const paginatedUserBooks = await this.bookRepository.findMany(query);
+
+    return paginatedUserBooks;
+  }
+}
+</file>
+
+<file path="src/infrastructure/database/mongo-connection.ts">
+import mongoose from 'mongoose';
+import { environmentService } from '@infrastructure/services/environment-service';
+
+export const connectToMongoDb = async (): Promise<void> => {
+  const { MONGO_USER, MONGO_PASSWORD, MONGO_HOST } = environmentService.get();
+
+  await mongoose.connect(
+    `mongodb://${MONGO_USER}:${MONGO_PASSWORD}@${MONGO_HOST}/db_project?authSource=admin`
+  );
+  console.log('Mongodb connected!');
+};
+</file>
+
+<file path="src/tests/books/delete-book.test.ts">
+import request from 'supertest';
+import { createRandomBook } from './helper';
+import { app } from '@ui/api';
+import { createBookResponseSchema, deleteBookResponseSchema } from '../schemas/test-schemas';
+import { signupAndLogin } from '../authentication/helpers';
+
+describe('DELETE /books/:bookId', () => {
+  const BOOKS_URL = '/books';
+  test('Given no authorization header, endpoint should return a 401 status code', async () => {
+    const { newRandomBook } = await createRandomBook();
+    const createdBook = createBookResponseSchema.parse(newRandomBook.body as unknown);
+
+    const response = await request(app).delete(`${BOOKS_URL}/${createdBook.content.id}`).send();
+
+    expect(response.status).toBe(401);
+  });
+
+  test('Given an invalid token, endpoint should return a 401 status code', async () => {
+    const { newRandomBook } = await createRandomBook();
+    const createdBook = createBookResponseSchema.parse(newRandomBook.body as unknown);
+    const invalidToken =
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30';
+
+    const response = await request(app)
+      .delete(`${BOOKS_URL}/${createdBook.content.id}`)
+      .set('Authorization', invalidToken)
+      .send();
+
+    expect(response.status).toBe(401);
+  });
+
+  test('Should return 404 when book does not exist', async () => {
+    const { token } = await createRandomBook();
+
+    const response = await request(app)
+      .delete(`${BOOKS_URL}/6979054b067bd17c70d31fbf`)
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(response.status).toBe(404);
+  });
+
+  test('Should delete a book and return 204', async () => {
+    const { newRandomBook, token } = await createRandomBook();
+    const createdBook = createBookResponseSchema.parse(newRandomBook.body as unknown);
+
+    const response = await request(app)
+      .delete(`${BOOKS_URL}/${createdBook.content.id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send();
+
+    expect(response.status).toBe(200);
+
+    const validateResponse = deleteBookResponseSchema.parse(response.body);
+
+    expect(validateResponse.message).toBe('Book removed successfully');
+  });
+
+  test('Should actually remove the book', async () => {
+    const { newRandomBook, token } = await createRandomBook();
+    const createdBook = createBookResponseSchema.parse(newRandomBook.body as unknown);
+
+    await request(app)
+      .delete(`${BOOKS_URL}/${createdBook.content.id}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send();
+
+    const getResponse = await request(app).get(`${BOOKS_URL}/${createdBook.content.id}`);
+
+    expect(getResponse.status).toBe(404);
+  });
+
+  test('Given a user that is not the book owner, return a Forbidden operation errpr', async () => {
+    const { newRandomBook } = await createRandomBook();
+    const createdBookUserA = createBookResponseSchema.parse(newRandomBook.body as unknown);
+
+    const tokenUserB = await signupAndLogin('other@email.com', 'OtherPassword123');
+
+    const response = await request(app)
+      .delete(`${BOOKS_URL}/${createdBookUserA.content.id}`)
+      .set('Authorization', `Bearer ${tokenUserB}`)
+      .send();
+
+    expect(response.status).toBe(403);
+  });
+});
+</file>
+
+<file path="src/ui/controllers/books/create-book-controller.ts">
+import { useCases } from '@di/use-case-resolver';
+
+import { authenticatedUserSchema, createBookBodySchema } from '@ui/validators/book-validators';
+import { Request, Response } from 'express';
+
+export const createBookController = async (request: Request, response: Response): Promise<void> => {
+  const validateBody = createBookBodySchema.parse(request.body);
+
+  const { id: userId } = authenticatedUserSchema.parse(request.user);
+
+  const createdBook = await useCases.createBook().execute({
+    title: validateBody.title,
+    description: validateBody.description,
+    price: validateBody.price,
+    author: validateBody.author,
+    ownerId: userId,
+  });
+
+  response.status(201).json({ content: createdBook });
+};
+</file>
+
+<file path="src/ui/controllers/books/delete-book-controller.ts">
+import { useCases } from '@di/use-case-resolver';
+import { authenticatedUserSchema, bookIdParamsSchema } from '@ui/validators/book-validators';
+import { Request, Response } from 'express';
+
+export const deleteBookController = async (request: Request, response: Response): Promise<void> => {
+  const { bookId } = bookIdParamsSchema.parse(request.params);
+  const { id: userId } = authenticatedUserSchema.parse(request.user);
+
+  await useCases.deleteBook().execute(bookId, userId);
+
+  response.json({ message: 'Book removed successfully' });
+};
+</file>
+
+<file path="src/ui/routes/user-book-routes.ts">
+import { Router } from 'express';
+
+import { findUserBooksController } from '@ui/controllers/books/find-user-books-controller';
+import { authenticationMiddleware } from '@ui/middlewares/authentication-middleware';
+
+const userBookRouter: Router = Router();
+
+userBookRouter.get('/books', [authenticationMiddleware], findUserBooksController);
+
+export default userBookRouter;
+</file>
+
+<file path="src/ui/validators/authentication-validators.ts">
+import * as z from 'zod';
+
+const MIN_PASSWORD_LENGTH = 8;
+
+export const authenticationBodySchema = z.object({
+  email: z.email('Invalid email format'),
+  password: z
+    .string()
+    .min(MIN_PASSWORD_LENGTH, 'Password must be at least 4 characters')
+    .max(16, 'Password cannot have more than 16 characters')
+    .regex(/[A-Z]/, 'Password must include at least one uppercase letter')
+    .regex(/[a-z]/, 'Password must include at least one lowercase letter')
+    .regex(/[0-9]/, 'Password must include at least one number'),
+});
+
+export type AuthenticationBody = z.infer<typeof authenticationBodySchema>;
+</file>
+
+<file path="src/di/infrastructure-bindings.ts">
+import { BookRepository } from '@domain/repositories/BookRepository';
+import { UserRepository } from '@domain/repositories/UserRepository';
+import { EmailService } from '@domain/services/EmailService';
+import { SecurityService } from '@domain/services/SecurityService';
+import { NotificationTemplateService } from '@domain/services/NotificationTemplateService';
+
+import { BookMongoRepository } from '@infrastructure/repositories/book-mongo-repository';
+import { UserMongoRepository } from '@infrastructure/repositories/user-mongo-repository';
+import { MailtrapService } from '@infrastructure/services/mailtrap-email-service';
+import { SecurityBcryptService } from '@infrastructure/services/security-bcrypt-service';
+import { NotificationTemplateServiceImpl } from '@infrastructure/services/notification-template-service';
+
+import { container } from './container';
+import {
+  BOOK_REPOSITORY,
+  USER_REPOSITORY,
+  EMAIL_SERVICE,
+  SECURITY_SERVICE,
+  NOTIFICATION_TEMPLATE_SERVICE,
+} from './tokens';
+
+export function registerInfrastructureBindings(): void {
+  container.bind<BookRepository>(BOOK_REPOSITORY).to(BookMongoRepository).inSingletonScope();
+  container.bind<UserRepository>(USER_REPOSITORY).to(UserMongoRepository).inSingletonScope();
+  container.bind<EmailService>(EMAIL_SERVICE).to(MailtrapService).inSingletonScope();
+  container.bind<SecurityService>(SECURITY_SERVICE).to(SecurityBcryptService).inSingletonScope();
+  container
+    .bind<NotificationTemplateService>(NOTIFICATION_TEMPLATE_SERVICE)
+    .to(NotificationTemplateServiceImpl)
+    .inSingletonScope();
+}
+</file>
+
+<file path="src/di/usecase-bindings.ts">
+import { CreateBookUseCase } from '@domain/use-cases/books/create-book-usecase';
+import { FindBooksUseCase } from '@domain/use-cases/books/find-books-usecase';
+import { FindUserBooksUseCase } from '@domain/use-cases/books/find-user-book-usecase';
+import { UpdateBookUseCase } from '@domain/use-cases/books/update-book-usecase';
+import { DeleteBookUseCase } from '@domain/use-cases/books/delete-book-usecase';
+import { BuyBookUseCase } from '@domain/use-cases/books/buy-book-usecase';
+import { SendPriceReductionSuggestionUseCase } from '@domain/use-cases/books/send-price-reduction-suggestion-usecase';
+import { CreateUserUseCase } from '@domain/use-cases/user/create-user-usecase';
+import { LoginUserUseCase } from '@domain/use-cases/user/login-user-usecase';
+
+import { BookRepository } from '@domain/repositories/BookRepository';
+import { UserRepository } from '@domain/repositories/UserRepository';
+import { EmailService } from '@domain/services/EmailService';
+import { SecurityService } from '@domain/services/SecurityService';
+import { NotificationTemplateService } from '@domain/services/NotificationTemplateService';
+
+import { container } from './container';
+import {
+  CREATE_BOOK_USE_CASE,
+  FIND_BOOKS_USE_CASE,
+  FIND_USER_BOOKS_USE_CASE,
+  UPDATE_BOOK_USE_CASE,
+  DELETE_BOOK_USE_CASE,
+  BUY_BOOK_USE_CASE,
+  SEND_PRICE_REDUCTION_USE_CASE,
+  CREATE_USER_USE_CASE,
+  LOGIN_USER_USE_CASE,
+  BOOK_REPOSITORY,
+  USER_REPOSITORY,
+  EMAIL_SERVICE,
+  SECURITY_SERVICE,
+  NOTIFICATION_TEMPLATE_SERVICE,
+} from './tokens';
+
+export function registerUseCaseBindings(): void {
+  container.bind(CREATE_BOOK_USE_CASE).toDynamicValue(context => {
+    const bookRepo = context.get<BookRepository>(BOOK_REPOSITORY);
+    return new CreateBookUseCase(bookRepo);
+  });
+
+  container.bind(FIND_BOOKS_USE_CASE).toDynamicValue(context => {
+    const bookRepo = context.get<BookRepository>(BOOK_REPOSITORY);
+    return new FindBooksUseCase(bookRepo);
+  });
+
+  container.bind(FIND_USER_BOOKS_USE_CASE).toDynamicValue(context => {
+    const bookRepo = context.get<BookRepository>(BOOK_REPOSITORY);
+    return new FindUserBooksUseCase(bookRepo);
+  });
+
+  container.bind(UPDATE_BOOK_USE_CASE).toDynamicValue(context => {
+    const bookRepo = context.get<BookRepository>(BOOK_REPOSITORY);
+    return new UpdateBookUseCase(bookRepo);
+  });
+
+  container.bind(DELETE_BOOK_USE_CASE).toDynamicValue(context => {
+    const bookRepo = context.get<BookRepository>(BOOK_REPOSITORY);
+    return new DeleteBookUseCase(bookRepo);
+  });
+
+  container.bind(BUY_BOOK_USE_CASE).toDynamicValue(context => {
+    const bookRepo = context.get<BookRepository>(BOOK_REPOSITORY);
+    const userRepo = context.get<UserRepository>(USER_REPOSITORY);
+    const emailSvc = context.get<EmailService>(EMAIL_SERVICE);
+    const templateSvc = context.get<NotificationTemplateService>(NOTIFICATION_TEMPLATE_SERVICE);
+    return new BuyBookUseCase(bookRepo, userRepo, emailSvc, templateSvc);
+  });
+
+  container.bind(SEND_PRICE_REDUCTION_USE_CASE).toDynamicValue(context => {
+    const bookRepo = context.get<BookRepository>(BOOK_REPOSITORY);
+    const userRepo = context.get<UserRepository>(USER_REPOSITORY);
+    const emailSvc = context.get<EmailService>(EMAIL_SERVICE);
+    const templateSvc = context.get<NotificationTemplateService>(NOTIFICATION_TEMPLATE_SERVICE);
+    return new SendPriceReductionSuggestionUseCase(bookRepo, userRepo, emailSvc, templateSvc);
+  });
+
+  container.bind(CREATE_USER_USE_CASE).toDynamicValue(context => {
+    const userRepo = context.get<UserRepository>(USER_REPOSITORY);
+    const securitySvc = context.get<SecurityService>(SECURITY_SERVICE);
+    return new CreateUserUseCase(userRepo, securitySvc);
+  });
+
+  container.bind(LOGIN_USER_USE_CASE).toDynamicValue(context => {
+    const userRepo = context.get<UserRepository>(USER_REPOSITORY);
+    const securitySvc = context.get<SecurityService>(SECURITY_SERVICE);
+    return new LoginUserUseCase(userRepo, securitySvc);
+  });
+}
+</file>
+
+<file path="src/domain/repositories/UserRepository.ts">
+import { User } from '@domain/entities/User';
+import { CreateUserQuery } from '@domain/types/user/CreateUserQuery';
+
+export interface UserRepository {
+  createOne(query: CreateUserQuery): Promise<User>;
+  findByEmail(email: string): Promise<User | null>;
+  find(): Promise<User[]>;
+  findById(id: string): Promise<User | null>;
+}
+</file>
+
+<file path="src/domain/types/book/UpdateBookQuery.ts">
+export interface UpdateBookQuery {
+  title?: string;
+  description?: string;
+  price?: number;
+  author?: string;
+}
+</file>
+
+<file path="src/domain/types/errors/index.ts">
+export * from './BusinessConflictError';
+export * from './UnauthorizedError';
+export * from './ForbiddenOperation';
+export * from './EntityNotFoundError';
+export * from './EmailServiceError';
+</file>
+
+<file path="src/domain/use-cases/books/create-book-usecase.ts">
+import { Book, BookStatus } from '@domain/entities/Book';
+import { BookRepository } from '@domain/repositories/BookRepository';
+import { CreateBookQuery } from '@domain/types/book/CreateBookQuery';
+import { BusinessConflictError } from '@domain/types/errors';
+
+export class CreateBookUseCase {
+  constructor(private readonly bookRepository: BookRepository) {}
+
+  public async execute(query: CreateBookQuery): Promise<Book> {
+    this.validateBookCreationRules(query);
+
+    const createdBook = await this.bookRepository.createOne({
+      ...query,
+      status: BookStatus.PUBLISHED,
+      soldAt: null,
+    });
+
+    return createdBook;
+  }
+
+  private validateBookCreationRules(query: CreateBookQuery): void {
+    if (query.price < 1) {
+      throw new BusinessConflictError('Book price must be at least 1');
+    }
+
+    if (query.title.trim().length === 0) {
+      throw new BusinessConflictError('Book title cannot be empty');
+    }
+  }
+}
+</file>
+
+<file path="src/domain/use-cases/books/find-books-usecase.ts">
+import { Book, BookStatus } from '@domain/entities/Book';
+import { BookRepository } from '@domain/repositories/BookRepository';
+import { BookFindQuery } from '@domain/types/book/BookFindQuery';
+import { PaginatedResponse } from '@domain/types/pagination';
+
+export class FindBooksUseCase {
+  constructor(private readonly bookRepository: BookRepository) {}
+
+  async execute(query: BookFindQuery): Promise<PaginatedResponse<Book>> {
+    const paginatedBooks = await this.bookRepository.findMany({
+      ...query,
+      status: BookStatus.PUBLISHED,
+    });
+
+    return paginatedBooks;
+  }
+}
+</file>
+
+<file path="src/infrastructure/repositories/user-mongo-repository.ts">
+import { User } from '@domain/entities/User';
+import { UserRepository } from '@domain/repositories/UserRepository';
+import { CreateUserQuery } from '@domain/types/user/CreateUserQuery';
+import { UserModel, UserMongoDb } from '@infrastructure/models/user-model';
+
+export class UserMongoRepository implements UserRepository {
+  async createOne(query: CreateUserQuery): Promise<User> {
+    const newUser = new UserModel({
+      email: query.email,
+      password: query.password,
+    });
+
+    const userDb = await newUser.save();
+
+    return this.restoreUser(userDb);
+  }
+
+  async find(): Promise<User[]> {
+    const usersDb = await UserModel.find();
+    return usersDb.map(userDb => this.restoreUser(userDb));
+  }
+
+  async findByEmail(email: string): Promise<User | null> {
+    const userDb = await UserModel.findOne({ email });
+    return userDb ? this.restoreUser(userDb) : null;
+  }
+
+  async findById(id: string): Promise<User | null> {
+    const userDb = await UserModel.findById(id);
+    return userDb ? this.restoreUser(userDb) : null;
+  }
+
+  private restoreUser(userDb: UserMongoDb): User {
+    return new User({
+      email: userDb?.email,
+      password: userDb?.password,
+      id: userDb._id.toString(),
+      createdAt: userDb?.createdAt,
+    });
+  }
+}
+</file>
+
+<file path="src/infrastructure/services/environment-service.ts">
+import dotenv, { config } from 'dotenv';
+import * as z from 'zod';
+
+const environmentVariablesValidator = z.object({
+  ENVIRONMENT: z.enum(['local', 'staging', 'production']),
+  API_PORT: z.string(),
+  MONGO_USER: z.string(),
+  MONGO_PASSWORD: z.string(),
+  MONGO_HOST: z.string(),
+  JWT_SECRET: z.string(),
+  SENTRY_DSN: z.url(),
+  MAILTRAP_TOKEN: z.string(),
+  INBOXID: z.string(),
+  IS_SANDBOX: z.string(),
+});
+
+type EnvironmentVariables = z.infer<typeof environmentVariablesValidator>;
+
+class EnvironmentService {
+  private environmentVariables: EnvironmentVariables | null = null;
+
+  load(): void {
+    if (this.environmentVariables) return;
+
+    const currentEnvironment = process.env.NODE_ENV ?? '';
+    const environmentFile = this.getEnvironmentFile(currentEnvironment);
+
+    const variables: dotenv.DotenvConfigOutput = config({
+      path: environmentFile,
+      quiet: true,
+    });
+
+    if (variables.error) {
+      throw new Error(`Error reading environment variables: ${variables.error.message}`);
+    }
+
+    try {
+      this.environmentVariables = environmentVariablesValidator.parse({
+        ...variables.parsed,
+        ...process.env,
+      });
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? `Error validating environment variables ${error.message}` : '';
+      throw new Error(`Error validating environment variables: ${errorMessage}`);
+    }
+  }
+
+  get(): EnvironmentVariables {
+    if (!this.environmentVariables) {
+      throw new Error('Environment variables are not loaded. Use load method first');
+    }
+    return this.environmentVariables;
+  }
+
+  private getEnvironmentFile(
+    currentEnvironment: string
+  ): '.env.production' | '.env.staging' | '.env' {
+    switch (currentEnvironment) {
+      case 'production':
+        return '.env.production';
+      case 'staging':
+        return '.env.staging';
+      default:
+        return '.env';
+    }
+  }
+}
+
+export const environmentService = new EnvironmentService();
+</file>
+
+<file path="src/infrastructure/services/mailtrap-email-service.ts">
+import { MailtrapClient } from 'mailtrap';
+
+import { EmailService } from '@domain/services/EmailService';
+import { environmentService } from './environment-service';
+import { EmailServiceError } from '@domain/types/errors';
+
+export class MailtrapService implements EmailService {
+  private readonly mailtrapClient: MailtrapClient;
+  private readonly isSandbox: boolean;
+  private readonly senderEmail: string;
+
+  constructor() {
+    const { MAILTRAP_TOKEN, INBOXID, IS_SANDBOX } = environmentService.get();
+    this.isSandbox = IS_SANDBOX === 'true';
+    const inboxId = this.isSandbox ? Number(INBOXID) : undefined;
+
+    this.senderEmail = this.isSandbox ? 'hello@demomailtrap.co' : 'no-reply@tu-dominio.com';
+
+    this.mailtrapClient = new MailtrapClient({
+      token: MAILTRAP_TOKEN,
+      sandbox: this.isSandbox,
+      testInboxId: inboxId,
+    });
+  }
+
+  async sendEmailToSeller(email: string, message: string, subject: string): Promise<void> {
+    try {
+      await this.mailtrapClient.send({
+        from: {
+          name: 'Mailtrap Test',
+          email: this.senderEmail,
+        },
+        to: [{ email }],
+        subject: subject,
+        text: message,
+      });
+    } catch (error) {
+      throw new EmailServiceError(error instanceof Error ? error.message : 'Failed to send email');
+    }
+  }
+}
+</file>
+
+<file path="src/tests/authentication/helpers.ts">
+import { faker } from '@faker-js/faker';
+import { app } from '@ui/api';
+import request from 'supertest';
+import * as z from 'zod';
+
+const loginResponseSchema = z.object({
+  content: z.string(),
+});
+
+export const signupAndLogin = async (
+  email: string = faker.internet.email(),
+  password: string = 'Qwertyui1.'
+): Promise<string> => {
+  await request(app).post('/authentication/signup').send({ email, password });
+
+  const loginResponse = await request(app).post('/authentication/signin').send({ email, password });
+
+  const validateResponse = loginResponseSchema.parse(loginResponse.body);
+  return validateResponse.content;
+};
+</file>
+
+<file path="src/ui/controllers/books/update-book-controller.ts">
+import { useCases } from '@di/use-case-resolver';
+import {
+  authenticatedUserSchema,
+  bookIdParamsSchema,
+  updateBookBodySchema,
+} from '@ui/validators/book-validators';
+import { Response, Request } from 'express';
+
+export const updateBookController = async (request: Request, response: Response): Promise<void> => {
+  const { bookId } = bookIdParamsSchema.parse(request.params);
+  const { title, description, author, price } = updateBookBodySchema.parse(request.body);
+  const { id: userId } = authenticatedUserSchema.parse(request.user);
+
+  const updateBook = await useCases
+    .updateBook()
+    .execute(bookId, { title, description, author, price }, userId);
+
+  response.json({ content: updateBook });
+};
+</file>
+
+<file path="src/ui/controllers/jobs/price-reduction-job-controller.ts">
+import { useCases } from '@di/use-case-resolver';
+
+export const priceReductionJobController = async (): Promise<void> => {
+  console.log('Initializing price reduction suggestion job...');
+
+  try {
+    await useCases.sendPriceReduction().execute();
+    console.log('Price reduction suggestion emails sent successfully!');
+  } catch (error) {
+    console.error('Error sending price reduction suggestions:', error);
+  }
+};
+</file>
+
+<file path="src/ui/middlewares/rate-limit-middleware.ts">
+import { rateLimit } from 'express-rate-limit';
+
+const isTestEnvironment = process.env.NODE_ENV === 'test';
+
+const skipRateLimit = (): boolean => isTestEnvironment;
+
+export const siginRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  message: 'Too many login attempts, please try again later in 15 minutes.',
+  skip: skipRateLimit,
+});
+
+export const sigupRateLimit = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 3,
+  message: 'Too many accounts created, try again later in 15 minutes.',
+  skip: skipRateLimit,
+});
+</file>
+
+<file path="src/domain/entities/Book.ts">
+import { BusinessConflictError, ForbiddenOperation } from '@domain/types/errors';
+import { Entity } from './Entity';
+
+export enum BookStatus {
+  PUBLISHED = 'PUBLISHED',
+  SOLD = 'SOLD',
+}
+
+export class Book extends Entity {
+  readonly title: string;
+  readonly description: string;
+  readonly price: number;
+  readonly author: string;
+  readonly status: BookStatus;
+  readonly ownerId: string;
+  readonly soldAt: Date | null;
+
+  constructor({
+    title,
+    description,
+    price,
+    author,
+    status = BookStatus.PUBLISHED,
+    ownerId,
+    soldAt = null,
+    id,
+    createdAt,
+  }: {
+    title: string;
+    description: string;
+    price: number;
+    author: string;
+    status?: BookStatus;
+    ownerId: string;
+    soldAt?: Date | null;
+    id: string;
+    createdAt: Date;
+  }) {
+    super(id, createdAt);
+    this.title = title;
+    this.description = description;
+    this.price = price;
+    this.author = author;
+    this.status = status;
+    this.ownerId = ownerId;
+    this.soldAt = soldAt;
+
+    if (this.status === BookStatus.PUBLISHED && this.soldAt !== null)
+      throw new Error('soldAt must be null when status is PUBLISHED');
+
+    if (this.status === BookStatus.SOLD && this.soldAt === null)
+      throw new Error('soldAt must have a date when status is SOLD');
+  }
+
+  sellTo(buyerId: string): Book {
+    if (this.ownerId === buyerId) {
+      throw new ForbiddenOperation('You cannot buy your own book');
+    }
+
+    if (this.status !== BookStatus.PUBLISHED) {
+      throw new BusinessConflictError('Book is not available for purchase');
+    }
+    return new Book({
+      title: this.title,
+      description: this.description,
+      price: this.price,
+      author: this.author,
+      status: BookStatus.SOLD,
+      ownerId: buyerId,
+      soldAt: new Date(),
+      id: this.id,
+      createdAt: this.createdAt,
+    });
+  }
+}
+</file>
+
+<file path="src/domain/use-cases/books/send-price-reduction-suggestion-usecase.ts">
+import { Book, BookStatus } from '@domain/entities/Book';
+import { BookRepository } from '@domain/repositories/BookRepository';
+import { UserRepository } from '@domain/repositories/UserRepository';
+import { EmailService } from '@domain/services/EmailService';
+import { NotificationTemplateService } from '@domain/services/NotificationTemplateService';
+
+export class SendPriceReductionSuggestionUseCase {
+  private readonly limitDays: number = 7;
+
+  constructor(
+    private readonly bookRepository: BookRepository,
+    private readonly userRepository: UserRepository,
+    private readonly emailService: EmailService,
+    private readonly templateService: NotificationTemplateService
+  ) {}
+
+  public async execute(): Promise<void> {
+    const users = await this.userRepository.find();
+
+    const limitDate = this.getLimitDate(this.limitDays);
+
+    for (const user of users) {
+      const oldBooks = await this.getOldPublishedBooksForUser(user.id, limitDate);
+      if (oldBooks.length === 0) continue;
+
+      const { subject, body } = this.buildSuggestionEmail(oldBooks);
+
+      await this.sendSuggestionEmail(user.email, body, subject);
+    }
+  }
+
+  private getLimitDate(limitDays: number): Date {
+    const limitDate = new Date();
+    limitDate.setDate(limitDate.getDate() - limitDays);
+
+    return limitDate;
+  }
+
+  private async getOldPublishedBooksForUser(ownerId: string, limitDate: Date): Promise<Book[]> {
+    const response = await this.bookRepository.findMany({
+      ownerId,
+      page: 1,
+      limit: 999,
+    });
+
+    return response.content.filter(book => {
+      return book.status === BookStatus.PUBLISHED && book.createdAt < limitDate;
+    });
+  }
+
+  private buildSuggestionEmail(oldBooks: Book[]): {
+    subject: string;
+    body: string;
+  } {
+    const bookList = oldBooks
+      .map(book => ` - "${book.title}" (Precio actual: ${book.price} €)`)
+      .join('\n');
+
+    return this.templateService.getPriceReductionSuggestionTemplate(
+      oldBooks.length,
+      this.limitDays,
+      bookList
+    );
+  }
+
+  private async sendSuggestionEmail(email: string, body: string, subject: string): Promise<void> {
+    await this.emailService.sendEmailToSeller(email, body, subject);
+  }
+}
+</file>
+
+<file path="src/domain/use-cases/books/update-book-usecase.ts">
+import { Book } from '@domain/entities/Book';
+import { BookRepository } from '@domain/repositories/BookRepository';
+import { UpdateBookQuery } from '@domain/types/book/UpdateBookQuery';
+import { EntityNotFoundError, ForbiddenOperation } from '@domain/types/errors';
+
+export class UpdateBookUseCase {
+  constructor(private readonly bookRepository: BookRepository) {}
+
+  public async execute(
+    bookId: string,
+    query: UpdateBookQuery,
+    userId: string
+  ): Promise<Book | null> {
+    const bookToUpdate = await this.bookRepository.findById(bookId);
+
+    if (!bookToUpdate) throw new EntityNotFoundError('Book', bookId);
+
+    if (userId !== bookToUpdate.ownerId)
+      throw new ForbiddenOperation('Only owner of the book can update this book');
+
+    const updatedBook = await this.bookRepository.updateBookDetails(bookId, query);
+
+    return updatedBook;
+  }
+}
+</file>
+
+<file path="src/infrastructure/models/book-model.ts">
+import { BookStatus } from '@domain/entities/Book';
+import mongoose, { Types } from 'mongoose';
+
+export interface BookMongoDb {
+  title: string;
+  description: string;
+  price: number;
+  author: string;
+  status: BookStatus;
+  soldAt: null | Date;
+  createdAt: Date;
+  updatedAt: Date;
+  ownerId: Types.ObjectId;
+  _id: Types.ObjectId;
+}
+
+const BookSchema = new mongoose.Schema<BookMongoDb>(
+  {
+    title: {
+      type: String,
+      required: true,
+      index: true,
+    },
+    description: {
+      type: String,
+      required: true,
+    },
+    price: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+    author: {
+      type: String,
+      required: true,
+      index: true,
+    },
+    status: {
+      type: String,
+      enum: [BookStatus.PUBLISHED, BookStatus.SOLD],
+      default: BookStatus.PUBLISHED,
+      required: true,
+    },
+    ownerId: {
+      type: Types.ObjectId,
+      required: true,
+      ref: 'User',
+    },
+    soldAt: {
+      type: Date,
+      default: null,
+    },
+  },
+  { timestamps: true }
+);
+
+export const BookModel = mongoose.model('Book', BookSchema, 'Books');
+</file>
+
+<file path="src/tests/books/create-book.test.ts">
+import request from 'supertest';
+import { createRandomBook } from './helper';
+import { app } from '@ui/api';
+import { faker } from '@faker-js/faker';
+import { createBookResponseSchema } from '../schemas/test-schemas';
+
+describe('POST /books', () => {
+  const BOOKS_URL = '/books';
+
+  test('Given no authorization header, sould return 401', async () => {
+    const response = await request(app).post(BOOKS_URL).send({});
+
+    expect(response.status).toBe(401);
+  });
+
+  test('Given an invalid token, should return 401', async () => {
+    const response = await request(app)
+      .post(BOOKS_URL)
+      .set('Authorization', 'Bearer invalid-token')
+      .send({});
+
+    expect(response.status).toBe(401);
+  });
+
+  test('Given not all book parameters, should return 400', async () => {
+    const { token } = await createRandomBook();
+
+    const response = await request(app)
+      .post(BOOKS_URL)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ title: faker.book.title() });
+
+    expect(response.status).toBe(400);
+  });
+
+  test('Should return 400 if parameters have invalid types', async () => {
+    const { token } = await createRandomBook();
+
+    const response = await request(app)
+      .post(BOOKS_URL)
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        title: faker.book.title(),
+        description: faker.commerce.productDescription(),
+        price: 'not-a-number',
+        author: faker.book.author(),
+        status: 'PUBLISHED',
+        soldAt: null,
+      });
+
+    expect(response.status).toBe(400);
+  });
+
+  test('Book should be created, returning 201', async () => {
+    const { token } = await createRandomBook();
+
+    const newBook = {
+      title: faker.book.title(),
+      description: faker.commerce.productDescription(),
+      price: parseInt(faker.commerce.price(), 10),
+      author: faker.book.author(),
+    };
+
+    const response = await request(app)
+      .post(BOOKS_URL)
+      .set('Authorization', `Bearer ${token}`)
+      .send(newBook);
+
+    const validateResponse = createBookResponseSchema.parse(response.body);
+
+    expect(response.status).toBe(201);
+    expect(validateResponse.content.title).toBe(newBook.title);
+    //!
+  });
+
+  test('Initial book status always should be PUBLISHED, instead returns 400', async () => {
+    const { newRandomBook, token } = await createRandomBook();
+    const invalidBook = { ...newRandomBook, status: 'SOLD' };
+
+    const response = await request(app)
+      .post(BOOKS_URL)
+      .set('Authorization', `Bearer ${token}`)
+      .send(invalidBook);
+
+    expect(response.status).toBe(400);
+  });
+
+  test('soldAt always should be null when a book is created', async () => {
+    const { newRandomBook, token } = await createRandomBook();
+
+    const invalidBook = { ...newRandomBook, soldAt: new Date() };
+
+    const response = await request(app)
+      .post(BOOKS_URL)
+      .set('Authorization', `Bearer ${token}`)
+      .send(invalidBook);
+
+    expect(response.status).toBe(400);
+  });
+
+  test('The price cannot be negative', async () => {
+    const { newRandomBook, token } = await createRandomBook();
+    const invalidBook = { ...newRandomBook, price: -10 };
+
+    const response = await request(app)
+      .post(BOOKS_URL)
+      .set('Authorization', `Bearer ${token}`)
+      .send(invalidBook);
+
+    expect(response.status).toBe(400);
+  });
+});
+</file>
+
+<file path="src/ui/controllers/authentication/signin-controller.ts">
+import { useCases } from '@di/use-case-resolver';
+import { authenticationBodySchema } from '@ui/validators/authentication-validators';
+import { Request, Response } from 'express';
+
+export const signinController = async (request: Request, response: Response): Promise<void> => {
+  const { email, password } = authenticationBodySchema.parse(request.body);
+
+  const { token } = await useCases.loginUser().execute({ email, password });
+
+  response.json({ content: token });
+};
+</file>
+
+<file path="src/ui/controllers/authentication/signup-controller.ts">
+import { useCases } from '@di/use-case-resolver';
+import { authenticationBodySchema } from '@ui/validators/authentication-validators';
+import { Request, Response } from 'express';
+
+export const signupController = async (request: Request, response: Response): Promise<void> => {
+  const { email, password } = authenticationBodySchema.parse(request.body);
+
+  await useCases.createUser().execute({ email, password });
+  response.status(201).json({ content: 'User created successfully' });
+};
+</file>
+
+<file path="src/ui/controllers/books/find-user-books-controller.ts">
+import { useCases } from '@di/use-case-resolver';
+import { authenticatedUserSchema, findBooksBodySchema } from '@ui/validators/book-validators';
+import { Request, Response } from 'express';
+
+export const findUserBooksController = async (
+  request: Request,
+  response: Response
+): Promise<void> => {
+  const { page, limit, search, author, title } = findBooksBodySchema.parse(request.query);
+  const { id: userId } = authenticatedUserSchema.parse(request.user);
+
+  const paginatedUserBooks = await useCases.findUserBooks().execute({
+    page,
+    limit,
+    search,
+    author,
+    title,
+    ownerId: userId,
+  });
+
+  response.json(paginatedUserBooks);
+};
+</file>
+
+<file path="src/ui/api.ts">
+import express, { json, type Express } from 'express';
+
+import bookRouter from './routes/book-routes';
+import authenticationRouter from './routes/authentication-routes';
+import { errorHandlerMiddleware } from './middlewares/error-handler-middleware';
+import { environmentService } from '@infrastructure/services/environment-service';
+import userBookRouter from './routes/user-book-routes';
+
+export const app: Express = express();
+
+app.use(json());
+
+app.use('/books', bookRouter);
+app.use('/authentication', authenticationRouter);
+app.use('/me', userBookRouter);
+
+app.use(errorHandlerMiddleware);
+
+export const startHttpApi = (): void => {
+  const { API_PORT } = environmentService.get();
+  app.listen(API_PORT, () => {
+    console.log(`Up & running on port: ${API_PORT}`);
+  });
+};
+</file>
+
+<file path="src/domain/use-cases/user/create-user-usecase.ts">
+import { User } from '@domain/entities/User';
+import { UserRepository } from '@domain/repositories/UserRepository';
+import { SecurityService } from '@domain/services/SecurityService';
+import { BusinessConflictError } from '@domain/types/errors';
+import { CreateUserQuery } from '@domain/types/user/CreateUserQuery';
+
+export class CreateUserUseCase {
+  constructor(
+    private readonly userRepository: UserRepository,
+    private readonly securityService: SecurityService
+  ) {}
+  async execute(query: CreateUserQuery): Promise<User> {
+    const user = await this.userRepository.findByEmail(query.email);
+
+    if (user) {
+      throw new BusinessConflictError('The user already exists');
+    }
+
+    const hashedPassword = await this.securityService.hashPassword(query.password);
+
+    const createdUser = await this.userRepository.createOne({
+      email: query.email,
+      password: hashedPassword,
+    });
+
+    return createdUser;
+  }
+}
+</file>
+
+<file path="src/infrastructure/services/security-bcrypt-service.ts">
+/* eslint-disable import/no-named-as-default-member */
+import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+
+import { User } from '@domain/entities/User';
+import { SecurityService } from '@domain/services/SecurityService';
+import { environmentService } from './environment-service';
+import { UnauthorizedError } from '@domain/types/errors';
+
+export class SecurityBcryptService implements SecurityService {
+  private readonly jwtSecret: string;
+
+  constructor() {
+    const { JWT_SECRET } = environmentService.get();
+    this.jwtSecret = JWT_SECRET;
+  }
+
+  async comparePasswords(incomingPassword: string, userPassword: string): Promise<boolean> {
+    const isMatch = await bcrypt.compare(incomingPassword, userPassword);
+
+    if (!isMatch) throw new UnauthorizedError('Password is incorrect');
+
+    return isMatch;
+  }
+
+  generateJWT(user: User): string {
+    try {
+      const token = jwt.sign({ userId: user.id }, this.jwtSecret, { expiresIn: '15Minutes' });
+      return token;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'jwt.sign error';
+      throw new UnauthorizedError(`Error generating JWT: ${errorMessage}`);
+    }
+  }
+  async hashPassword(password: string): Promise<string> {
+    const rounds = process.env.NODE_ENV === 'test' ? 1 : 14;
+    const salt = await bcrypt.genSalt(rounds);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    return hashedPassword;
+  }
+
+  verifyJWT(token: string): { userId: string } {
+    try {
+      const data = jwt.verify(token, this.jwtSecret, { algorithms: ['HS256'] }) as {
+        userId: string;
+      };
+      return data;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'jwt.verify error';
+      throw new UnauthorizedError(`Error verifying JWT: ${errorMessage}`);
+    }
+  }
+}
+</file>
+
+<file path="src/tests/books/buy-book.test.ts">
+vi.mock('@infrastructure/services/mailtrap-email-service', () => ({
+  MailtrapService: vi.fn().mockImplementation(() => ({
+    sendEmailToSeller: vi.fn(),
+  })),
+}));
+
+import request from 'supertest';
+import { createRandomBook } from './helper';
+import { app } from '@ui/api';
+import { faker } from '@faker-js/faker';
+import { signupAndLogin } from '../authentication/helpers';
+import { buyBookResponseSchema, errorResponseSchema } from '../schemas/test-schemas';
+
+describe('POST /books/:bookId/buy', () => {
+  test('Should return 401 if user is not authenticated', async () => {
+    const { newRandomBook } = await createRandomBook();
+    const validateResponseId = buyBookResponseSchema.parse(newRandomBook.body);
+    const bookId = validateResponseId.content.id;
+    const response = await request(app).post(`/books/${bookId}/buy`);
+
+    expect(response.status).toBe(401);
+  });
+
+  test('Should return 404 if book does not exist', async () => {
+    const { token } = await createRandomBook();
+    const fakeBookId = '698f869c9d81e007ef244f4e';
+
+    const response = await request(app)
+      .post(`/books/${fakeBookId}/buy`)
+      .set('Authorization', `Bearer ${token}`);
+
+    const validateErrorResponse = errorResponseSchema.parse(response.body);
+
+    expect(response.status).toBe(404);
+    expect(validateErrorResponse.message).toContain(
+      `Book with id ${fakeBookId} could not be found`
+    );
+  });
+
+  test('Should return 403 if user tries to buy theis own books', async () => {
+    const email = faker.internet.email();
+    const { newRandomBook, token } = await createRandomBook(email);
+    const validateResponseId = buyBookResponseSchema.parse(newRandomBook.body);
+    const bookId = validateResponseId.content.id;
+
+    const response = await request(app)
+      .post(`/books/${bookId}/buy`)
+      .set('Authorization', `Bearer ${token}`);
+
+    const validateErrorResponse = errorResponseSchema.parse(response.body);
+
+    expect(response.status).toBe(403);
+    expect(validateErrorResponse.message).toBe('You cannot buy your own book');
+  });
+
+  test('The book is successfully purchased', async () => {
+    const sellerEmail = faker.internet.email();
+    const { newRandomBook } = await createRandomBook(sellerEmail);
+
+    const validateResponseSeller = buyBookResponseSchema.parse(newRandomBook.body);
+    const bookId = validateResponseSeller.content.id;
+
+    const buyerEmail = faker.internet.email();
+    const buyerToken = await signupAndLogin(buyerEmail);
+
+    const response = await request(app)
+      .post(`/books/${bookId}/buy`)
+      .set('Authorization', `Bearer ${buyerToken}`);
+
+    expect(response.status).toBe(200);
+
+    const validateResponse = buyBookResponseSchema.parse(response.body);
+    expect(validateResponse.content.ownerId).not.toBe(validateResponseSeller.content.ownerId);
+    expect(validateResponse.content.status).toBe('SOLD');
+
+    const { soldAt } = validateResponse.content;
+    expect(soldAt).not.toBeNull();
+    if (soldAt) {
+      expect(new Date(soldAt)).toBeInstanceOf(Date);
+    }
+  });
+
+  test('Should return 409 if book is already sold', async () => {
+    const sellerEmail = faker.internet.email();
+    const { newRandomBook } = await createRandomBook(sellerEmail);
+    const validateResponseId = buyBookResponseSchema.parse(newRandomBook.body);
+    const bookId = validateResponseId.content.id;
+
+    const firstBuyerEmail = faker.internet.email();
+    const firstBuyerToken = await signupAndLogin(firstBuyerEmail);
+    await request(app)
+      .post(`/books/${bookId}/buy`)
+      .set('Authorization', `Bearer ${firstBuyerToken}`);
+
+    const secondBuyerEmail = faker.internet.email();
+    const secondBuyerToken = await signupAndLogin(secondBuyerEmail);
+    const response = await request(app)
+      .post(`/books/${bookId}/buy`)
+      .set('Authorization', `Bearer ${secondBuyerToken}`);
+
+    const validateErrorResponse = errorResponseSchema.parse(response.body);
+
+    expect(response.status).toBe(409);
+    expect(validateErrorResponse.message).toBe('Book is not available for purchase');
+  });
+
+  test('Should update book status from PUBLISHED to SOLD', async () => {
+    const sellerEmail = faker.internet.email();
+    const { newRandomBook } = await createRandomBook(sellerEmail);
+    const validateResponseRandomBook = buyBookResponseSchema.parse(newRandomBook.body);
+    const bookId = validateResponseRandomBook.content.id;
+
+    expect(validateResponseRandomBook.content.status).toBe('PUBLISHED');
+    expect(validateResponseRandomBook.content.soldAt).toBeNull();
+
+    const buyerEmail = faker.internet.email();
+    const buyerToken = await signupAndLogin(buyerEmail);
+
+    const response = await request(app)
+      .post(`/books/${bookId}/buy`)
+      .set('Authorization', `Bearer ${buyerToken}`);
+
+    expect(response.status).toBe(200);
+
+    const validateResponse = buyBookResponseSchema.parse(response.body);
+    expect(validateResponse.content.status).toBe('SOLD');
+    expect(validateResponse.content.soldAt).toBeDefined();
+  });
+});
+</file>
+
+<file path="src/tests/books/find-books.test.ts">
+import request from 'supertest';
+import { createRandomBook } from './helper';
+import { app } from '@ui/api';
+import { createBookResponseSchema, findBooksResponseSchema } from '../schemas/test-schemas';
+
+describe('GET /books', () => {
+  const BOOKS_URL = '/books';
+
+  test('Sould return an empty array when there are no books', async () => {
+    const response = await request(app).get(BOOKS_URL);
+
+    const validateResponse = findBooksResponseSchema.parse(response.body);
+    expect(validateResponse.content.length).toBe(0);
+  });
+
+  test('Should return 200 and a list of books', async () => {
+    await createRandomBook();
+    await createRandomBook();
+    await createRandomBook(undefined, { status: 'SOLD', soldAt: new Date().toISOString() });
+
+    const response = await request(app).get(BOOKS_URL);
+    expect(response.status).toBe(200);
+
+    const validateResponse = findBooksResponseSchema.parse(response.body);
+    const books = validateResponse.content;
+
+    expect(books.length).toBe(3);
+    expect(books.every(book => book.status === 'PUBLISHED')).toBe(true);
+    expect(books.some(book => book.status === 'SOLD')).toBe(false);
+  });
+
+  test('Should return only PUBLISHED books', async () => {
+    await createRandomBook();
+    await createRandomBook();
+
+    const response = await request(app).get(BOOKS_URL);
+    expect(response.status).toBe(200);
+
+    const validateResponse = findBooksResponseSchema.parse(response.body);
+    const books = validateResponse.content;
+    expect(books.length).toBeGreaterThan(0);
+    expect(books.every(book => book.status === 'PUBLISHED')).toBe(true);
+  });
+
+  test('Should allow searching by title', async () => {
+    const { newRandomBook } = await createRandomBook();
+    const validateTitle = createBookResponseSchema.parse(newRandomBook.body as unknown);
+    const title = validateTitle.content.title;
+
+    const response = await request(app).get(`${BOOKS_URL}/?search=${title}`);
+
+    const validateResponse = findBooksResponseSchema.parse(response.body);
+
+    expect(response.status).toBe(200);
+    expect(validateResponse.content.some(book => book.title.includes(title))).toBe(true);
+  });
+
+  test('Should allow searching by author', async () => {
+    const { newRandomBook } = await createRandomBook();
+    const validateAuthor = createBookResponseSchema.parse(newRandomBook.body as unknown);
+    const author = validateAuthor.content.author;
+
+    const response = await request(app).get(`${BOOKS_URL}/?search=${author}`);
+    const validateResponse = findBooksResponseSchema.parse(response.body);
+
+    expect(response.status).toBe(200);
+    expect(validateResponse.content.some(book => book.author.includes(author))).toBe(true);
+  });
+
+  test('Should return paginated results (default pagination)', async () => {
+    const response = await request(app).get(BOOKS_URL);
+    const validateResponse = findBooksResponseSchema.parse(response.body);
+
+    expect(response.status).toBe(200);
+    expect(validateResponse.meta).toBeDefined();
+    expect(validateResponse.meta.page).toBeDefined();
+    expect(validateResponse.meta.limit).toBeDefined();
+    expect(validateResponse.meta.total).toBeDefined();
+  });
+
+  test('Should respect page and limit query params', async () => {
+    await Promise.all(Array.from({ length: 12 }).map(() => createRandomBook()));
+
+    const response = await request(app).get(`${BOOKS_URL}?page=1&limit=5`);
+    const validateResponse = findBooksResponseSchema.parse(response.body);
+
+    expect(response.status).toBe(200);
+    expect(validateResponse.content.length).toBeLessThanOrEqual(5);
+    expect(validateResponse.meta.page).toBe(1);
+    expect(validateResponse.meta.limit).toBe(5);
+  });
+
+  test('Should not require authentication', async () => {
+    const response = await request(app).get(BOOKS_URL);
+
+    expect(response.status).not.toBe(401);
+  });
+
+  test('Should return consistent book shape', async () => {
+    await createRandomBook();
+
+    const response = await request(app).get(BOOKS_URL);
+    const validateResponse = findBooksResponseSchema.parse(response.body);
+
+    expect(response.status).toBe(200);
+
+    const book = validateResponse.content[0];
+
+    expect(book).toHaveProperty('id');
+    expect(book).toHaveProperty('title');
+    expect(book).toHaveProperty('description');
+    expect(book).toHaveProperty('price');
+    expect(book).toHaveProperty('author');
+    expect(book).toHaveProperty('status');
+    expect(book).toHaveProperty('ownerId');
+    expect(book).toHaveProperty('soldAt');
+    expect(book).toHaveProperty('createdAt');
+  });
+
+  test('Should return empty array when page exceeds total pages', async () => {
+    await createRandomBook();
+
+    const response = await request(app).get(`${BOOKS_URL}?page=999&limit=5`);
+    const validateResponse = findBooksResponseSchema.parse(response.body);
+
+    expect(response.status).toBe(200);
+    expect(validateResponse.content.length).toBe(0);
+  });
+
+  test('Should fallback to defaults when page or limit is invalid', async () => {
+    const response = await request(app).get(`${BOOKS_URL}?page=-1&limit=abc`);
+    const validateResponse = findBooksResponseSchema.parse(response.body);
+
+    expect(response.status).toBe(200);
+    expect(validateResponse.meta.page).toBeGreaterThan(0);
+  });
+});
+</file>
+
+<file path="src/tests/books/get-user-books.test.ts">
+import request from 'supertest';
+import { createRandomBook } from './helper';
+import { app } from '@ui/api';
+import { faker } from '@faker-js/faker';
+import { signupAndLogin } from '../authentication/helpers';
+import { createBookResponseSchema, getUserBooksResponseSchema } from '../schemas/test-schemas';
+
+describe('GET /me/books', () => {
+  const ME_BOOKS_URL = '/me/books';
+
+  test('Given no authorization header, should return 401 status code', async () => {
+    const response = await request(app).get(ME_BOOKS_URL);
+
+    expect(response.status).toBe(401);
+    expect(response.body).toHaveProperty('message');
+  });
+
+  test('Given an invalid token, should return 401 status code', async () => {
+    const invalidToken = '1234';
+
+    const response = await request(app)
+      .get(ME_BOOKS_URL)
+      .set('Authorization', `Bearer ${invalidToken}`);
+
+    expect(response.status).toBe(401);
+  });
+
+  test('Given a malformed authorization header, should return 401 status code', async () => {
+    const response = await request(app)
+      .get(ME_BOOKS_URL)
+      .set('Authorization', 'Invalid-header invalid-token');
+
+    expect(response.status).toBe(401);
+  });
+
+  test('Given a valid token, should return 200 status code', async () => {
+    const { token } = await createRandomBook();
+
+    const response = await request(app).get(ME_BOOKS_URL).set('Authorization', `Bearer ${token}`);
+
+    expect(response.status).toBe(200);
+  });
+
+  test('Should return empty array when user has no books', async () => {
+    const token = await signupAndLogin('test@test.com', 'TestPassword123');
+
+    const response = await request(app).get(ME_BOOKS_URL).set('Authorization', `Bearer ${token}`);
+    const validateResponse = getUserBooksResponseSchema.parse(response.body);
+
+    expect(response.status).toBe(200);
+    expect(Array.isArray(validateResponse.content)).toBe(true);
+    expect(validateResponse.content).toHaveLength(0);
+  });
+
+  test('Should returning only books belonging to the authorizated user', async () => {
+    const { token: tokenUserA, newRandomBook: bookUserA } =
+      await createRandomBook('userA@test.com');
+    const validateTitleA = createBookResponseSchema.parse(bookUserA.body as unknown);
+    const titleA = validateTitleA.content.title;
+    const book2Payload = {
+      title: faker.book.title(),
+      description: faker.commerce.productDescription(),
+      price: 50,
+      author: faker.book.author(),
+    };
+
+    await request(app)
+      .post('/books')
+      .set('Authorization', `Bearer ${tokenUserA}`)
+      .send(book2Payload);
+
+    const { newRandomBook: bookUserB } = await createRandomBook('userB@test.com');
+    const validateTitleB = createBookResponseSchema.parse(bookUserB.body as unknown);
+    const titleB = validateTitleB.content.title;
+
+    const response = await request(app)
+      .get(ME_BOOKS_URL)
+      .set('Authorization', `Bearer ${tokenUserA}`);
+    const validateResponse = getUserBooksResponseSchema.parse(response.body);
+
+    expect(response.status).toBe(200);
+    expect(validateResponse.content).toHaveLength(2);
+
+    const titles = validateResponse.content.map(b => b.title);
+    expect(titles).toContain(titleA);
+    expect(titles).toContain(book2Payload.title);
+
+    expect(titles).not.toContain(titleB);
+  });
+
+  test('Should return books with correct structure', async () => {
+    const { token } = await createRandomBook();
+
+    const response = await request(app).get(ME_BOOKS_URL).set('Authorization', `Bearer ${token}`);
+    const validateResponse = getUserBooksResponseSchema.parse(response.body);
+
+    const book = validateResponse.content[0];
+
+    expect(response.status).toBe(200);
+    expect(book).toHaveProperty('id');
+    expect(book).toHaveProperty('title');
+    expect(book).toHaveProperty('description');
+    expect(book).toHaveProperty('price');
+    expect(book).toHaveProperty('author');
+    expect(book).toHaveProperty('status');
+    expect(book).toHaveProperty('ownerId');
+    expect(book).toHaveProperty('soldAt');
+    expect(book).toHaveProperty('createdAt');
+  });
+
+  test('Should not expose sensitive information (_id)', async () => {
+    const { token } = await createRandomBook();
+
+    const response = await request(app).get(ME_BOOKS_URL).set('Authorization', `Bearer ${token}`);
+    const validateResponse = getUserBooksResponseSchema.parse(response.body);
+
+    expect(response.status).toBe(200);
+
+    const book = validateResponse.content[0];
+    expect(book).not.toHaveProperty('_id');
+    expect(book).not.toHaveProperty('_v');
+  });
+
+  test('Should return paginated results', async () => {
+    const { token } = await createRandomBook();
+
+    const booksToCreate = Array.from({ length: 23 }).map(() => ({
+      title: faker.book.title(),
+      description: faker.commerce.productDescription(),
+      price: 20,
+      author: faker.book.author(),
+    }));
+
+    for (const book of booksToCreate) {
+      await request(app).post('/books').set('Authorization', `Bearer ${token}`).send(book);
+    }
+
+    const response = await request(app)
+      .get(`${ME_BOOKS_URL}?page=1&limit=10`)
+      .set('Authorization', `Bearer ${token}`);
+
+    const validateResponse = getUserBooksResponseSchema.parse(response.body);
+
+    expect(response.status).toBe(200);
+    expect(validateResponse.content).toHaveLength(10);
+    expect(validateResponse.meta.page).toBe(1);
+    expect(validateResponse.meta.total).toBe(24);
+  });
+
+  test('Should handle negative page numbers successfully', async () => {
+    const { token } = await createRandomBook();
+
+    const response = await request(app)
+      .get(`${ME_BOOKS_URL}?page=-1`)
+      .set('Authorization', `Bearer ${token}`);
+
+    const validateResponse = getUserBooksResponseSchema.parse(response.body);
+
+    expect(response.status).toBe(200);
+    expect(validateResponse.meta.page).toEqual(1);
+  });
+
+  test('Should handle negative limit numbers successfully', async () => {
+    const { token } = await createRandomBook();
+
+    const response = await request(app)
+      .get(`${ME_BOOKS_URL}?limit=-10`)
+      .set('Authorization', `Bearer ${token}`);
+
+    const validateResponse = getUserBooksResponseSchema.parse(response.body);
+
+    expect(response.status).toBe(200);
+    expect(validateResponse.meta.limit).toEqual(10);
+  });
+
+  test('Should cap limit at maximum value (100)', async () => {
+    const { token } = await createRandomBook();
+
+    const response = await request(app)
+      .get(`${ME_BOOKS_URL}?limit=9999`)
+      .set('Authorization', `Bearer ${token}`);
+
+    const validateResponse = getUserBooksResponseSchema.parse(response.body);
+
+    expect(response.status).toBe(200);
+    expect(validateResponse.meta.limit).toBeLessThanOrEqual(100);
+  });
+
+  test('Should handle page=0 and limit=0 successfully', async () => {
+    const { token } = await createRandomBook();
+
+    const response = await request(app)
+      .get(`${ME_BOOKS_URL}?page=0&limit=0`)
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(response.status).toBe(200);
+  });
+
+  test('Should handle non-numeric page or limit parameters', async () => {
+    const { token } = await createRandomBook();
+
+    const response = await request(app)
+      .get(`${ME_BOOKS_URL}?page=abc&limit=abc`)
+      .set('Authorization', `Bearer ${token}`);
+
+    expect(response.status).toBe(200);
+  });
+
+  test('Should handle decimals successfully', async () => {
+    const { token } = await createRandomBook();
+
+    const response = await request(app)
+      .get(`${ME_BOOKS_URL}?page=0.5&limit=0.5`)
+      .set('Authorization', `Bearer ${token}`);
+
+    const validateResponse = getUserBooksResponseSchema.parse(response.body);
+
+    expect(response.status).toBe(200);
+    expect(Number.isInteger(validateResponse.meta.page)).toBe(true);
+    expect(Number.isInteger(validateResponse.meta.limit)).toBe(true);
+  });
+});
+</file>
+
+<file path="src/tests/books/helper.ts">
+import request from 'supertest';
+import { faker } from '@faker-js/faker';
+
+import { app } from '@ui/api';
+import { signupAndLogin } from '../authentication/helpers';
+import * as z from 'zod';
+import { bookSchema } from '../schemas/test-schemas';
+
+type Book = z.infer<typeof bookSchema>;
+
+type CreateRandomBookOverrides = Partial<
+  Pick<Book, 'title' | 'description' | 'price' | 'author' | 'status' | 'soldAt'>
+>;
+
+export const createRandomBook = async (
+  email?: string,
+  overrides?: CreateRandomBookOverrides
+): Promise<{
+  newRandomBook: request.Response;
+  token: string;
+  randomBook: CreateRandomBookOverrides;
+}> => {
+  const token = await signupAndLogin(email);
+
+  const randomBook = {
+    title: faker.book.title(),
+    description: faker.commerce.productDescription(),
+    price: parseInt(faker.commerce.price(), 10),
+    author: faker.book.author(),
+    status: 'PUBLISHED' as const,
+    soldAt: null,
+    ...overrides,
+  };
+  const newRandomBook = await request(app)
+    .post('/books')
+    .set('Authorization', `Bearer ${token}`)
+    .send(randomBook);
+
+  return { newRandomBook, token, randomBook };
+};
+</file>
+
+<file path="src/tests/setup.ts">
+import 'reflect-metadata';
+
+import { environmentService } from '@infrastructure/services/environment-service';
+import { MongoMemoryServer } from 'mongodb-memory-server';
+import mongoose from 'mongoose';
+import { container } from '@di/container';
+import { registerInfrastructureBindings } from '@di/infrastructure-bindings';
+import { registerUseCaseBindings } from '@di/usecase-bindings';
+import { EMAIL_SERVICE } from '@di/tokens';
+
+let mongo: MongoMemoryServer;
+
+beforeAll(async () => {
+  environmentService.load();
+  registerInfrastructureBindings();
+  registerUseCaseBindings();
+  container.rebind(EMAIL_SERVICE).toConstantValue({
+    sendEmailToSeller: vi.fn(),
+  });
+  mongo = await MongoMemoryServer.create({
+    binary: { version: '7.0.11' },
+  });
+
+  await mongoose.connect(mongo.getUri());
+}, 120000);
+
+afterEach(async () => {
+  const db = mongoose.connection.db;
+  if (!db) return;
+
+  await db.dropDatabase();
+  await mongoose.connection.syncIndexes();
+  mongoose.deleteModel(/.*/);
+});
+
+afterAll(async () => {
+  await mongoose.connection.close();
+  await mongo?.stop();
+});
+</file>
+
+<file path="src/ui/controllers/books/buy-book-controller.ts">
+import { useCases } from '@di/use-case-resolver';
+import { authenticatedUserSchema, bookIdParamsSchema } from '@ui/validators/book-validators';
+import { Request, Response } from 'express';
+
+export const buyBookController = async (request: Request, response: Response): Promise<void> => {
+  const { bookId } = bookIdParamsSchema.parse(request.params);
+  const { id: buyerId } = authenticatedUserSchema.parse(request.user);
+
+  const updatedBook = await useCases.buyBook().execute({ bookId, buyerId });
+
+  response.json({ content: updatedBook });
+};
+</file>
+
+<file path="src/ui/controllers/books/find-books-controller.ts">
+import { useCases } from '@di/use-case-resolver';
+import { findBooksBodySchema } from '@ui/validators/book-validators';
+import { Response, Request } from 'express';
+
+export const findBooksController = async (request: Request, response: Response): Promise<void> => {
+  const { page, limit, search, author, title } = findBooksBodySchema.parse(request.query);
+
+  const paginatedBooks = await useCases.findBooks().execute({ page, limit, search, author, title });
+
+  response.json(paginatedBooks);
+};
+</file>
+
+<file path="src/ui/routes/authentication-routes.ts">
+import { signinController } from '@ui/controllers/authentication/signin-controller';
+import { signupController } from '@ui/controllers/authentication/signup-controller';
+import { siginRateLimit, sigupRateLimit } from '@ui/middlewares/rate-limit-middleware';
+import { Router } from 'express';
+
+const authenticationRouter: Router = Router();
+
+authenticationRouter.post('/signup', sigupRateLimit, signupController);
+authenticationRouter.post('/signin', siginRateLimit, signinController);
+
+export default authenticationRouter;
+</file>
+
+<file path="src/ui/validators/book-validators.ts">
+import * as z from 'zod';
+
+export const createBookBodySchema = z.object({
+  title: z.string().min(1, 'Title is required').max(200, 'Title must be less than 200 characters'),
+  description: z
+    .string()
+    .min(1, 'Description is required')
+    .max(1500, 'Description must be less than 200 characters'),
+  price: z.number().positive('Price must be positive').min(0.01, 'Price must be at least 0.01'),
+  author: z
+    .string()
+    .min(1, 'Author is required')
+    .max(100, 'Author must be less than 200 characters'),
+});
+
+export const authenticatedUserSchema = z.object({
+  id: z.string(),
+});
+
+export const bookIdParamsSchema = z.object({
+  bookId: z.string(),
+});
+
+export const updateBookBodySchema = z
+  .object({
+    title: z.string().min(3, 'Title must be at least 3 characters').optional(),
+    description: z
+      .string()
+      .min(10, 'Description must be at least 10 characters')
+      .max(1500, 'Description must be at most 150 characters')
+      .optional(),
+    price: z
+      .number()
+      .positive('Price must be positive')
+      .min(0.01, 'Price must be at least 0.01')
+      .optional(),
+    author: z
+      .string()
+      .min(1, 'Author is required')
+      .max(100, 'Author must be less than 200 characters')
+      .optional(),
+  })
+  .strict();
+
+export const findBooksBodySchema = z.object({
+  page: z.coerce.number().min(1).default(1).catch(1).transform(Math.floor),
+  limit: z.coerce.number().min(1).max(100).default(10).catch(10).transform(Math.floor),
+  search: z.string().optional(),
+  author: z.string().optional(),
+  title: z.string().optional(),
+});
+
+export type FindBookQuery = z.infer<typeof findBooksBodySchema>;
+export type CreateBookBody = z.infer<typeof createBookBodySchema>;
+export type AuthenticatedUser = z.infer<typeof authenticatedUserSchema>;
+export type BookIdParams = z.infer<typeof bookIdParamsSchema>;
+export type UpdateBookBody = z.infer<typeof updateBookBodySchema>;
+</file>
+
+<file path="src/domain/repositories/BookRepository.ts">
+import { Book } from '@domain/entities/Book';
+import { BookFindQuery } from '@domain/types/book/BookFindQuery';
+import { CreateBookQuery } from '@domain/types/book/CreateBookQuery';
+import { UpdateBookQuery } from '@domain/types/book/UpdateBookQuery';
+import { PaginatedResponse } from '@domain/types/pagination';
+
+export interface BookRepository {
+  createOne(query: CreateBookQuery): Promise<Book>;
+  findMany(query: BookFindQuery): Promise<PaginatedResponse<Book>>;
+  updateBookDetails(bookId: string, query: UpdateBookQuery): Promise<Book | null>;
+  findById(bookId: string): Promise<Book | null>;
+  markAsSold(bookId: string, buyerId: string, soldAt: Date): Promise<Book | null>;
+  deleteBook(bookId: string): Promise<boolean>;
+}
+</file>
+
+<file path="src/domain/use-cases/user/login-user-usecase.ts">
+import { UserRepository } from '@domain/repositories/UserRepository';
+import { SecurityService } from '@domain/services/SecurityService';
+import { EntityNotFoundError, UnauthorizedError } from '@domain/types/errors';
+import { LoginUserQuery } from '@domain/types/user/LoginUserQuery';
+
+export class LoginUserUseCase {
+  constructor(
+    private readonly userRepository: UserRepository,
+    private readonly securityService: SecurityService
+  ) {}
+  async execute(query: LoginUserQuery): Promise<{
+    token: string;
+  }> {
+    const existingUser = await this.userRepository.findByEmail(query.email);
+
+    if (!existingUser) throw new EntityNotFoundError('User', query.email);
+
+    const arePasswordEqual = await this.securityService.comparePasswords(
+      query.password,
+      existingUser.password
+    );
+
+    if (arePasswordEqual) {
+      const token = this.securityService.generateJWT(existingUser);
+      return { token };
+    } else {
+      throw new UnauthorizedError('Wrong password');
+    }
+  }
+}
+</file>
+
+<file path="src/tests/authentication/signin.test.ts">
+import request from 'supertest';
+import { faker } from '@faker-js/faker';
+
+import { app } from '@ui/api';
+import { type SigninResponse, signinResponseSchema } from '../schemas/test-schemas';
+
+describe('POST /authentication/signin', () => {
+  const SIGNIN_URL = '/authentication/signin';
+  const VALID_PASSWORD = 'Qwertyui1.';
+
+  test('Should return 400 status code if email and password is missing', async () => {
+    const response = await request(app).post(SIGNIN_URL).send({});
+
+    expect(response.status).toBe(400);
+  });
+
+  test('Should return 400 for invalid email format', async () => {
+    const response = await request(app).post(SIGNIN_URL).send({
+      email: 'not-an-email',
+      password: VALID_PASSWORD,
+    });
+
+    expect(response.status).toBe(400);
+  });
+
+  test('Should return 400 if the password is too short', async () => {
+    const response = await request(app).post(SIGNIN_URL).send({
+      email: faker.internet.email(),
+      password: '123',
+    });
+
+    expect(response.status).toBe(400);
+  });
+
+  test('Should return 400 if an empty password is given', async () => {
+    const response = await request(app).post(SIGNIN_URL).send({
+      email: faker.internet.email(),
+      password: '',
+    });
+
+    expect(response.status).toBe(400);
+  });
+
+  test('Should return 404 if user not found', async () => {
+    const response = await request(app)
+      .post(SIGNIN_URL)
+      .send({ email: faker.internet.email(), password: VALID_PASSWORD });
+
+    expect(response.status).toBe(404);
+  });
+
+  test('Should return 401 if credentials are invalid', async () => {
+    const email = faker.internet.email();
+    const password = VALID_PASSWORD;
+
+    await request(app).post('/authentication/signup').send({ email, password });
+
+    const response = await request(app)
+      .post(SIGNIN_URL)
+      .send({ email, password: 'WrongPassword123' });
+
+    expect(response.status).toBe(401);
+  });
+
+  test('Should return token if credentials are valid', async () => {
+    const email = faker.internet.email();
+    const password = VALID_PASSWORD;
+
+    await request(app).post('/authentication/signup').send({ email, password });
+
+    const response = await request(app).post(SIGNIN_URL).send({
+      email,
+      password,
+    });
+
+    expect(response.status).toBe(200);
+
+    const validateResponse: SigninResponse = signinResponseSchema.parse(response.body);
+    expect(validateResponse.content).toBeDefined();
+    expect(typeof validateResponse.content).toBe('string');
+  });
+
+  test('Should not expose sensitive user data', async () => {
+    const email = faker.internet.email();
+    const password = VALID_PASSWORD;
+
+    await request(app).post('/authentication/signup').send({ email, password });
+
+    const response = await request(app).post(SIGNIN_URL).send({
+      email,
+      password,
+    });
+
+    const validateResponse = signinResponseSchema.parse(response.body);
+
+    expect(validateResponse.content).toBeDefined();
+
+    expect(response.body).not.toHaveProperty('password');
+    expect(response.body).not.toHaveProperty('user');
+    expect(response.body).not.toHaveProperty('hashedPassword');
+    expect(response.body).not.toHaveProperty('_id');
+  });
+});
+</file>
+
+<file path="src/tests/schemas/test-schemas.ts">
+import * as z from 'zod';
+
+export const signupResponseSchema = z.object({
+  content: z.string(),
+});
+
+export const signinResponseSchema = z.object({
+  content: z.string().min(1),
+});
+
+export const bookSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string(),
+  price: z.number().positive(),
+  author: z.string(),
+  status: z.enum(['PUBLISHED', 'SOLD']),
+  ownerId: z.string(),
+  soldAt: z.iso.datetime().nullable(),
+  createdAt: z.iso.datetime(),
+});
+
+export const buyBookResponseSchema = z.object({
+  content: bookSchema,
+});
+
+export const createBookResponseSchema = z.object({
+  content: bookSchema,
+});
+
+export const updateBookResponseSchema = z.object({
+  content: bookSchema,
+});
+
+export const paginationMetaSchema = z.object({
+  page: z.number().int().positive(),
+  limit: z.number().int().positive(),
+  total: z.number().int().nonnegative(),
+});
+
+export const findBooksResponseSchema = z.object({
+  content: z.array(bookSchema),
+  meta: paginationMetaSchema,
+});
+
+export const getUserBooksResponseSchema = z.object({
+  content: z.array(bookSchema),
+  meta: paginationMetaSchema,
+});
+
+export const deleteBookResponseSchema = z.object({
+  message: z.string(),
+});
+
+export const errorResponseSchema = z.object({
+  message: z.string(),
+  errors: z
+    .object({
+      formErrors: z.array(z.string()).optional(),
+      fieldErrors: z.record(z.string(), z.array(z.string())).optional(),
+    })
+    .optional(),
+});
+
+export type SignupResponse = z.infer<typeof signupResponseSchema>;
+export type SigninResponse = z.infer<typeof signinResponseSchema>;
+export type Book = z.infer<typeof bookSchema>;
+export type CreateBookResponse = z.infer<typeof createBookResponseSchema>;
+export type UpdateBookResponse = z.infer<typeof updateBookResponseSchema>;
+export type FindBooksResponse = z.infer<typeof findBooksResponseSchema>;
+export type GetUserBooksResponse = z.infer<typeof getUserBooksResponseSchema>;
+export type BuyBookResponse = z.infer<typeof buyBookResponseSchema>;
+export type PaginationMeta = z.infer<typeof paginationMetaSchema>;
+export type ErrorResponse = z.infer<typeof errorResponseSchema>;
+export type DeleteResponse = z.infer<typeof deleteBookResponseSchema>;
+</file>
+
+<file path="src/ui/middlewares/authentication-middleware.ts">
+import { Request, Response, NextFunction } from 'express';
+import { UnauthorizedError } from '@domain/types/errors';
+import { container } from '@di/container';
+import { SecurityService } from '@domain/services/SecurityService';
+import { SECURITY_SERVICE } from '@di/tokens';
+
+export const authenticationMiddleware = (
+  request: Request,
+  _response: Response,
+  next: NextFunction
+): void => {
+  const authorizationHeader = request.headers.authorization;
+
+  if (!authorizationHeader) {
+    throw new UnauthorizedError('Authorization header is required');
+  }
+
+  const [scheme, token] = authorizationHeader.split(' ');
+
+  if (scheme !== 'Bearer' || !token) {
+    throw new UnauthorizedError('Invalid authorization header format');
+  }
+
+  try {
+    const securityService = container.get<SecurityService>(SECURITY_SERVICE);
+    const { userId } = securityService.verifyJWT(token);
+    request.user = { id: userId };
+    next();
+  } catch {
+    throw new UnauthorizedError('Invalid token');
+  }
+};
+</file>
+
+<file path="src/domain/use-cases/books/buy-book-usecase.ts">
+import { Book } from '@domain/entities/Book';
+import { BookRepository } from '@domain/repositories/BookRepository';
+import { EmailServiceError, EntityNotFoundError } from '@domain/types/errors';
+import { UserRepository } from '@domain/repositories/UserRepository';
+import { EmailService } from '@domain/services/EmailService';
+import { NotificationTemplateService } from '@domain/services/NotificationTemplateService';
+import { BuyBookQuery } from '@domain/types/book/BuyBookQuery';
+
+export class BuyBookUseCase {
+  constructor(
+    private readonly bookRepository: BookRepository,
+    private readonly userRepository: UserRepository,
+    private readonly emailService: EmailService,
+    private readonly templateService: NotificationTemplateService
+  ) {}
+
+  public async execute({ bookId, buyerId }: BuyBookQuery): Promise<Book | null> {
+    const book = await this.bookRepository.findById(bookId);
+    if (!book) throw new EntityNotFoundError('Book', bookId);
+
+    const sellerId = book.ownerId;
+    const soldBook = book.sellTo(buyerId);
+
+    const updatedBook = await this.bookRepository.markAsSold(bookId, buyerId, soldBook.soldAt!);
+    await this.notifyToSeller(sellerId, book.title, book.price);
+
+    return updatedBook;
+  }
+
+  private async notifyToSeller(
+    sellerId: string,
+    bookTitle: string,
+    bookPrice: number
+  ): Promise<void> {
+    try {
+      const seller = await this.userRepository.findById(sellerId);
+
+      if (seller) {
+        const { subject, body } = this.templateService.getBookSoldTemplate(bookTitle, bookPrice);
+        await this.emailService.sendEmailToSeller(seller.email, body, subject);
+      }
+    } catch (error) {
+      if (error instanceof EmailServiceError) {
+        console.warn(error.message);
+        return;
+      }
+      throw error;
+    }
+  }
+}
+</file>
+
+<file path="src/tests/authentication/signup.test.ts">
+import { vi } from 'vitest';
+import request from 'supertest';
+import { faker } from '@faker-js/faker';
+import bcrypt from 'bcryptjs';
+
+import { app } from '@ui/api';
+import { signupResponseSchema } from '../schemas/test-schemas';
+
+describe('POST /authentication/signup', () => {
+  const AUTHENTICATION_URL = '/authentication/signup';
+  const VALID_PASSWORD = 'Qwertyui1.';
+  test('Email and password should be mandatory', async () => {
+    const response = await request(app).post(AUTHENTICATION_URL).send({});
+
+    expect(response.status).toBe(400);
+  });
+
+  test('Email should be unique', async () => {
+    const email = faker.internet.email();
+
+    const firstAttempResponse = await request(app).post(AUTHENTICATION_URL).send({
+      email,
+      password: VALID_PASSWORD,
+    });
+    expect(firstAttempResponse.status).toBe(201);
+
+    const secondAttempResponse = await request(app).post(AUTHENTICATION_URL).send({
+      email,
+      password: VALID_PASSWORD,
+    });
+    expect(secondAttempResponse.status).toBe(409);
+  });
+
+  test('Should rejet invalid email format', async () => {
+    const response = await request(app).post(AUTHENTICATION_URL).send({
+      email: 'not-an-email',
+      password: VALID_PASSWORD,
+    });
+
+    expect(response.status).toBe(400);
+  });
+
+  test('Should reject short passwords', async () => {
+    const response = await request(app).post(AUTHENTICATION_URL).send({
+      email: faker.internet.email(),
+      password: '123',
+    });
+
+    expect(response.status).toBe(400);
+  });
+
+  test('Should reject empty password', async () => {
+    const response = await request(app).post(AUTHENTICATION_URL).send({
+      email: faker.internet.email(),
+      password: '',
+    });
+
+    expect(response.status).toBe(400);
+  });
+
+  test('Given a valid email and password, a new user is created', async () => {
+    const email = faker.internet.email();
+    const password = VALID_PASSWORD;
+
+    const response = await request(app).post(AUTHENTICATION_URL).send({
+      email,
+      password,
+    });
+    expect(response.status).toBe(201);
+  });
+
+  test('Should not return password in response body', async () => {
+    const response = await request(app).post(AUTHENTICATION_URL).send({
+      email: faker.internet.email(),
+      password: VALID_PASSWORD,
+    });
+
+    const validateResponse = signupResponseSchema.parse(response.body);
+
+    expect(validateResponse.content).not.toHaveProperty('password');
+    expect(validateResponse.content).toBe('User created successfully');
+  });
+
+  test('Password should be hashed before storing', async () => {
+    const originalHash = bcrypt.hash;
+    // eslint-disable-next-line @typescript-eslint/no-misused-promises
+    const hashSpy = vi.spyOn(bcrypt, 'hash').mockImplementation(originalHash);
+
+    await request(app).post(AUTHENTICATION_URL).send({
+      email: faker.internet.email(),
+      password: VALID_PASSWORD,
+    });
+
+    expect(hashSpy).toHaveBeenCalled();
+    hashSpy.mockRestore();
+  });
+});
+</file>
+
+<file path="src/tests/books/send-price-reduction-suggestion.test.ts">
+import { vi, type Mocked } from 'vitest';
+import { SendPriceReductionSuggestionUseCase } from '@domain/use-cases/books/send-price-reduction-suggestion-usecase';
+import { BookRepository } from '@domain/repositories/BookRepository';
+import { UserRepository } from '@domain/repositories/UserRepository';
+import { EmailService } from '@domain/services/EmailService';
+import { NotificationTemplateService } from '@domain/services/NotificationTemplateService';
+import { User } from '@domain/entities/User';
+import { Book, BookStatus } from '@domain/entities/Book';
+
+let userCounter = 0;
+
+function createMockUser(email: string): User {
+  return new User({
+    id: `user-${Date.now()}-${userCounter++}`,
+    email,
+    password: 'hashed-password',
+    createdAt: new Date(),
+  });
+}
+
+function createMockBook(
+  id: string,
+  title: string,
+  price: number,
+  ownerId: string,
+  daysOld: number,
+  status: BookStatus = BookStatus.PUBLISHED
+): Book {
+  const createdAt = new Date();
+  createdAt.setDate(createdAt.getDate() - daysOld);
+
+  const soldAt = status === BookStatus.SOLD ? new Date() : null;
+
+  return new Book({
+    id,
+    title,
+    description: 'Test description',
+    price,
+    author: 'Test Author',
+    ownerId,
+    status,
+    createdAt,
+    soldAt,
+  });
+}
+
+describe('SendPriceReductionSuggestionUseCase', () => {
+  let useCase: SendPriceReductionSuggestionUseCase;
+  let bookRepositoryMock: Mocked<BookRepository>;
+  let userRepositoryMock: Mocked<UserRepository>;
+  let emailServiceMock: Mocked<EmailService>;
+  let templateServiceMock: Mocked<NotificationTemplateService>;
+
+  beforeEach(() => {
+    bookRepositoryMock = {
+      createOne: vi.fn(),
+      findMany: vi.fn(),
+      updateBookDetails: vi.fn(),
+      findById: vi.fn(),
+      markAsSold: vi.fn(),
+      deleteBook: vi.fn(),
+    } as unknown as Mocked<BookRepository>;
+
+    userRepositoryMock = {
+      createOne: vi.fn(),
+      findByEmail: vi.fn(),
+      find: vi.fn(),
+      findById: vi.fn(),
+    } as unknown as Mocked<UserRepository>;
+
+    emailServiceMock = {
+      sendEmailToSeller: vi.fn(),
+    } as unknown as Mocked<EmailService>;
+
+    templateServiceMock = {
+      getBookSoldTemplate: vi.fn().mockReturnValue({
+        subject: '¡Tu libro ha sido vendido!',
+        body: '¡Felicidades! Tu libro "Test" ha sido vendido.',
+      }),
+      getPriceReductionSuggestionTemplate: vi.fn(),
+    } as unknown as Mocked<NotificationTemplateService>;
+
+    templateServiceMock.getPriceReductionSuggestionTemplate.mockImplementation(
+      (booksCount: number, limitDays: number, bookDetails: string) => {
+        const bookLabel = booksCount === 1 ? 'libro' : 'libros';
+        const publishedLabel = booksCount === 1 ? 'publicado' : 'publicados';
+        return {
+          subject: `${booksCount} ${bookLabel}`,
+          body: `Tienes ${booksCount} ${publishedLabel} desde hace más de ${limitDays} días:\n\n${bookDetails}\n\n¿Y si les bajamos el precio?`,
+        };
+      }
+    );
+
+    useCase = new SendPriceReductionSuggestionUseCase(
+      bookRepositoryMock,
+      userRepositoryMock,
+      emailServiceMock,
+      templateServiceMock
+    );
+  });
+
+  describe('execute', () => {
+    test('should send email when user has old published books', async () => {
+      const user = createMockUser('user@example.com');
+      const oldBook = createMockBook('1', 'Old Book', 9.99, user.id, 15);
+      const oldBook2 = createMockBook('2', 'Another Old Book', 19.99, user.id, 10);
+
+      userRepositoryMock.find.mockResolvedValue([user]);
+      bookRepositoryMock.findMany.mockResolvedValue({
+        content: [oldBook, oldBook2],
+        meta: {
+          page: 1,
+          limit: 999,
+          total: 2,
+        },
+      });
+      emailServiceMock.sendEmailToSeller.mockResolvedValue(undefined);
+
+      await useCase.execute();
+
+      expect(userRepositoryMock.find).toHaveBeenCalledTimes(1);
+      expect(bookRepositoryMock.findMany).toHaveBeenCalledWith({
+        ownerId: user.id,
+        page: 1,
+        limit: 999,
+      });
+      expect(emailServiceMock.sendEmailToSeller).toHaveBeenCalledTimes(1);
+      expect(emailServiceMock.sendEmailToSeller).toHaveBeenCalledWith(
+        user.email,
+        expect.stringContaining('Tienes 2 publicados desde hace más de 7 días'),
+        expect.stringContaining('2 libros')
+      );
+    });
+
+    test('should not send email when user has no books', async () => {
+      const user = createMockUser('user@example.com');
+
+      userRepositoryMock.find.mockResolvedValue([user]);
+      bookRepositoryMock.findMany.mockResolvedValue({
+        content: [],
+        meta: {
+          page: 1,
+          limit: 999,
+          total: 0,
+        },
+      });
+
+      await useCase.execute();
+
+      expect(emailServiceMock.sendEmailToSeller).not.toHaveBeenCalled();
+    });
+
+    test('should not send email when user has only recent books', async () => {
+      const user = createMockUser('user@example.com');
+      const recentBook = createMockBook('1', 'Recent Book', 25.0, user.id, 3);
+
+      userRepositoryMock.find.mockResolvedValue([user]);
+      bookRepositoryMock.findMany.mockResolvedValue({
+        content: [recentBook],
+        meta: {
+          page: 1,
+          limit: 999,
+          total: 1,
+        },
+      });
+
+      await useCase.execute();
+
+      expect(emailServiceMock.sendEmailToSeller).not.toHaveBeenCalled();
+    });
+
+    test('should not send email when books have non-PUBLISHED status', async () => {
+      const user = createMockUser('user@example.com');
+      const soldBook = createMockBook('1', 'Sold Book', 15.0, user.id, 10, BookStatus.SOLD);
+
+      userRepositoryMock.find.mockResolvedValue([user]);
+      bookRepositoryMock.findMany.mockResolvedValue({
+        content: [soldBook],
+        meta: {
+          page: 1,
+          limit: 999,
+          total: 1,
+        },
+      });
+
+      await useCase.execute();
+
+      expect(emailServiceMock.sendEmailToSeller).not.toHaveBeenCalled();
+    });
+
+    test('should handle multiple users with different scenarios', async () => {
+      const userWithOldBooks = createMockUser('user1@example.com');
+      const userWithRecentBooks = createMockUser('user2@example.com');
+      const userWithNoBooks = createMockUser('user3@example.com');
+
+      const oldBook = createMockBook('1', 'Old Book', 9.99, userWithOldBooks.id, 10);
+      const recentBook = createMockBook('2', 'Recent Book', 19.99, userWithRecentBooks.id, 3);
+
+      userRepositoryMock.find.mockResolvedValue([
+        userWithOldBooks,
+        userWithRecentBooks,
+        userWithNoBooks,
+      ]);
+
+      bookRepositoryMock.findMany.mockImplementation((query: { ownerId?: string }) => {
+        if (query.ownerId === userWithOldBooks.id) {
+          return Promise.resolve({ content: [oldBook], meta: { page: 1, limit: 999, total: 1 } });
+        }
+        if (query.ownerId === userWithRecentBooks.id) {
+          return Promise.resolve({
+            content: [recentBook],
+            meta: { page: 1, limit: 999, total: 1 },
+          });
+        }
+        return Promise.resolve({ content: [], meta: { page: 1, limit: 999, total: 0 } });
+      });
+
+      emailServiceMock.sendEmailToSeller.mockResolvedValue(undefined);
+
+      await useCase.execute();
+
+      expect(bookRepositoryMock.findMany).toHaveBeenCalledTimes(3);
+      expect(emailServiceMock.sendEmailToSeller).toHaveBeenCalledTimes(1);
+      expect(emailServiceMock.sendEmailToSeller).toHaveBeenCalledWith(
+        userWithOldBooks.email,
+        expect.anything(),
+        expect.anything()
+      );
+    });
+
+    test('should send email with correct book information', async () => {
+      const user = createMockUser('seller@example.com');
+      const book1 = createMockBook('1', 'Book Title One', 12.5, user.id, 8);
+      const book2 = createMockBook('2', 'Book Title Two', 25.99, user.id, 10);
+
+      userRepositoryMock.find.mockResolvedValue([user]);
+      bookRepositoryMock.findMany.mockResolvedValue({
+        content: [book1, book2],
+        meta: {
+          page: 1,
+          limit: 999,
+          total: 2,
+        },
+      });
+      emailServiceMock.sendEmailToSeller.mockResolvedValue(undefined);
+
+      await useCase.execute();
+
+      const callArgs = emailServiceMock.sendEmailToSeller.mock.calls[0];
+      expect(callArgs).toBeDefined();
+      expect(callArgs![0]).toBe(user.email);
+      expect(callArgs![1]).toContain('Book Title One');
+      expect(callArgs![1]).toContain('12.5');
+      expect(callArgs![1]).toContain('Book Title Two');
+      expect(callArgs![1]).toContain('25.99');
+    });
+
+    test('should continue processing users even if email service fails for one user', async () => {
+      const user1 = createMockUser('user1@example.com');
+      const user2 = createMockUser('user2@example.com');
+      const oldBook1 = createMockBook('1', 'Old Book 1', 9.99, user1.id, 10);
+      const oldBook2 = createMockBook('2', 'Old Book 2', 19.99, user2.id, 10);
+
+      userRepositoryMock.find.mockResolvedValue([user1, user2]);
+
+      bookRepositoryMock.findMany.mockImplementation((query: { ownerId?: string }) => {
+        if (query.ownerId === user1.id) {
+          return Promise.resolve({ content: [oldBook1], meta: { page: 1, limit: 999, total: 1 } });
+        }
+        return Promise.resolve({ content: [oldBook2], meta: { page: 1, limit: 999, total: 1 } });
+      });
+
+      emailServiceMock.sendEmailToSeller.mockRejectedValueOnce(new Error('Email service failed'));
+      emailServiceMock.sendEmailToSeller.mockResolvedValueOnce(undefined);
+
+      await expect(useCase.execute()).rejects.toThrow();
+    });
+
+    test('should use correct limit date calculation', async () => {
+      const user = createMockUser('user@example.com');
+      const bookExactly7DaysOld = createMockBook('1', 'Book', 10.0, user.id, 7);
+      const bookMoreThan7DaysOld = createMockBook('2', 'Book', 10.0, user.id, 8);
+
+      userRepositoryMock.find.mockResolvedValue([user]);
+      bookRepositoryMock.findMany.mockResolvedValue({
+        content: [bookExactly7DaysOld, bookMoreThan7DaysOld],
+        meta: {
+          page: 1,
+          limit: 999,
+          total: 2,
+        },
+      });
+
+      emailServiceMock.sendEmailToSeller.mockResolvedValue(undefined);
+
+      await useCase.execute();
+
+      expect(emailServiceMock.sendEmailToSeller).toHaveBeenCalledWith(
+        user.email,
+        expect.stringContaining('1 publicado desde hace más de 7 días'),
+        expect.anything()
+      );
+    });
+
+    test('should handle empty user list', async () => {
+      userRepositoryMock.find.mockResolvedValue([]);
+
+      await useCase.execute();
+
+      expect(bookRepositoryMock.findMany).not.toHaveBeenCalled();
+      expect(emailServiceMock.sendEmailToSeller).not.toHaveBeenCalled();
+    });
+  });
+});
+</file>
+
+<file path="src/tests/books/update-book.test.ts">
+import request from 'supertest';
+import { createRandomBook } from './helper';
+import { app } from '@ui/api';
+import { signupAndLogin } from '../authentication/helpers';
+import {
+  createBookResponseSchema,
+  errorResponseSchema,
+  updateBookResponseSchema,
+} from '../schemas/test-schemas';
+
+describe('PATCH /books/:bookId', () => {
+  const BOOKS_URL = '/books';
+  test('Given no authorization header, endpoint should return 401 status code', async () => {
+    const { newRandomBook } = await createRandomBook();
+    const validateBookId = createBookResponseSchema.parse(newRandomBook.body);
+    const bookId = validateBookId.content.id;
+
+    const response = await request(app)
+      .patch(`${BOOKS_URL}/${bookId}`)
+
+      .send({ title: 'new-title' });
+
+    expect(response.status).toBe(401);
+  });
+
+  test('Given an invalid token, endpoint should return a 401 status code', async () => {
+    const { newRandomBook } = await createRandomBook();
+    const validateBookId = createBookResponseSchema.parse(newRandomBook.body);
+    const bookId = validateBookId.content.id;
+
+    const response = await request(app)
+      .patch(`${BOOKS_URL}/${bookId}`)
+      .set('Authorization', `Bearer invalid-token`)
+      .send({ title: 'new-title' });
+
+    expect(response.status).toBe(401);
+  });
+
+  test('Given a non existing book, return a 404 status code', async () => {
+    const { token } = await createRandomBook();
+
+    const response = await request(app)
+      .patch(`${BOOKS_URL}/${'6979054b067bd17c70d31fbf'}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({});
+
+    expect(response.status).toBe(404);
+  });
+
+  test('Given an existing book, should return 200 and updated book', async () => {
+    const { token, newRandomBook } = await createRandomBook();
+    const validateBookId = createBookResponseSchema.parse(newRandomBook.body);
+    const bookId = validateBookId.content.id;
+
+    const updatedPayload = {
+      title: 'Updated title',
+      price: 150,
+    };
+
+    const response = await request(app)
+      .patch(`${BOOKS_URL}/${bookId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send(updatedPayload);
+
+    const validateResponse = updateBookResponseSchema.parse(response.body);
+
+    expect(response.status).toBe(200);
+    expect(validateResponse.content.title).toBe('Updated title');
+    expect(validateResponse.content.price).toBe(150);
+  });
+
+  test('Given an user that is not the book owner, return a 403 status code', async () => {
+    const { newRandomBook } = await createRandomBook();
+    const validateBookId = createBookResponseSchema.parse(newRandomBook.body);
+    const bookId = validateBookId.content.id;
+
+    const tokenFromAnotherUser = await signupAndLogin('other-user@test.com', 'OtherPassword123');
+
+    const response = await request(app)
+      .patch(`${BOOKS_URL}/${bookId}`)
+      .set('Authorization', `Bearer ${tokenFromAnotherUser}`)
+      .send({ title: 'new-title' });
+
+    const validateErrorResponse = errorResponseSchema.parse(response.body);
+
+    expect(response.status).toBe(403);
+    expect(validateErrorResponse).toStrictEqual({
+      message: 'Only owner of the book can update this book',
+    });
+  });
+
+  test('Given an invalid payload, should return a 400', async () => {
+    const { newRandomBook, token } = await createRandomBook();
+    const validateBookId = createBookResponseSchema.parse(newRandomBook.body);
+    const bookId = validateBookId.content.id;
+
+    const response = await request(app)
+      .patch(`${BOOKS_URL}/${bookId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ price: -10 });
+
+    expect(response.status).toBe(400);
+  });
+
+  test('Should not allow updating immutable fields as id, ownerId', async () => {
+    const { newRandomBook, token } = await createRandomBook();
+    const validateBookId = createBookResponseSchema.parse(newRandomBook.body);
+    const bookId = validateBookId.content.id;
+
+    const response = await request(app)
+      .patch(`${BOOKS_URL}/${bookId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ ownerId: 'new-Owner-Id' });
+
+    const validateErrorResponse = errorResponseSchema.parse(response.body);
+
+    expect(response.status).toBe(400);
+    expect(validateErrorResponse.message).toEqual('Validation failed');
+    expect(validateErrorResponse.errors?.formErrors?.[0]).toBe('Unrecognized key: "ownerId"');
+  });
+});
+</file>
+
+<file path="src/ui/middlewares/error-handler-middleware.ts">
+import { Response, Request, NextFunction } from 'express';
+import { status } from 'http-status';
+import * as z from 'zod';
+import * as Sentry from '@sentry/node';
+
+import { DomainError } from '@domain/types/errors/DomainError';
+
+const domainErrorToHttpStatusCode: Record<string, number> = {
+  EntityNotFoundError: status.NOT_FOUND,
+  UnauthorizedError: status.UNAUTHORIZED,
+  ForbiddenOperation: status.FORBIDDEN,
+  BusinessConflictError: status.CONFLICT,
+  EmailServiceError: status.TOO_MANY_REQUESTS,
+};
+
+export const errorHandlerMiddleware = (
+  error: Error,
+  request: Request,
+  response: Response,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  _next: NextFunction
+): Response => {
+  if (error instanceof DomainError) {
+    const statusCode = domainErrorToHttpStatusCode[error.name] ?? status.INTERNAL_SERVER_ERROR;
+    return response.status(statusCode).json({ message: error.message });
+  }
+
+  if (error instanceof z.ZodError) {
+    const flattenedError = z.flattenError(error);
+
+    return response.status(status.BAD_REQUEST).json({
+      message: 'Validation failed',
+      errors: {
+        formErrors: flattenedError.formErrors,
+        fieldErrors: flattenedError.fieldErrors,
+      },
+    });
+  }
+
+  Sentry.captureException(error, {
+    extra: {
+      path: request.path,
+      method: request.method,
+      user: request.user?.id,
+    },
+  });
+  return response.status(status.INTERNAL_SERVER_ERROR).json({ message: JSON.stringify(error) });
+};
+</file>
+
+<file path="src/server.ts">
+import 'reflect-metadata';
+
+import { connectToMongoDb } from '@infrastructure/database/mongo-connection';
+import { startHttpApi } from './ui/api';
+import { environmentService } from '@infrastructure/services/environment-service';
+import { startCronJobs } from '@ui/cron';
+import { initializeSentry } from '@infrastructure/monitoring/sentry.initializer';
+import { registerInfrastructureBindings } from '@di/infrastructure-bindings';
+import { registerUseCaseBindings } from '@di/usecase-bindings';
+
+const executeApp = async (): Promise<void> => {
+  try {
+    console.log('-- Starting application --');
+    console.log('...loading environment');
+    environmentService.load();
+
+    initializeSentry();
+
+    registerInfrastructureBindings();
+    registerUseCaseBindings();
+
+    await connectToMongoDb();
+    startCronJobs();
+    startHttpApi();
+  } catch (error) {
+    console.log('Unable to start application', error);
+    process.exit(1);
+  }
+};
+
+await executeApp();
+</file>
+
+<file path="src/ui/routes/book-routes.ts">
+import { Router } from 'express';
+
+import { createBookController } from '@ui/controllers/books/create-book-controller';
+import { authenticationMiddleware } from '@ui/middlewares/authentication-middleware';
+import { findBooksController } from '@ui/controllers/books/find-books-controller';
+import { updateBookController } from '@ui/controllers/books/update-book-controller';
+import { buyBookController } from '@ui/controllers/books/buy-book-controller';
+import { deleteBookController } from '@ui/controllers/books/delete-book-controller';
+
+const bookRouter: Router = Router();
+
+bookRouter.get('/', findBooksController);
+bookRouter.post('/', [authenticationMiddleware], createBookController);
+bookRouter.patch('/:bookId', [authenticationMiddleware], updateBookController);
+bookRouter.post('/:bookId/buy', [authenticationMiddleware], buyBookController);
+bookRouter.delete('/:bookId', [authenticationMiddleware], deleteBookController);
+
+export default bookRouter;
+</file>
+
+<file path="src/infrastructure/repositories/book-mongo-repository.ts">
+import { Book, BookStatus } from '@domain/entities/Book';
+import { BookRepository } from '@domain/repositories/BookRepository';
+import { BookFindQuery } from '@domain/types/book/BookFindQuery';
+import { CreateBookQuery } from '@domain/types/book/CreateBookQuery';
+import { UpdateBookQuery } from '@domain/types/book/UpdateBookQuery';
+import { PaginatedResponse } from '@domain/types/pagination';
+import { BookModel, BookMongoDb } from '@infrastructure/models/book-model';
+import { QueryFilter } from 'mongoose';
+
+export class BookMongoRepository implements BookRepository {
+  async createOne(query: CreateBookQuery): Promise<Book> {
+    const newBook = new BookModel({
+      title: query.title,
+      description: query.description,
+      price: query.price,
+      author: query.author,
+      ownerId: query.ownerId,
+    });
+
+    const createdBook = await newBook.save();
+    return this.restoreBook(createdBook);
+  }
+
+  async findMany(query: BookFindQuery): Promise<PaginatedResponse<Book>> {
+    const searchQuery = this.buildSearchQuery(query);
+
+    const { skip, limit } = this.buildPagination(query);
+
+    const [books, total] = await Promise.all([
+      BookModel.find(searchQuery).skip(skip).limit(limit),
+      BookModel.countDocuments(searchQuery),
+    ]);
+
+    return {
+      meta: {
+        page: query.page,
+        limit: limit,
+        total,
+      },
+      content: books.map(book => this.restoreBook(book)),
+    };
+  }
+
+  async updateBookDetails(bookId: string, query: UpdateBookQuery): Promise<Book | null> {
+    const updateData = await BookModel.findByIdAndUpdate(bookId, query, {
+      returnDocument: 'after',
+    });
+    return updateData ? this.restoreBook(updateData) : null;
+  }
+
+  async findById(bookId: string): Promise<Book | null> {
+    const book = await BookModel.findById(bookId);
+    return book ? this.restoreBook(book) : null;
+  }
+
+  async markAsSold(bookId: string, buyerId: string, soldAt: Date): Promise<Book | null> {
+    const updated = await BookModel.findByIdAndUpdate(
+      bookId,
+      {
+        $set: {
+          ownerId: buyerId,
+          status: BookStatus.SOLD,
+          soldAt,
+        },
+      },
+      { returnDocument: 'after' }
+    );
+
+    return updated ? this.restoreBook(updated) : null;
+  }
+
+  async deleteBook(bookId: string): Promise<boolean> {
+    const deleteBook = await BookModel.findByIdAndDelete(bookId);
+    return !!deleteBook;
+  }
+
+  private buildSearchQuery(query: BookFindQuery): QueryFilter<BookMongoDb> {
+    const searchQuery: QueryFilter<BookMongoDb> = {};
+
+    if (query.search) {
+      searchQuery.$or = [
+        { title: { $regex: query.search, $options: 'i' } },
+        { author: { $regex: query.search, $options: 'i' } },
+      ];
+      return searchQuery;
+    }
+    if (query.author) {
+      searchQuery.author = { $regex: query.author, $options: 'i' };
+    }
+
+    if (query.title) {
+      searchQuery.title = { $regex: query.title, $options: 'i' };
+    }
+
+    if (query.ownerId) {
+      searchQuery.ownerId = query.ownerId;
+    }
+
+    return searchQuery;
+  }
+  private buildPagination(query: BookFindQuery): {
+    limit: number;
+    skip: number;
+  } {
+    const limit = query.limit;
+    const skip = (query.page - 1) * query.limit;
+
+    return { limit, skip };
+  }
+
+  private restoreBook(mongoBook: BookMongoDb): Book {
+    return new Book({
+      id: mongoBook._id.toString(),
+      title: mongoBook.title,
+      description: mongoBook.description,
+      price: mongoBook.price,
+      author: mongoBook.author,
+      status: mongoBook.status,
+      ownerId: mongoBook.ownerId.toString(),
+      soldAt: mongoBook.soldAt,
+      createdAt: mongoBook.createdAt,
+    });
+  }
+}
+</file>
+
+</files>
