@@ -35,7 +35,10 @@ class EnvironmentService {
     }
 
     try {
-      this.environmentVariables = environmentVariablesValidator.parse(variables.parsed);
+      this.environmentVariables = environmentVariablesValidator.parse({
+        ...variables.parsed,
+        ...process.env,
+      });
     } catch (error) {
       const errorMessage =
         error instanceof Error ? `Error validating environment variables ${error.message}` : '';
