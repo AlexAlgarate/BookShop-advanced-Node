@@ -57,7 +57,6 @@ describe('SendPriceReductionSuggestionUseCase', () => {
       findMany: vi.fn(),
       updateBookDetails: vi.fn(),
       findById: vi.fn(),
-      markAsSold: vi.fn(),
       deleteBook: vi.fn(),
     } as unknown as Mocked<BookRepository>;
 

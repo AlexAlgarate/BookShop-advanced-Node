@@ -8,6 +8,5 @@ export interface BookRepository {
   findMany(query: BookFindQuery): Promise<PaginatedResponse<Book>>;
   updateBookDetails(book: Book): Promise<Book | null>;
   findById(bookId: string): Promise<Book | null>;
-  markAsSold(bookId: string, buyerId: string, soldAt: Date): Promise<Book | null>;
   deleteBook(bookId: string): Promise<boolean>;
 }

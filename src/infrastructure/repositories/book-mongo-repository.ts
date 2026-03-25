@@ -1,4 +1,4 @@
-import { Book, BookStatus } from '@domain/entities/Book';
+import { Book } from '@domain/entities/Book';
 import { BookRepository } from '@domain/repositories/BookRepository';
 import { BookFindQuery } from '@domain/types/book/BookFindQuery';
 import { CreateBookQuery } from '@domain/types/book/CreateBookQuery';
@@ -64,22 +64,6 @@ export class BookMongoRepository implements BookRepository {
   async findById(bookId: string): Promise<Book | null> {
     const book = await BookModel.findById(bookId);
     return book ? this.restoreBook(book) : null;
-  }
-
-  async markAsSold(bookId: string, buyerId: string, soldAt: Date): Promise<Book | null> {
-    const updated = await BookModel.findByIdAndUpdate(
-      bookId,
-      {
-        $set: {
-          ownerId: buyerId,
-          status: BookStatus.SOLD,
-          soldAt,
-        },
-      },
-      { returnDocument: 'after' }
-    );
-
-    return updated ? this.restoreBook(updated) : null;
   }
 
   async deleteBook(bookId: string): Promise<boolean> {
