@@ -21,7 +21,7 @@ export class BuyBookUseCase {
     const sellerId = book.ownerId;
     const soldBook = book.sellTo(buyerId);
 
-    const updatedBook = await this.bookRepository.markAsSold(bookId, buyerId, soldBook.soldAt!);
+    const updatedBook = await this.bookRepository.updateBookDetails(soldBook);
     await this.notifyToSeller(sellerId, book.title, book.price);
 
     return updatedBook;

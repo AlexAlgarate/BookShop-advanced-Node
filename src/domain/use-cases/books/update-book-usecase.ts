@@ -18,8 +18,18 @@ export class UpdateBookUseCase {
     if (userId !== bookToUpdate.ownerId)
       throw new ForbiddenOperation('Only owner of the book can update this book');
 
-    const updatedBook = await this.bookRepository.updateBookDetails(bookId, query);
+    const updatedBook = new Book({
+      title: query.title ?? bookToUpdate.title,
+      description: query.description ?? bookToUpdate.description,
+      price: query.price ?? bookToUpdate.price,
+      author: query.author ?? bookToUpdate.author,
+      status: bookToUpdate.status,
+      ownerId: bookToUpdate.ownerId,
+      soldAt: bookToUpdate.soldAt,
+      id: bookToUpdate.id,
+      createdAt: bookToUpdate.createdAt,
+    });
 
-    return updatedBook;
+    return await this.bookRepository.updateBookDetails(updatedBook);
   }
 }

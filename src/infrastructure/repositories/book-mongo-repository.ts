@@ -2,7 +2,6 @@ import { Book, BookStatus } from '@domain/entities/Book';
 import { BookRepository } from '@domain/repositories/BookRepository';
 import { BookFindQuery } from '@domain/types/book/BookFindQuery';
 import { CreateBookQuery } from '@domain/types/book/CreateBookQuery';
-import { UpdateBookQuery } from '@domain/types/book/UpdateBookQuery';
 import { PaginatedResponse } from '@domain/types/pagination';
 import { BookModel, BookMongoDb } from '@infrastructure/models/book-model';
 import { QueryFilter } from 'mongoose';
@@ -41,10 +40,24 @@ export class BookMongoRepository implements BookRepository {
     };
   }
 
-  async updateBookDetails(bookId: string, query: UpdateBookQuery): Promise<Book | null> {
-    const updateData = await BookModel.findByIdAndUpdate(bookId, query, {
-      returnDocument: 'after',
-    });
+  async updateBookDetails(book: Book): Promise<Book | null> {
+    const updateData = await BookModel.findByIdAndUpdate(
+      book.id,
+      {
+        $set: {
+          title: book.title,
+          description: book.description,
+          price: book.price,
+          author: book.author,
+          status: book.status,
+          ownerId: book.ownerId,
+          soldAt: book.soldAt,
+        },
+      },
+      {
+        returnDocument: 'after',
+      }
+    );
     return updateData ? this.restoreBook(updateData) : null;
   }
 
