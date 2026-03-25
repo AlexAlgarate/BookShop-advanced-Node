@@ -45,6 +45,14 @@ export class Book extends Entity {
     this.ownerId = ownerId;
     this.soldAt = soldAt;
 
+    if (title.trim().length === 0) {
+      throw new BusinessConflictError('Book title cannot be empty');
+    }
+
+    if (price < 1) {
+      throw new BusinessConflictError('Book price must be at least 1');
+    }
+
     if (this.status === BookStatus.PUBLISHED && this.soldAt !== null)
       throw new Error('soldAt must be null when status is PUBLISHED');
 
