@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 
 import { connectToMongoDb } from '@infrastructure/database/mongo-connection';
-import { startHttpApi } from './ui/api';
+import { createApp, startHttpApi } from './ui/api';
 import { environmentService } from '@infrastructure/services/environment-service';
 import { startCronJobs } from '@ui/cron';
 import { initializeSentry } from '@infrastructure/monitoring/sentry.initializer';
@@ -21,7 +21,8 @@ const executeApp = async (): Promise<void> => {
 
     await connectToMongoDb();
     startCronJobs();
-    startHttpApi();
+    const app = createApp();
+    startHttpApi(app);
   } catch (error) {
     console.log('Unable to start application', error);
     process.exit(1);
