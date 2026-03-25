@@ -1,18 +1,17 @@
 import request from 'supertest';
-import { createRandomBook } from './helper';
-import { getTestApp } from '../setup';
-import { signupAndLogin } from '../authentication/helpers';
+import { getTestApp } from '@tests/setup';
 import {
   createBookResponseSchema,
   errorResponseSchema,
   updateBookResponseSchema,
-} from '../schemas/test-schemas';
+} from '@tests/schemas/test-schemas';
+import { createBookWithUser, getAuthToken } from '@tests/helpers';
 
 describe('PATCH /books/:bookId', () => {
   const BOOKS_URL = '/books';
   test('Given no authorization header, endpoint should return 401 status code', async () => {
-    const { newRandomBook } = await createRandomBook();
-    const validateBookId = createBookResponseSchema.parse(newRandomBook.body);
+    const { book } = await createBookWithUser();
+    const validateBookId = createBookResponseSchema.parse(book.body);
     const bookId = validateBookId.content.id;
 
     const response = await request(getTestApp())
@@ -24,8 +23,8 @@ describe('PATCH /books/:bookId', () => {
   });
 
   test('Given an invalid token, endpoint should return a 401 status code', async () => {
-    const { newRandomBook } = await createRandomBook();
-    const validateBookId = createBookResponseSchema.parse(newRandomBook.body);
+    const { book } = await createBookWithUser();
+    const validateBookId = createBookResponseSchema.parse(book.body);
     const bookId = validateBookId.content.id;
 
     const response = await request(getTestApp())
@@ -37,7 +36,7 @@ describe('PATCH /books/:bookId', () => {
   });
 
   test('Given a non existing book, return a 404 status code', async () => {
-    const { token } = await createRandomBook();
+    const { token } = await createBookWithUser();
 
     const response = await request(getTestApp())
       .patch(`${BOOKS_URL}/${'6979054b067bd17c70d31fbf'}`)
@@ -48,8 +47,8 @@ describe('PATCH /books/:bookId', () => {
   });
 
   test('Given an existing book, should return 200 and updated book', async () => {
-    const { token, newRandomBook } = await createRandomBook();
-    const validateBookId = createBookResponseSchema.parse(newRandomBook.body);
+    const { token, book } = await createBookWithUser();
+    const validateBookId = createBookResponseSchema.parse(book.body);
     const bookId = validateBookId.content.id;
 
     const updatedPayload = {
@@ -70,11 +69,11 @@ describe('PATCH /books/:bookId', () => {
   });
 
   test('Given an user that is not the book owner, return a 403 status code', async () => {
-    const { newRandomBook } = await createRandomBook();
-    const validateBookId = createBookResponseSchema.parse(newRandomBook.body);
+    const { book } = await createBookWithUser();
+    const validateBookId = createBookResponseSchema.parse(book.body);
     const bookId = validateBookId.content.id;
 
-    const tokenFromAnotherUser = await signupAndLogin('other-user@test.com', 'OtherPassword123');
+    const tokenFromAnotherUser = await getAuthToken();
 
     const response = await request(getTestApp())
       .patch(`${BOOKS_URL}/${bookId}`)
@@ -90,8 +89,8 @@ describe('PATCH /books/:bookId', () => {
   });
 
   test('Given an invalid payload, should return a 400', async () => {
-    const { newRandomBook, token } = await createRandomBook();
-    const validateBookId = createBookResponseSchema.parse(newRandomBook.body);
+    const { book, token } = await createBookWithUser();
+    const validateBookId = createBookResponseSchema.parse(book.body);
     const bookId = validateBookId.content.id;
 
     const response = await request(getTestApp())
@@ -103,8 +102,8 @@ describe('PATCH /books/:bookId', () => {
   });
 
   test('Should not allow updating immutable fields as id, ownerId', async () => {
-    const { newRandomBook, token } = await createRandomBook();
-    const validateBookId = createBookResponseSchema.parse(newRandomBook.body);
+    const { book, token } = await createBookWithUser();
+    const validateBookId = createBookResponseSchema.parse(book.body);
     const bookId = validateBookId.content.id;
 
     const response = await request(getTestApp())

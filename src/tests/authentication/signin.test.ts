@@ -1,7 +1,7 @@
 import request from 'supertest';
 import { faker } from '@faker-js/faker';
 
-import { getTestApp } from '../setup';
+import { getTestApp } from '@tests/setup';
 import { type SigninResponse, signinResponseSchema } from '../schemas/test-schemas';
 
 describe('POST /authentication/signin', () => {

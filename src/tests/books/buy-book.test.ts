@@ -1,14 +1,13 @@
 import request from 'supertest';
-import { createRandomBook } from './helper';
-import { getTestApp } from '../setup';
+import { createBookWithUser, getAuthToken } from '@tests/helpers';
+import { getTestApp } from '@tests/setup';
 import { faker } from '@faker-js/faker';
-import { signupAndLogin } from '../authentication/helpers';
 import { buyBookResponseSchema, errorResponseSchema } from '../schemas/test-schemas';
 
 describe('POST /books/:bookId/buy', () => {
   test('Should return 401 if user is not authenticated', async () => {
-    const { newRandomBook } = await createRandomBook();
-    const validateResponseId = buyBookResponseSchema.parse(newRandomBook.body);
+    const { book } = await createBookWithUser();
+    const validateResponseId = buyBookResponseSchema.parse(book.body);
     const bookId = validateResponseId.content.id;
     const response = await request(getTestApp()).post(`/books/${bookId}/buy`);
 
@@ -16,7 +15,7 @@ describe('POST /books/:bookId/buy', () => {
   });
 
   test('Should return 404 if book does not exist', async () => {
-    const { token } = await createRandomBook();
+    const token = await getAuthToken();
     const fakeBookId = '698f869c9d81e007ef244f4e';
 
     const response = await request(getTestApp())
@@ -33,8 +32,8 @@ describe('POST /books/:bookId/buy', () => {
 
   test('Should return 403 if user tries to buy theis own books', async () => {
     const email = faker.internet.email();
-    const { newRandomBook, token } = await createRandomBook(email);
-    const validateResponseId = buyBookResponseSchema.parse(newRandomBook.body);
+    const { book, token } = await createBookWithUser(email);
+    const validateResponseId = buyBookResponseSchema.parse(book.body);
     const bookId = validateResponseId.content.id;
 
     const response = await request(getTestApp())
@@ -48,14 +47,12 @@ describe('POST /books/:bookId/buy', () => {
   });
 
   test('The book is successfully purchased', async () => {
-    const sellerEmail = faker.internet.email();
-    const { newRandomBook } = await createRandomBook(sellerEmail);
+    const { book } = await createBookWithUser();
 
-    const validateResponseSeller = buyBookResponseSchema.parse(newRandomBook.body);
+    const validateResponseSeller = buyBookResponseSchema.parse(book.body);
     const bookId = validateResponseSeller.content.id;
 
-    const buyerEmail = faker.internet.email();
-    const buyerToken = await signupAndLogin(buyerEmail);
+    const buyerToken = await getAuthToken();
 
     const response = await request(getTestApp())
       .post(`/books/${bookId}/buy`)
@@ -75,19 +72,16 @@ describe('POST /books/:bookId/buy', () => {
   });
 
   test('Should return 409 if book is already sold', async () => {
-    const sellerEmail = faker.internet.email();
-    const { newRandomBook } = await createRandomBook(sellerEmail);
-    const validateResponseId = buyBookResponseSchema.parse(newRandomBook.body);
+    const { book } = await createBookWithUser();
+    const validateResponseId = buyBookResponseSchema.parse(book.body);
     const bookId = validateResponseId.content.id;
 
-    const firstBuyerEmail = faker.internet.email();
-    const firstBuyerToken = await signupAndLogin(firstBuyerEmail);
+    const firstBuyerToken = await getAuthToken();
     await request(getTestApp())
       .post(`/books/${bookId}/buy`)
       .set('Authorization', `Bearer ${firstBuyerToken}`);
 
-    const secondBuyerEmail = faker.internet.email();
-    const secondBuyerToken = await signupAndLogin(secondBuyerEmail);
+    const secondBuyerToken = await getAuthToken();
     const response = await request(getTestApp())
       .post(`/books/${bookId}/buy`)
       .set('Authorization', `Bearer ${secondBuyerToken}`);
@@ -99,16 +93,14 @@ describe('POST /books/:bookId/buy', () => {
   });
 
   test('Should update book status from PUBLISHED to SOLD', async () => {
-    const sellerEmail = faker.internet.email();
-    const { newRandomBook } = await createRandomBook(sellerEmail);
-    const validateResponseRandomBook = buyBookResponseSchema.parse(newRandomBook.body);
+    const { book } = await createBookWithUser();
+    const validateResponseRandomBook = buyBookResponseSchema.parse(book.body);
     const bookId = validateResponseRandomBook.content.id;
 
     expect(validateResponseRandomBook.content.status).toBe('PUBLISHED');
     expect(validateResponseRandomBook.content.soldAt).toBeNull();
 
-    const buyerEmail = faker.internet.email();
-    const buyerToken = await signupAndLogin(buyerEmail);
+    const buyerToken = await getAuthToken();
 
     const response = await request(getTestApp())
       .post(`/books/${bookId}/buy`)

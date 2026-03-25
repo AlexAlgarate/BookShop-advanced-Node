@@ -3,8 +3,8 @@ import request from 'supertest';
 import { faker } from '@faker-js/faker';
 import bcrypt from 'bcryptjs';
 
-import { getTestApp } from '../setup';
-import { signupResponseSchema } from '../schemas/test-schemas';
+import { getTestApp } from '@tests/setup';
+import { signupResponseSchema } from '@tests/schemas/test-schemas';
 
 describe('POST /authentication/signup', () => {
   const AUTHENTICATION_URL = '/authentication/signup';

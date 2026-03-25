@@ -8,6 +8,7 @@ export default defineConfig({
       '@infrastructure': path.resolve(__dirname, './src/infrastructure'),
       '@ui': path.resolve(__dirname, './src/ui'),
       '@di': path.resolve(__dirname, './src/di'),
+      '@tests': path.resolve(__dirname, './src/tests'),
     },
   },
   test: {

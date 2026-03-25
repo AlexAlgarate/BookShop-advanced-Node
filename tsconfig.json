@@ -32,7 +32,8 @@
       "@domain/*": ["domain/*"],
       "@infrastructure/*": ["infrastructure/*"],
       "@ui/*": ["ui/*"],
-      "@di/*": ["di/*"]
+      "@di/*": ["di/*"],
+      "@tests/*": ["tests/*"]
     },
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true

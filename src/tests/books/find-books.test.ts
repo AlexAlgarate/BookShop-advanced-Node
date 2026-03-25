@@ -1,7 +1,7 @@
 import request from 'supertest';
-import { createRandomBook } from './helper';
-import { getTestApp } from '../setup';
+import { getTestApp } from '@tests/setup';
 import { createBookResponseSchema, findBooksResponseSchema } from '../schemas/test-schemas';
+import { createBookWithUser } from '@tests/helpers';
 
 describe('GET /books', () => {
   const BOOKS_URL = '/books';
@@ -14,9 +14,9 @@ describe('GET /books', () => {
   });
 
   test('Should return 200 and a list of books', async () => {
-    await createRandomBook();
-    await createRandomBook();
-    await createRandomBook(undefined, { status: 'SOLD', soldAt: new Date().toISOString() });
+    await createBookWithUser();
+    await createBookWithUser();
+    await createBookWithUser(undefined, { status: 'SOLD', soldAt: new Date().toISOString() });
 
     const response = await request(getTestApp()).get(BOOKS_URL);
     expect(response.status).toBe(200);
@@ -30,8 +30,8 @@ describe('GET /books', () => {
   });
 
   test('Should return only PUBLISHED books', async () => {
-    await createRandomBook();
-    await createRandomBook();
+    await createBookWithUser();
+    await createBookWithUser();
 
     const response = await request(getTestApp()).get(BOOKS_URL);
     expect(response.status).toBe(200);
@@ -43,8 +43,8 @@ describe('GET /books', () => {
   });
 
   test('Should allow searching by title', async () => {
-    const { newRandomBook } = await createRandomBook();
-    const validateTitle = createBookResponseSchema.parse(newRandomBook.body as unknown);
+    const { book } = await createBookWithUser();
+    const validateTitle = createBookResponseSchema.parse(book.body as unknown);
     const title = validateTitle.content.title;
 
     const response = await request(getTestApp()).get(`${BOOKS_URL}/?search=${title}`);
@@ -56,8 +56,8 @@ describe('GET /books', () => {
   });
 
   test('Should allow searching by author', async () => {
-    const { newRandomBook } = await createRandomBook();
-    const validateAuthor = createBookResponseSchema.parse(newRandomBook.body as unknown);
+    const { book } = await createBookWithUser();
+    const validateAuthor = createBookResponseSchema.parse(book.body as unknown);
     const author = validateAuthor.content.author;
 
     const response = await request(getTestApp()).get(`${BOOKS_URL}/?search=${author}`);
@@ -79,7 +79,7 @@ describe('GET /books', () => {
   });
 
   test('Should respect page and limit query params', async () => {
-    await Promise.all(Array.from({ length: 12 }).map(() => createRandomBook()));
+    await Promise.all(Array.from({ length: 12 }).map(() => createBookWithUser()));
 
     const response = await request(getTestApp()).get(`${BOOKS_URL}?page=1&limit=5`);
     const validateResponse = findBooksResponseSchema.parse(response.body);
@@ -97,7 +97,7 @@ describe('GET /books', () => {
   });
 
   test('Should return consistent book shape', async () => {
-    await createRandomBook();
+    await createBookWithUser();
 
     const response = await request(getTestApp()).get(BOOKS_URL);
     const validateResponse = findBooksResponseSchema.parse(response.body);
@@ -118,7 +118,7 @@ describe('GET /books', () => {
   });
 
   test('Should return empty array when page exceeds total pages', async () => {
-    await createRandomBook();
+    await createBookWithUser();
 
     const response = await request(getTestApp()).get(`${BOOKS_URL}?page=999&limit=5`);
     const validateResponse = findBooksResponseSchema.parse(response.body);

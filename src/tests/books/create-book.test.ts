@@ -1,8 +1,8 @@
 import request from 'supertest';
-import { createRandomBook } from './helper';
-import { getTestApp } from '../setup';
+import { getTestApp } from '@tests/setup';
 import { faker } from '@faker-js/faker';
 import { createBookResponseSchema } from '../schemas/test-schemas';
+import { createBookWithUser, getAuthToken } from '@tests/helpers';
 
 describe('POST /books', () => {
   const BOOKS_URL = '/books';
@@ -23,7 +23,7 @@ describe('POST /books', () => {
   });
 
   test('Given not all book parameters, should return 400', async () => {
-    const { token } = await createRandomBook();
+    const token = await getAuthToken();
 
     const response = await request(getTestApp())
       .post(BOOKS_URL)
@@ -34,7 +34,7 @@ describe('POST /books', () => {
   });
 
   test('Should return 400 if parameters have invalid types', async () => {
-    const { token } = await createRandomBook();
+    const token = await getAuthToken();
 
     const response = await request(getTestApp())
       .post(BOOKS_URL)
@@ -52,7 +52,7 @@ describe('POST /books', () => {
   });
 
   test('Book should be created, returning 201', async () => {
-    const { token } = await createRandomBook();
+    const token = await getAuthToken();
 
     const newBook = {
       title: faker.book.title(),
@@ -74,8 +74,8 @@ describe('POST /books', () => {
   });
 
   test('Initial book status always should be PUBLISHED, instead returns 400', async () => {
-    const { newRandomBook, token } = await createRandomBook();
-    const invalidBook = { ...newRandomBook, status: 'SOLD' };
+    const { book, token } = await createBookWithUser();
+    const invalidBook = { ...book, status: 'SOLD' };
 
     const response = await request(getTestApp())
       .post(BOOKS_URL)
@@ -86,9 +86,9 @@ describe('POST /books', () => {
   });
 
   test('soldAt always should be null when a book is created', async () => {
-    const { newRandomBook, token } = await createRandomBook();
+    const { book, token } = await createBookWithUser();
 
-    const invalidBook = { ...newRandomBook, soldAt: new Date() };
+    const invalidBook = { ...book, soldAt: new Date() };
 
     const response = await request(getTestApp())
       .post(BOOKS_URL)
@@ -99,8 +99,8 @@ describe('POST /books', () => {
   });
 
   test('The price cannot be negative', async () => {
-    const { newRandomBook, token } = await createRandomBook();
-    const invalidBook = { ...newRandomBook, price: -10 };
+    const { book, token } = await createBookWithUser();
+    const invalidBook = { ...book, price: -10 };
 
     const response = await request(getTestApp())
       .post(BOOKS_URL)

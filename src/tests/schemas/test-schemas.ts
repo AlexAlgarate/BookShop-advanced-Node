@@ -62,6 +62,13 @@ export const errorResponseSchema = z.object({
     .optional(),
 });
 
+export type BookOverrides = Partial<
+  Pick<
+    z.infer<typeof bookSchema>,
+    'title' | 'description' | 'price' | 'author' | 'status' | 'soldAt'
+  >
+>;
+
 export type SignupResponse = z.infer<typeof signupResponseSchema>;
 export type SigninResponse = z.infer<typeof signinResponseSchema>;
 export type Book = z.infer<typeof bookSchema>;
