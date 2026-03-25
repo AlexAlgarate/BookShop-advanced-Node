@@ -29,7 +29,7 @@ export class DeleteBookUseCase {
 
   private ensureUserIsOwner(userId: string, ownerId: string): void {
     if (userId !== ownerId) {
-      throw new ForbiddenOperation('Forbidden operation');
+      throw new ForbiddenOperation('Only the owner can delete this book');
     }
   }
 }

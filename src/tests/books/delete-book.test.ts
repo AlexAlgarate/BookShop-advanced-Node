@@ -100,7 +100,7 @@ describe('DELETE /books/:bookId', () => {
       expect(response.status).toBe(403);
 
       const validateResponse = deleteBookResponseSchema.parse(response.body);
-      expect(validateResponse.message).toBe('Forbidden operation');
+      expect(validateResponse.message).toBe('Only the owner can delete this book');
     });
   });
 });
