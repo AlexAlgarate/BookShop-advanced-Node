@@ -11,6 +11,7 @@ import { LoginUserUseCase } from '@domain/use-cases/user/login-user-usecase';
 import { BookRepository } from '@domain/repositories/BookRepository';
 import { UserRepository } from '@domain/repositories/UserRepository';
 import { EmailService } from '@domain/services/EmailService';
+import { LoggerService } from '@domain/services/LoggerService';
 import { SecurityService } from '@domain/services/SecurityService';
 import { NotificationTemplateService } from '@domain/services/NotificationTemplateService';
 
@@ -28,6 +29,7 @@ import {
   BOOK_REPOSITORY,
   USER_REPOSITORY,
   EMAIL_SERVICE,
+  LOGGER_SERVICE,
   SECURITY_SERVICE,
   NOTIFICATION_TEMPLATE_SERVICE,
 } from './tokens';
@@ -63,7 +65,8 @@ export function registerUseCaseBindings(): void {
     const userRepo = context.get<UserRepository>(USER_REPOSITORY);
     const emailSvc = context.get<EmailService>(EMAIL_SERVICE);
     const templateSvc = context.get<NotificationTemplateService>(NOTIFICATION_TEMPLATE_SERVICE);
-    return new BuyBookUseCase(bookRepo, userRepo, emailSvc, templateSvc);
+    const loggerSvc = context.get<LoggerService>(LOGGER_SERVICE);
+    return new BuyBookUseCase(bookRepo, userRepo, emailSvc, templateSvc, loggerSvc);
   });
 
   container.bind(SEND_PRICE_REDUCTION_USE_CASE).toDynamicValue(context => {

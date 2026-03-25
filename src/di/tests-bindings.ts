@@ -1,6 +1,7 @@
 import { BookRepository } from '@domain/repositories/BookRepository';
 import { UserRepository } from '@domain/repositories/UserRepository';
 import { EmailService } from '@domain/services/EmailService';
+import { LoggerService } from '@domain/services/LoggerService';
 import { SecurityService } from '@domain/services/SecurityService';
 import { NotificationTemplateService } from '@domain/services/NotificationTemplateService';
 
@@ -14,6 +15,7 @@ import {
   BOOK_REPOSITORY,
   USER_REPOSITORY,
   EMAIL_SERVICE,
+  LOGGER_SERVICE,
   SECURITY_SERVICE,
   NOTIFICATION_TEMPLATE_SERVICE,
 } from './tokens';
@@ -28,6 +30,11 @@ export function registerTestBindings(): void {
     .bind<NotificationTemplateService>(NOTIFICATION_TEMPLATE_SERVICE)
     .to(NotificationTemplateServiceImpl)
     .inSingletonScope();
+  container.bind<LoggerService>(LOGGER_SERVICE).toConstantValue({
+    log: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+  });
   container.bind<EmailService>(EMAIL_SERVICE).toConstantValue({
     sendEmailToSeller: vi.fn(),
   });

@@ -7,11 +7,14 @@ import { startCronJobs } from '@ui/cron';
 import { initializeSentry } from '@infrastructure/monitoring/sentry.initializer';
 import { registerInfrastructureBindings } from '@di/infrastructure-bindings';
 import { registerUseCaseBindings } from '@di/usecase-bindings';
+import { getLogger } from './infrastructure/services/logger-init';
+
+const logger = getLogger();
 
 const executeApp = async (): Promise<void> => {
   try {
-    console.log('-- Starting application --');
-    console.log('...loading environment');
+    logger.log('-- Starting application --');
+    logger.log('...loading environment');
     environmentService.load();
 
     initializeSentry();
@@ -22,9 +25,9 @@ const executeApp = async (): Promise<void> => {
     await connectToMongoDb();
     startCronJobs();
     const app = createApp();
-    startHttpApi(app);
+    startHttpApi(app, logger);
   } catch (error) {
-    console.log('Unable to start application', error);
+    logger.error('Unable to start application', error as Error);
     process.exit(1);
   }
 };

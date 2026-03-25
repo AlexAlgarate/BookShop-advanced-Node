@@ -1,12 +1,16 @@
-import { useCases } from '@di/use-case-resolver';
+import { getControllers } from '@di/controller-factory';
+import { getLogger } from '@infrastructure/services/logger-init';
+
+const logger = getLogger();
 
 export const priceReductionJobController = async (): Promise<void> => {
-  console.log('Initializing price reduction suggestion job...');
+  logger.log('Initializing price reduction suggestion job...');
 
   try {
-    await useCases.sendPriceReduction().execute();
-    console.log('Price reduction suggestion emails sent successfully!');
+    const { sendPriceReductionUseCase } = getControllers();
+    await sendPriceReductionUseCase().execute();
+    logger.log('Price reduction suggestion emails sent successfully!');
   } catch (error) {
-    console.error('Error sending price reduction suggestions:', error);
+    logger.error('Error sending price reduction suggestions:', error as Error);
   }
 };

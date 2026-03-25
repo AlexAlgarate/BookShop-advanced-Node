@@ -1,5 +1,8 @@
 import { schedule } from 'node-cron';
 import { priceReductionJobController } from './controllers/jobs/price-reduction-job-controller';
+import { getLogger } from '@infrastructure/services/logger-init';
+
+const logger = getLogger();
 
 export const startCronJobs = (): void => {
   const weeklyPriceReductionJob = '0 10 * * 1';
@@ -8,5 +11,5 @@ export const startCronJobs = (): void => {
   schedule(weeklyPriceReductionJob, async () => {
     await priceReductionJobController();
   });
-  console.log('Cron jobs started!');
+  logger.log('Cron jobs started!');
 };

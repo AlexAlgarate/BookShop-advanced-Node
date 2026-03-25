@@ -1,6 +1,7 @@
 import { Book } from '@domain/entities/Book';
 import { BookRepository } from '@domain/repositories/BookRepository';
 import { EmailServiceError, EntityNotFoundError } from '@domain/types/errors';
+import { LoggerService } from '@domain/services/LoggerService';
 import { UserRepository } from '@domain/repositories/UserRepository';
 import { EmailService } from '@domain/services/EmailService';
 import { NotificationTemplateService } from '@domain/services/NotificationTemplateService';
@@ -11,7 +12,8 @@ export class BuyBookUseCase {
     private readonly bookRepository: BookRepository,
     private readonly userRepository: UserRepository,
     private readonly emailService: EmailService,
-    private readonly templateService: NotificationTemplateService
+    private readonly templateService: NotificationTemplateService,
+    private readonly loggerService: LoggerService
   ) {}
 
   public async execute({ bookId, buyerId }: BuyBookQuery): Promise<Book | null> {
@@ -41,7 +43,7 @@ export class BuyBookUseCase {
       }
     } catch (error) {
       if (error instanceof EmailServiceError) {
-        console.warn(error.message);
+        this.loggerService.warn(error.message);
         return;
       }
       throw error;
