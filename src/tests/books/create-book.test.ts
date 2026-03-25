@@ -2,111 +2,171 @@ import request from 'supertest';
 import { getTestApp } from '@tests/setup';
 import { faker } from '@faker-js/faker';
 import { createBookResponseSchema } from '../schemas/test-schemas';
-import { createBookWithUser, getAuthToken } from '@tests/helpers';
+import { buildBookPayload, createBook, createBookWithUser, getAuthToken } from '@tests/helpers';
 
 describe('POST /books', () => {
   const BOOKS_URL = '/books';
 
-  test('Given no authorization header, sould return 401', async () => {
-    const response = await request(getTestApp()).post(BOOKS_URL).send({});
+  describe('Authentication', () => {
+    test('Given no authorization header, sould return 401', async () => {
+      const response = await request(getTestApp()).post(BOOKS_URL).send(buildBookPayload());
 
-    expect(response.status).toBe(401);
-  });
+      expect(response.status).toBe(401);
+    });
 
-  test('Given an invalid token, should return 401', async () => {
-    const response = await request(getTestApp())
-      .post(BOOKS_URL)
-      .set('Authorization', 'Bearer invalid-token')
-      .send({});
+    test('Given an invalid token, should return 401', async () => {
+      const response = await request(getTestApp())
+        .post(BOOKS_URL)
+        .set('Authorization', 'Bearer invalid-token')
+        .send(buildBookPayload());
 
-    expect(response.status).toBe(401);
-  });
-
-  test('Given not all book parameters, should return 400', async () => {
-    const token = await getAuthToken();
-
-    const response = await request(getTestApp())
-      .post(BOOKS_URL)
-      .set('Authorization', `Bearer ${token}`)
-      .send({ title: faker.book.title() });
-
-    expect(response.status).toBe(400);
-  });
-
-  test('Should return 400 if parameters have invalid types', async () => {
-    const token = await getAuthToken();
-
-    const response = await request(getTestApp())
-      .post(BOOKS_URL)
-      .set('Authorization', `Bearer ${token}`)
-      .send({
-        title: faker.book.title(),
-        description: faker.commerce.productDescription(),
-        price: 'not-a-number',
-        author: faker.book.author(),
-        status: 'PUBLISHED',
-        soldAt: null,
-      });
-
-    expect(response.status).toBe(400);
+      expect(response.status).toBe(401);
+    });
   });
 
   test('Book should be created, returning 201', async () => {
     const token = await getAuthToken();
+    const payload = buildBookPayload();
 
-    const newBook = {
-      title: faker.book.title(),
-      description: faker.commerce.productDescription(),
-      price: parseInt(faker.commerce.price(), 10),
-      author: faker.book.author(),
-    };
-
-    const response = await request(getTestApp())
-      .post(BOOKS_URL)
-      .set('Authorization', `Bearer ${token}`)
-      .send(newBook);
+    const response = await createBook(token, payload);
 
     const validateResponse = createBookResponseSchema.parse(response.body);
 
     expect(response.status).toBe(201);
-    expect(validateResponse.content.title).toBe(newBook.title);
-    //!
+    expect(validateResponse.content.title).toBe(payload.title);
+    expect(validateResponse.content.price).toBe(payload.price);
+    expect(validateResponse.content.description).toBe(payload.description);
+    expect(validateResponse.content.author).toBe(payload.author);
   });
 
-  test('Initial book status always should be PUBLISHED, instead returns 400', async () => {
-    const { book, token } = await createBookWithUser();
-    const invalidBook = { ...book, status: 'SOLD' };
+  test('Created book should always have PUBLISHED status', async () => {
+    const token = await getAuthToken();
 
-    const response = await request(getTestApp())
-      .post(BOOKS_URL)
-      .set('Authorization', `Bearer ${token}`)
-      .send(invalidBook);
+    const response = await createBook(token);
+    const validated = createBookResponseSchema.parse(response.body);
 
-    expect(response.status).toBe(400);
+    expect(validated.content.status).toBe('PUBLISHED');
   });
 
-  test('soldAt always should be null when a book is created', async () => {
-    const { book, token } = await createBookWithUser();
+  test('Created book should always have null soldAt', async () => {
+    const token = await getAuthToken();
 
-    const invalidBook = { ...book, soldAt: new Date() };
+    const response = await createBook(token);
+    const validated = createBookResponseSchema.parse(response.body);
 
-    const response = await request(getTestApp())
-      .post(BOOKS_URL)
-      .set('Authorization', `Bearer ${token}`)
-      .send(invalidBook);
+    expect(validated.content.soldAt).toBeNull();
+  });
+  describe('Validation', () => {
+    test('Given no payload, should return 400', async () => {
+      const token = await getAuthToken();
 
-    expect(response.status).toBe(400);
+      const response = await request(getTestApp())
+        .post(BOOKS_URL)
+        .set('Authorization', `Bearer ${token}`)
+        .send({});
+
+      expect(response.status).toBe(400);
+    });
+
+    test('Given a partial payload, should return 400', async () => {
+      const token = await getAuthToken();
+
+      const response = await request(getTestApp())
+        .post(BOOKS_URL)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ title: faker.book.title() });
+
+      expect(response.status).toBe(400);
+    });
+
+    test('Given a negative price, should return 400', async () => {
+      const token = await getAuthToken();
+
+      const response = await request(getTestApp())
+        .post(BOOKS_URL)
+        .set('Authorization', `Bearer ${token}`)
+        .send(buildBookPayload({ price: -2 }));
+
+      expect(response.status).toBe(400);
+    });
+
+    test('Given a price of 0, should return 400', async () => {
+      const token = await getAuthToken();
+
+      const response = await request(getTestApp())
+        .post(BOOKS_URL)
+        .set('Authorization', `Bearer ${token}`)
+        .send(buildBookPayload({ price: 0 }));
+
+      expect(response.status).toBe(400);
+    });
+
+    test('Given a non-numeric price, should return 400', async () => {
+      const token = await getAuthToken();
+
+      const response = await request(getTestApp())
+        .post(BOOKS_URL)
+        .set('Authorization', `Bearer ${token}`)
+        .send(buildBookPayload({ price: 'not-a-number' as unknown as number }));
+
+      expect(response.status).toBe(400);
+    });
+
+    test('Given a title longer than 200 characters, should return 400', async () => {
+      const token = await getAuthToken();
+
+      const response = await request(getTestApp())
+        .post(BOOKS_URL)
+        .set('Authorization', `Bearer ${token}`)
+        .send(buildBookPayload({ title: 'q'.repeat(201) }));
+
+      expect(response.status).toBe(400);
+    });
+
+    test('Given a status field in the payload, should return 400', async () => {
+      const { token, response: book } = await createBookWithUser();
+
+      const response = await request(getTestApp())
+        .post(BOOKS_URL)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ ...book, status: 'SOLD' });
+
+      expect(response.status).toBe(400);
+    });
+
+    test('Given a soldAt field in the payload, should return 400', async () => {
+      const { token, response: book } = await createBookWithUser();
+
+      const response = await request(getTestApp())
+        .post(BOOKS_URL)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ ...book, soldAt: new Date().toISOString() });
+
+      expect(response.status).toBe(400);
+    });
   });
 
-  test('The price cannot be negative', async () => {
-    const { book, token } = await createBookWithUser();
-    const invalidBook = { ...book, price: -10 };
+  describe('Business rules', () => {
+    test('The same user can create multiple books', async () => {
+      const token = await getAuthToken();
 
-    const response = await request(getTestApp())
-      .post(BOOKS_URL)
-      .set('Authorization', `Bearer ${token}`)
-      .send(invalidBook);
+      const response1 = await createBook(token);
+      const response2 = await createBook(token);
 
-    expect(response.status).toBe(400);
+      expect(response1.status).toBe(201);
+      expect(response2.status).toBe(201);
+    });
+    test('Multiple users can create books with the same title', async () => {
+      const sharedTitle = faker.book.title();
+
+      const token1 = await getAuthToken();
+      const token2 = await getAuthToken();
+
+      const response1 = await createBook(token1, { title: sharedTitle });
+      const response2 = await createBook(token2, { title: sharedTitle });
+
+      expect(response1.status).toBe(201);
+      expect(response2.status).toBe(201);
+    });
   });
 });
