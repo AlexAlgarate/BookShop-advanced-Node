@@ -1,6 +1,11 @@
 import request, { Test, Response } from 'supertest';
 import { faker } from '@faker-js/faker';
-import { BookOverrides, signinResponseSchema } from './schemas/test-schemas';
+import {
+  BookOverrides,
+  createBookResponseSchema,
+  signinResponseSchema,
+  Book,
+} from '@tests/schemas/test-schemas';
 import { getTestApp } from '@tests/setup';
 
 export const VALID_PASSWORD = 'Qwertyui1.';
@@ -41,8 +46,9 @@ export const createBook = (token: string, overrides: BookOverrides = {}): Test =
 export const createBookWithUser = async (
   email?: string,
   overrides: BookOverrides = {}
-): Promise<{ book: Response; token: string }> => {
+): Promise<{ response: Response; token: string; bookId: string; book: Book }> => {
   const token = await getAuthToken(email);
-  const book = await createBook(token, overrides);
-  return { book, token };
+  const response = await createBook(token, overrides);
+  const parsedBook = createBookResponseSchema.parse(response.body);
+  return { response, token, bookId: parsedBook.content.id, book: parsedBook.content };
 };

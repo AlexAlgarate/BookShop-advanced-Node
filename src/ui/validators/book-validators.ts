@@ -5,12 +5,12 @@ export const createBookBodySchema = z.object({
   description: z
     .string()
     .min(1, 'Description is required')
-    .max(1500, 'Description must be less than 200 characters'),
+    .max(1500, 'Description must be less than 1500 characters'),
   price: z.number().positive('Price must be positive').min(0.01, 'Price must be at least 0.01'),
   author: z
     .string()
     .min(1, 'Author is required')
-    .max(100, 'Author must be less than 200 characters'),
+    .max(100, 'Author must be less than 100 characters'),
 });
 
 export const authenticatedUserSchema = z.object({
@@ -23,11 +23,15 @@ export const bookIdParamsSchema = z.object({
 
 export const updateBookBodySchema = z
   .object({
-    title: z.string().min(3, 'Title must be at least 3 characters').optional(),
+    title: z
+      .string()
+      .min(3, 'Title must be at least 3 characters')
+      .max(200, 'Title must be less than 200 characters')
+      .optional(),
     description: z
       .string()
       .min(10, 'Description must be at least 10 characters')
-      .max(1500, 'Description must be at most 150 characters')
+      .max(1500, 'Description must be at most 1500 characters')
       .optional(),
     price: z
       .number()
@@ -37,7 +41,7 @@ export const updateBookBodySchema = z
     author: z
       .string()
       .min(1, 'Author is required')
-      .max(100, 'Author must be less than 200 characters')
+      .max(100, 'Author must be less than 100 characters')
       .optional(),
   })
   .strict();

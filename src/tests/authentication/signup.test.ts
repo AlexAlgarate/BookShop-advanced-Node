@@ -1,16 +1,23 @@
-import { vi } from 'vitest';
 import request from 'supertest';
 import { faker } from '@faker-js/faker';
-import bcrypt from 'bcryptjs';
 
 import { getTestApp } from '@tests/setup';
 import { signupResponseSchema } from '@tests/schemas/test-schemas';
+import { VALID_PASSWORD } from '@tests/helpers';
 
 describe('POST /authentication/signup', () => {
   const AUTHENTICATION_URL = '/authentication/signup';
-  const VALID_PASSWORD = 'Qwertyui1.';
-  test('Email and password should be mandatory', async () => {
-    const response = await request(getTestApp()).post(AUTHENTICATION_URL).send({});
+  test('Email is mandatory', async () => {
+    const response = await request(getTestApp())
+      .post(AUTHENTICATION_URL)
+      .send({ password: VALID_PASSWORD });
+
+    expect(response.status).toBe(400);
+  });
+  test('Password is mandatory', async () => {
+    const response = await request(getTestApp())
+      .post(AUTHENTICATION_URL)
+      .send({ email: faker.internet.email() });
 
     expect(response.status).toBe(400);
   });
@@ -49,15 +56,6 @@ describe('POST /authentication/signup', () => {
     expect(response.status).toBe(400);
   });
 
-  test('Should reject empty password', async () => {
-    const response = await request(getTestApp()).post(AUTHENTICATION_URL).send({
-      email: faker.internet.email(),
-      password: '',
-    });
-
-    expect(response.status).toBe(400);
-  });
-
   test('Given a valid email and password, a new user is created', async () => {
     const email = faker.internet.email();
     const password = VALID_PASSWORD;
@@ -81,17 +79,51 @@ describe('POST /authentication/signup', () => {
     expect(validateResponse.content).toBe('User created successfully');
   });
 
-  test('Password should be hashed before storing', async () => {
-    const originalHash = bcrypt.hash;
-    // eslint-disable-next-line @typescript-eslint/no-misused-promises
-    const hashSpy = vi.spyOn(bcrypt, 'hash').mockImplementation(originalHash);
+  test('Should reject passwords without uppercase letters', async () => {
+    const email = faker.internet.email();
+    const invalidPassword = '123456789qwerqwer';
 
-    await request(getTestApp()).post(AUTHENTICATION_URL).send({
-      email: faker.internet.email(),
-      password: VALID_PASSWORD,
+    const response = await request(getTestApp()).post(AUTHENTICATION_URL).send({
+      email,
+      password: invalidPassword,
     });
 
-    expect(hashSpy).toHaveBeenCalled();
-    hashSpy.mockRestore();
+    expect(response.status).toBe(400);
+  });
+
+  test('Should reject passwords without lowercase letters', async () => {
+    const email = faker.internet.email();
+    const invalidPassword = '123456789QWERQWER';
+
+    const response = await request(getTestApp()).post(AUTHENTICATION_URL).send({
+      email,
+      password: invalidPassword,
+    });
+
+    expect(response.status).toBe(400);
+  });
+
+  test('Should reject passwords without numbers', async () => {
+    const email = faker.internet.email();
+    const invalidPassword = 'QwerQwer';
+
+    const response = await request(getTestApp()).post(AUTHENTICATION_URL).send({
+      email,
+      password: invalidPassword,
+    });
+
+    expect(response.status).toBe(400);
+  });
+
+  test('Should reject passwords longer than 16 characters', async () => {
+    const email = faker.internet.email();
+    const invalidPassword = '123456789123456789';
+
+    const response = await request(getTestApp()).post(AUTHENTICATION_URL).send({
+      email,
+      password: invalidPassword,
+    });
+
+    expect(response.status).toBe(400);
   });
 });

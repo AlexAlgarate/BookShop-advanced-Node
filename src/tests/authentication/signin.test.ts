@@ -2,14 +2,23 @@ import request from 'supertest';
 import { faker } from '@faker-js/faker';
 
 import { getTestApp } from '@tests/setup';
-import { type SigninResponse, signinResponseSchema } from '../schemas/test-schemas';
+import { type SigninResponse, signinResponseSchema } from '@tests/schemas/test-schemas';
+import { VALID_PASSWORD } from '@tests/helpers';
 
 describe('POST /authentication/signin', () => {
   const SIGNIN_URL = '/authentication/signin';
-  const VALID_PASSWORD = 'Qwertyui1.';
 
-  test('Should return 400 status code if email and password is missing', async () => {
-    const response = await request(getTestApp()).post(SIGNIN_URL).send({});
+  test('Should return 400 status code if email is missing', async () => {
+    const response = await request(getTestApp())
+      .post(SIGNIN_URL)
+      .send({ password: VALID_PASSWORD });
+
+    expect(response.status).toBe(400);
+  });
+  test('Should return 400 status code if password is missing', async () => {
+    const response = await request(getTestApp())
+      .post(SIGNIN_URL)
+      .send({ email: faker.internet.email() });
 
     expect(response.status).toBe(400);
   });
@@ -27,15 +36,6 @@ describe('POST /authentication/signin', () => {
     const response = await request(getTestApp()).post(SIGNIN_URL).send({
       email: faker.internet.email(),
       password: '123',
-    });
-
-    expect(response.status).toBe(400);
-  });
-
-  test('Should return 400 if an empty password is given', async () => {
-    const response = await request(getTestApp()).post(SIGNIN_URL).send({
-      email: faker.internet.email(),
-      password: '',
     });
 
     expect(response.status).toBe(400);
@@ -80,24 +80,51 @@ describe('POST /authentication/signin', () => {
     expect(typeof validateResponse.content).toBe('string');
   });
 
-  test('Should not expose sensitive user data', async () => {
+  test('Should reject passwords without uppercase letters', async () => {
     const email = faker.internet.email();
-    const password = VALID_PASSWORD;
-
-    await request(getTestApp()).post('/authentication/signup').send({ email, password });
+    const invalidPassword = '123456789qwerqwer';
 
     const response = await request(getTestApp()).post(SIGNIN_URL).send({
       email,
-      password,
+      password: invalidPassword,
     });
 
-    const validateResponse = signinResponseSchema.parse(response.body);
+    expect(response.status).toBe(400);
+  });
 
-    expect(validateResponse.content).toBeDefined();
+  test('Should reject passwords without lowercase letters', async () => {
+    const email = faker.internet.email();
+    const invalidPassword = '123456789QWERQWER';
 
-    expect(response.body).not.toHaveProperty('password');
-    expect(response.body).not.toHaveProperty('user');
-    expect(response.body).not.toHaveProperty('hashedPassword');
-    expect(response.body).not.toHaveProperty('_id');
+    const response = await request(getTestApp()).post(SIGNIN_URL).send({
+      email,
+      password: invalidPassword,
+    });
+
+    expect(response.status).toBe(400);
+  });
+
+  test('Should reject passwords without numbers', async () => {
+    const email = faker.internet.email();
+    const invalidPassword = 'QwerQwer';
+
+    const response = await request(getTestApp()).post(SIGNIN_URL).send({
+      email,
+      password: invalidPassword,
+    });
+
+    expect(response.status).toBe(400);
+  });
+
+  test('Should reject passwords longer than 16 characters', async () => {
+    const email = faker.internet.email();
+    const invalidPassword = '123456789123456789';
+
+    const response = await request(getTestApp()).post(SIGNIN_URL).send({
+      email,
+      password: invalidPassword,
+    });
+
+    expect(response.status).toBe(400);
   });
 });

@@ -2,34 +2,34 @@ import request from 'supertest';
 import { createBookWithUser, getAuthToken } from '@tests/helpers';
 import { getTestApp } from '@tests/setup';
 import { faker } from '@faker-js/faker';
-import { createBookResponseSchema, getUserBooksResponseSchema } from '@tests/schemas/test-schemas';
+import { getUserBooksResponseSchema } from '@tests/schemas/test-schemas';
 
 describe('GET /me/books', () => {
   const ME_BOOKS_URL = '/me/books';
 
-  test('Given no authorization header, should return 401 status code', async () => {
-    const response = await request(getTestApp()).get(ME_BOOKS_URL);
+  describe('Authentication', () => {
+    test('Given no authorization header, should return 401 status code', async () => {
+      const response = await request(getTestApp()).get(ME_BOOKS_URL);
 
-    expect(response.status).toBe(401);
-    expect(response.body).toHaveProperty('message');
-  });
+      expect(response.status).toBe(401);
+      expect(response.body).toHaveProperty('message');
+    });
 
-  test('Given an invalid token, should return 401 status code', async () => {
-    const invalidToken = '1234';
+    test('Given an invalid token, should return 401 status code', async () => {
+      const response = await request(getTestApp())
+        .get(ME_BOOKS_URL)
+        .set('Authorization', `Bearer invalid-token`);
 
-    const response = await request(getTestApp())
-      .get(ME_BOOKS_URL)
-      .set('Authorization', `Bearer ${invalidToken}`);
+      expect(response.status).toBe(401);
+    });
 
-    expect(response.status).toBe(401);
-  });
+    test('Given a malformed authorization header, should return 401 status code', async () => {
+      const response = await request(getTestApp())
+        .get(ME_BOOKS_URL)
+        .set('Authorization', 'Invalid-header invalid-token');
 
-  test('Given a malformed authorization header, should return 401 status code', async () => {
-    const response = await request(getTestApp())
-      .get(ME_BOOKS_URL)
-      .set('Authorization', 'Invalid-header invalid-token');
-
-    expect(response.status).toBe(401);
+      expect(response.status).toBe(401);
+    });
   });
 
   test('Given a valid token, should return 200 status code', async () => {
@@ -56,9 +56,8 @@ describe('GET /me/books', () => {
   });
 
   test('Should returning only books belonging to the authorizated user', async () => {
-    const { token: tokenUserA, book: bookUserA } = await createBookWithUser();
-    const validateTitleA = createBookResponseSchema.parse(bookUserA.body as unknown);
-    const titleA = validateTitleA.content.title;
+    const { token: tokenUserA, book: bookUserOne } = await createBookWithUser();
+    const titleBookUserOne = bookUserOne.title;
     const book2Payload = {
       title: faker.book.title(),
       description: faker.commerce.productDescription(),
@@ -71,9 +70,8 @@ describe('GET /me/books', () => {
       .set('Authorization', `Bearer ${tokenUserA}`)
       .send(book2Payload);
 
-    const { book: bookUserB } = await createBookWithUser();
-    const validateTitleB = createBookResponseSchema.parse(bookUserB.body as unknown);
-    const titleB = validateTitleB.content.title;
+    const { book: bookUserTwo } = await createBookWithUser();
+    const titleBookUserTwo = bookUserTwo.title;
 
     const response = await request(getTestApp())
       .get(ME_BOOKS_URL)
@@ -84,32 +82,10 @@ describe('GET /me/books', () => {
     expect(validateResponse.content).toHaveLength(2);
 
     const titles = validateResponse.content.map(b => b.title);
-    expect(titles).toContain(titleA);
+    expect(titles).toContain(titleBookUserOne);
     expect(titles).toContain(book2Payload.title);
 
-    expect(titles).not.toContain(titleB);
-  });
-
-  test('Should return books with correct structure', async () => {
-    const { token } = await createBookWithUser();
-    const response = await request(getTestApp())
-      .get(ME_BOOKS_URL)
-      .set('Authorization', `Bearer ${token}`);
-
-    const validateResponse = getUserBooksResponseSchema.parse(response.body);
-
-    const book = validateResponse.content[0];
-
-    expect(response.status).toBe(200);
-    expect(book).toHaveProperty('id');
-    expect(book).toHaveProperty('title');
-    expect(book).toHaveProperty('description');
-    expect(book).toHaveProperty('price');
-    expect(book).toHaveProperty('author');
-    expect(book).toHaveProperty('status');
-    expect(book).toHaveProperty('ownerId');
-    expect(book).toHaveProperty('soldAt');
-    expect(book).toHaveProperty('createdAt');
+    expect(titles).not.toContain(titleBookUserTwo);
   });
 
   test('Should not expose sensitive information (_id)', async () => {

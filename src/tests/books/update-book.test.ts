@@ -1,55 +1,46 @@
 import request from 'supertest';
 import { getTestApp } from '@tests/setup';
-import {
-  createBookResponseSchema,
-  errorResponseSchema,
-  updateBookResponseSchema,
-} from '@tests/schemas/test-schemas';
+import { errorResponseSchema, updateBookResponseSchema } from '@tests/schemas/test-schemas';
 import { createBookWithUser, getAuthToken } from '@tests/helpers';
 
 describe('PATCH /books/:bookId', () => {
   const BOOKS_URL = '/books';
-  test('Given no authorization header, endpoint should return 401 status code', async () => {
-    const { book } = await createBookWithUser();
-    const validateBookId = createBookResponseSchema.parse(book.body);
-    const bookId = validateBookId.content.id;
+  const NON_EXISTING_BOOK_ID = '6979054b067bd17c70d31fbf';
 
-    const response = await request(getTestApp())
-      .patch(`${BOOKS_URL}/${bookId}`)
+  describe('Authentication', () => {
+    test('Given no authorization header, should return 401', async () => {
+      const response = await request(getTestApp())
+        .patch(`${BOOKS_URL}/${NON_EXISTING_BOOK_ID}`)
+        .send({ title: 'new-title' });
 
-      .send({ title: 'new-title' });
+      expect(response.status).toBe(401);
+    });
 
-    expect(response.status).toBe(401);
+    test('Given an invalid token, should return a 401', async () => {
+      const response = await request(getTestApp())
+        .patch(`${BOOKS_URL}/${NON_EXISTING_BOOK_ID}`)
+        .set('Authorization', `Bearer invalid-token`)
+        .send({ title: 'new-title' });
+
+      expect(response.status).toBe(401);
+    });
   });
 
-  test('Given an invalid token, endpoint should return a 401 status code', async () => {
-    const { book } = await createBookWithUser();
-    const validateBookId = createBookResponseSchema.parse(book.body);
-    const bookId = validateBookId.content.id;
+  describe('Non found', () => {
+    test('Given a non existing book, return a 404', async () => {
+      const { token } = await createBookWithUser();
 
-    const response = await request(getTestApp())
-      .patch(`${BOOKS_URL}/${bookId}`)
-      .set('Authorization', `Bearer invalid-token`)
-      .send({ title: 'new-title' });
+      const response = await request(getTestApp())
+        .patch(`${BOOKS_URL}/${NON_EXISTING_BOOK_ID}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({});
 
-    expect(response.status).toBe(401);
-  });
-
-  test('Given a non existing book, return a 404 status code', async () => {
-    const { token } = await createBookWithUser();
-
-    const response = await request(getTestApp())
-      .patch(`${BOOKS_URL}/${'6979054b067bd17c70d31fbf'}`)
-      .set('Authorization', `Bearer ${token}`)
-      .send({});
-
-    expect(response.status).toBe(404);
+      expect(response.status).toBe(404);
+    });
   });
 
   test('Given an existing book, should return 200 and updated book', async () => {
-    const { token, book } = await createBookWithUser();
-    const validateBookId = createBookResponseSchema.parse(book.body);
-    const bookId = validateBookId.content.id;
+    const { token, bookId } = await createBookWithUser();
 
     const updatedPayload = {
       title: 'Updated title',
@@ -68,53 +59,116 @@ describe('PATCH /books/:bookId', () => {
     expect(validateResponse.content.price).toBe(150);
   });
 
-  test('Given an user that is not the book owner, return a 403 status code', async () => {
-    const { book } = await createBookWithUser();
-    const validateBookId = createBookResponseSchema.parse(book.body);
-    const bookId = validateBookId.content.id;
+  describe('Authorization', () => {
+    test('Given an user that is not the book owner, should return 403', async () => {
+      const { bookId } = await createBookWithUser();
 
-    const tokenFromAnotherUser = await getAuthToken();
+      const tokenFromAnotherUser = await getAuthToken();
 
-    const response = await request(getTestApp())
-      .patch(`${BOOKS_URL}/${bookId}`)
-      .set('Authorization', `Bearer ${tokenFromAnotherUser}`)
-      .send({ title: 'new-title' });
+      const response = await request(getTestApp())
+        .patch(`${BOOKS_URL}/${bookId}`)
+        .set('Authorization', `Bearer ${tokenFromAnotherUser}`)
+        .send({ title: 'new-title' });
 
-    const validateErrorResponse = errorResponseSchema.parse(response.body);
+      const validateErrorResponse = errorResponseSchema.parse(response.body);
 
-    expect(response.status).toBe(403);
-    expect(validateErrorResponse).toStrictEqual({
-      message: 'Only owner of the book can update this book',
+      expect(response.status).toBe(403);
+      expect(validateErrorResponse).toStrictEqual({
+        message: 'Only owner of the book can update this book',
+      });
     });
   });
 
-  test('Given an invalid payload, should return a 400', async () => {
-    const { book, token } = await createBookWithUser();
-    const validateBookId = createBookResponseSchema.parse(book.body);
-    const bookId = validateBookId.content.id;
+  describe('Validation', () => {
+    test('Given a negative price, should return 400', async () => {
+      const { bookId, token } = await createBookWithUser();
 
-    const response = await request(getTestApp())
-      .patch(`${BOOKS_URL}/${bookId}`)
-      .set('Authorization', `Bearer ${token}`)
-      .send({ price: -10 });
+      const response = await request(getTestApp())
+        .patch(`${BOOKS_URL}/${bookId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ price: -10 });
 
-    expect(response.status).toBe(400);
-  });
+      expect(response.status).toBe(400);
+    });
 
-  test('Should not allow updating immutable fields as id, ownerId', async () => {
-    const { book, token } = await createBookWithUser();
-    const validateBookId = createBookResponseSchema.parse(book.body);
-    const bookId = validateBookId.content.id;
+    test('Given a price of 0, should return 400', async () => {
+      const { bookId, token } = await createBookWithUser();
 
-    const response = await request(getTestApp())
-      .patch(`${BOOKS_URL}/${bookId}`)
-      .set('Authorization', `Bearer ${token}`)
-      .send({ ownerId: 'new-Owner-Id' });
+      const response = await request(getTestApp())
+        .patch(`${BOOKS_URL}/${bookId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ price: 0 });
 
-    const validateErrorResponse = errorResponseSchema.parse(response.body);
+      expect(response.status).toBe(400);
+    });
 
-    expect(response.status).toBe(400);
-    expect(validateErrorResponse.message).toEqual('Validation failed');
-    expect(validateErrorResponse.errors?.formErrors?.[0]).toBe('Unrecognized key: "ownerId"');
+    test('Given a title shorter than 3 characters, should return 400', async () => {
+      const { bookId, token } = await createBookWithUser();
+
+      const response = await request(getTestApp())
+        .patch(`${BOOKS_URL}/${bookId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ title: 'ab' });
+
+      expect(response.status).toBe(400);
+    });
+    test('Given a title longer than 200 characters, should return 400', async () => {
+      const { bookId, token } = await createBookWithUser();
+
+      const response = await request(getTestApp())
+        .patch(`${BOOKS_URL}/${bookId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ title: 'a'.repeat(201) });
+
+      expect(response.status).toBe(400);
+    });
+
+    test('Given a description shorter than 10 characters, should return 400', async () => {
+      const { bookId, token } = await createBookWithUser();
+
+      const response = await request(getTestApp())
+        .patch(`${BOOKS_URL}/${bookId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ description: 'short' });
+
+      expect(response.status).toBe(400);
+    });
+
+    test('Attempting to update ownerId should return 400', async () => {
+      const { bookId, token } = await createBookWithUser();
+
+      const response = await request(getTestApp())
+        .patch(`${BOOKS_URL}/${bookId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ ownerId: 'new-owner-id' });
+
+      expect(response.status).toBe(400);
+
+      const validatedError = errorResponseSchema.parse(response.body);
+      expect(validatedError.message).toBe('Validation failed');
+      expect(validatedError.errors?.formErrors?.[0]).toContain('ownerId');
+    });
+
+    test('Attempting to update id should return 400', async () => {
+      const { bookId, token } = await createBookWithUser();
+
+      const response = await request(getTestApp())
+        .patch(`${BOOKS_URL}/${bookId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ id: 'new-id' });
+
+      expect(response.status).toBe(400);
+    });
+
+    test('Attempting to update status should return 400', async () => {
+      const { bookId, token } = await createBookWithUser();
+
+      const response = await request(getTestApp())
+        .patch(`${BOOKS_URL}/${bookId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ status: 'SOLD' });
+
+      expect(response.status).toBe(400);
+    });
   });
 });

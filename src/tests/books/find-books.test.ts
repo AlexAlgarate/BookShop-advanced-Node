@@ -1,16 +1,26 @@
 import request from 'supertest';
 import { getTestApp } from '@tests/setup';
-import { createBookResponseSchema, findBooksResponseSchema } from '../schemas/test-schemas';
+import { findBooksResponseSchema } from '../schemas/test-schemas';
 import { createBookWithUser } from '@tests/helpers';
 
 describe('GET /books', () => {
   const BOOKS_URL = '/books';
 
-  test('Sould return an empty array when there are no books', async () => {
-    const response = await request(getTestApp()).get(BOOKS_URL);
+  describe('Public access', () => {
+    test('Should not require authentication', async () => {
+      const response = await request(getTestApp()).get(BOOKS_URL);
 
-    const validateResponse = findBooksResponseSchema.parse(response.body);
-    expect(validateResponse.content.length).toBe(0);
+      expect(response.status).not.toBe(401);
+      expect(response.status).toBe(200);
+    });
+
+    test('Sould return an empty array when there are no books', async () => {
+      const response = await request(getTestApp()).get(BOOKS_URL);
+      expect(response.status).toBe(200);
+
+      const validateResponse = findBooksResponseSchema.parse(response.body);
+      expect(validateResponse.content.length).toBe(0);
+    });
   });
 
   test('Should return 200 and a list of books', async () => {
@@ -44,8 +54,7 @@ describe('GET /books', () => {
 
   test('Should allow searching by title', async () => {
     const { book } = await createBookWithUser();
-    const validateTitle = createBookResponseSchema.parse(book.body as unknown);
-    const title = validateTitle.content.title;
+    const title = book.title;
 
     const response = await request(getTestApp()).get(`${BOOKS_URL}/?search=${title}`);
 
@@ -57,8 +66,7 @@ describe('GET /books', () => {
 
   test('Should allow searching by author', async () => {
     const { book } = await createBookWithUser();
-    const validateAuthor = createBookResponseSchema.parse(book.body as unknown);
-    const author = validateAuthor.content.author;
+    const author = book.author;
 
     const response = await request(getTestApp()).get(`${BOOKS_URL}/?search=${author}`);
     const validateResponse = findBooksResponseSchema.parse(response.body);
@@ -88,33 +96,6 @@ describe('GET /books', () => {
     expect(validateResponse.content.length).toBeLessThanOrEqual(5);
     expect(validateResponse.meta.page).toBe(1);
     expect(validateResponse.meta.limit).toBe(5);
-  });
-
-  test('Should not require authentication', async () => {
-    const response = await request(getTestApp()).get(BOOKS_URL);
-
-    expect(response.status).not.toBe(401);
-  });
-
-  test('Should return consistent book shape', async () => {
-    await createBookWithUser();
-
-    const response = await request(getTestApp()).get(BOOKS_URL);
-    const validateResponse = findBooksResponseSchema.parse(response.body);
-
-    expect(response.status).toBe(200);
-
-    const book = validateResponse.content[0];
-
-    expect(book).toHaveProperty('id');
-    expect(book).toHaveProperty('title');
-    expect(book).toHaveProperty('description');
-    expect(book).toHaveProperty('price');
-    expect(book).toHaveProperty('author');
-    expect(book).toHaveProperty('status');
-    expect(book).toHaveProperty('ownerId');
-    expect(book).toHaveProperty('soldAt');
-    expect(book).toHaveProperty('createdAt');
   });
 
   test('Should return empty array when page exceeds total pages', async () => {
