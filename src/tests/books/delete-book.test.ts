@@ -1,16 +1,18 @@
 import request from 'supertest';
 import { getTestApp } from '@tests/setup';
 import { deleteBookResponseSchema } from '../schemas/test-schemas';
-import { createBookWithUser, getAuthToken } from '@tests/helpers';
+import {
+  API_BOOKS_URL,
+  createBookWithUser,
+  getAuthToken,
+  NON_EXISTING_BOOK_ID,
+} from '@tests/helpers';
 
 describe('DELETE /books/:bookId', () => {
-  const BOOKS_URL = '/books';
-  const NON_EXISTING_BOOK_ID = '6979054b067bd17c70d31fbf';
-
   describe('Authentication', () => {
     test('Given no authorization header, endpoint should return a 401', async () => {
       const response = await request(getTestApp())
-        .delete(`${BOOKS_URL}/${NON_EXISTING_BOOK_ID}`)
+        .delete(`${API_BOOKS_URL}/${NON_EXISTING_BOOK_ID}`)
         .send();
 
       expect(response.status).toBe(401);
@@ -21,7 +23,7 @@ describe('DELETE /books/:bookId', () => {
         'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30';
 
       const response = await request(getTestApp())
-        .delete(`${BOOKS_URL}/${NON_EXISTING_BOOK_ID}`)
+        .delete(`${API_BOOKS_URL}/${NON_EXISTING_BOOK_ID}`)
         .set('Authorization', invalidToken)
         .send();
 
@@ -34,7 +36,7 @@ describe('DELETE /books/:bookId', () => {
       const token = await getAuthToken();
 
       const response = await request(getTestApp())
-        .delete(`${BOOKS_URL}/${NON_EXISTING_BOOK_ID}`)
+        .delete(`${API_BOOKS_URL}/${NON_EXISTING_BOOK_ID}`)
         .set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toBe(404);
@@ -46,7 +48,7 @@ describe('DELETE /books/:bookId', () => {
       const { bookId, token } = await createBookWithUser();
 
       const response = await request(getTestApp())
-        .delete(`${BOOKS_URL}/${bookId}`)
+        .delete(`${API_BOOKS_URL}/${bookId}`)
         .set('Authorization', `Bearer ${token}`)
         .send();
 
@@ -60,11 +62,11 @@ describe('DELETE /books/:bookId', () => {
       const { bookId, token } = await createBookWithUser();
 
       await request(getTestApp())
-        .delete(`${BOOKS_URL}/${bookId}`)
+        .delete(`${API_BOOKS_URL}/${bookId}`)
         .set('Authorization', `Bearer ${token}`)
         .send();
 
-      const getResponse = await request(getTestApp()).get(`${BOOKS_URL}/${bookId}`);
+      const getResponse = await request(getTestApp()).get(`${API_BOOKS_URL}/${bookId}`);
 
       expect(getResponse.status).toBe(404);
     });
@@ -73,12 +75,12 @@ describe('DELETE /books/:bookId', () => {
       const { bookId, token } = await createBookWithUser();
 
       await request(getTestApp())
-        .delete(`${BOOKS_URL}/${bookId}`)
+        .delete(`${API_BOOKS_URL}/${bookId}`)
         .set('Authorization', `Bearer ${token}`)
         .send();
 
       const secondDelete = await request(getTestApp())
-        .delete(`${BOOKS_URL}/${bookId}`)
+        .delete(`${API_BOOKS_URL}/${bookId}`)
         .set('Authorization', `Bearer ${token}`)
         .send();
 
@@ -93,7 +95,7 @@ describe('DELETE /books/:bookId', () => {
       const tokenUserB = await getAuthToken();
 
       const response = await request(getTestApp())
-        .delete(`${BOOKS_URL}/${bookId}`)
+        .delete(`${API_BOOKS_URL}/${bookId}`)
         .set('Authorization', `Bearer ${tokenUserB}`)
         .send();
 

@@ -8,6 +8,15 @@ import {
 } from '@tests/schemas/test-schemas';
 import { getTestApp } from '@tests/setup';
 
+const API_PREFIX = '/api/v1';
+export const API_SIGNUP_URL = `${API_PREFIX}/authentication/signup`;
+export const API_SIGNIN_URL = `${API_PREFIX}/authentication/signin`;
+
+export const API_BOOKS_URL = `${API_PREFIX}/books`;
+export const API_ME_BOOKS_URL = `${API_PREFIX}/me/books`;
+
+export const NON_EXISTING_BOOK_ID = '6979054b067bd17c70d31fbf';
+
 export const VALID_PASSWORD = 'Qwertyui1.';
 
 type BookPayload = {
@@ -18,10 +27,10 @@ type BookPayload = {
 } & BookOverrides;
 
 export const signup = (email = faker.internet.email(), password = VALID_PASSWORD): Test =>
-  request(getTestApp()).post('/authentication/signup').send({ email, password });
+  request(getTestApp()).post(API_SIGNUP_URL).send({ email, password });
 
 export const login = (email: string, password = VALID_PASSWORD): Test =>
-  request(getTestApp()).post('/authentication/signin').send({ email, password });
+  request(getTestApp()).post(API_SIGNIN_URL).send({ email, password });
 
 export const getAuthToken = async (email = faker.internet.email()): Promise<string> => {
   await signup(email);
@@ -39,7 +48,7 @@ export const buildBookPayload = (overrides: BookOverrides = {}): BookPayload => 
 
 export const createBook = (token: string, overrides: BookOverrides = {}): Test =>
   request(getTestApp())
-    .post('/books')
+    .post(API_BOOKS_URL)
     .set('Authorization', `Bearer ${token}`)
     .send(buildBookPayload(overrides));
 

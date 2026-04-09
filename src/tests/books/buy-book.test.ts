@@ -1,16 +1,19 @@
 import request from 'supertest';
-import { createBookWithUser, getAuthToken } from '@tests/helpers';
+import {
+  API_BOOKS_URL,
+  createBookWithUser,
+  getAuthToken,
+  NON_EXISTING_BOOK_ID,
+} from '@tests/helpers';
 import { getTestApp } from '@tests/setup';
 import { buyBookResponseSchema, errorResponseSchema } from '../schemas/test-schemas';
 
 describe('POST /books/:bookId/buy', () => {
-  const NON_EXISTENT_BOOK_ID = '698f869c9d81e007ef244f4e';
-
   describe('Authentication', () => {
     test('Should return 401 if user is not authenticated', async () => {
       const { bookId } = await createBookWithUser();
 
-      const response = await request(getTestApp()).post(`/books/${bookId}/buy`);
+      const response = await request(getTestApp()).post(`${API_BOOKS_URL}/${bookId}/buy`);
 
       expect(response.status).toBe(401);
     });
@@ -21,14 +24,14 @@ describe('POST /books/:bookId/buy', () => {
       const token = await getAuthToken();
 
       const response = await request(getTestApp())
-        .post(`/books/${NON_EXISTENT_BOOK_ID}/buy`)
+        .post(`${API_BOOKS_URL}/${NON_EXISTING_BOOK_ID}/buy`)
         .set('Authorization', `Bearer ${token}`);
 
       const validateErrorResponse = errorResponseSchema.parse(response.body);
 
       expect(response.status).toBe(404);
       expect(validateErrorResponse.message).toContain(
-        `Book with id ${NON_EXISTENT_BOOK_ID} could not be found`
+        `Book with id ${NON_EXISTING_BOOK_ID} could not be found`
       );
     });
   });
@@ -38,7 +41,7 @@ describe('POST /books/:bookId/buy', () => {
       const { bookId, token } = await createBookWithUser();
 
       const response = await request(getTestApp())
-        .post(`/books/${bookId}/buy`)
+        .post(`${API_BOOKS_URL}/${bookId}/buy`)
         .set('Authorization', `Bearer ${token}`);
 
       expect(response.status).toBe(403);
@@ -52,12 +55,12 @@ describe('POST /books/:bookId/buy', () => {
       const firstBuyerToken = await getAuthToken();
 
       await request(getTestApp())
-        .post(`/books/${bookId}/buy`)
+        .post(`${API_BOOKS_URL}/${bookId}/buy`)
         .set('Authorization', `Bearer ${firstBuyerToken}`);
 
       const secondBuyerToken = await getAuthToken();
       const response = await request(getTestApp())
-        .post(`/books/${bookId}/buy`)
+        .post(`${API_BOOKS_URL}/${bookId}/buy`)
         .set('Authorization', `Bearer ${secondBuyerToken}`);
 
       expect(response.status).toBe(409);
@@ -73,7 +76,7 @@ describe('POST /books/:bookId/buy', () => {
 
       const buyerToken = await getAuthToken();
       const response = await request(getTestApp())
-        .post(`/books/${bookId}/buy`)
+        .post(`${API_BOOKS_URL}/${bookId}/buy`)
         .set('Authorization', `Bearer ${buyerToken}`);
 
       expect(response.status).toBe(200);
@@ -88,7 +91,7 @@ describe('POST /books/:bookId/buy', () => {
       const buyerToken = await getAuthToken();
 
       const response = await request(getTestApp())
-        .post(`/books/${bookId}/buy`)
+        .post(`${API_BOOKS_URL}/${bookId}/buy`)
         .set('Authorization', `Bearer ${buyerToken}`);
 
       const validateResponse = buyBookResponseSchema.parse(response.body);
@@ -101,7 +104,7 @@ describe('POST /books/:bookId/buy', () => {
 
       const buyerToken = await getAuthToken();
       const response = await request(getTestApp())
-        .post(`/books/${bookId}/buy`)
+        .post(`${API_BOOKS_URL}/${bookId}/buy`)
         .set('Authorization', `Bearer ${buyerToken}`);
 
       const validatedResponse = buyBookResponseSchema.parse(response.body);
@@ -114,7 +117,7 @@ describe('POST /books/:bookId/buy', () => {
 
       const buyerToken = await getAuthToken();
       const response = await request(getTestApp())
-        .post(`/books/${bookId}/buy`)
+        .post(`${API_BOOKS_URL}/${bookId}/buy`)
         .set('Authorization', `Bearer ${buyerToken}`);
 
       const validatedResponse = buyBookResponseSchema.parse(response.body);

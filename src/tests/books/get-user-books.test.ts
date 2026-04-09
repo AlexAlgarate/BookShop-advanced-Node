@@ -1,15 +1,13 @@
 import request from 'supertest';
-import { createBookWithUser, getAuthToken } from '@tests/helpers';
+import { API_ME_BOOKS_URL, createBookWithUser, getAuthToken } from '@tests/helpers';
 import { getTestApp } from '@tests/setup';
 import { faker } from '@faker-js/faker';
 import { getUserBooksResponseSchema } from '@tests/schemas/test-schemas';
 
 describe('GET /me/books', () => {
-  const ME_BOOKS_URL = '/me/books';
-
   describe('Authentication', () => {
     test('Given no authorization header, should return 401 status code', async () => {
-      const response = await request(getTestApp()).get(ME_BOOKS_URL);
+      const response = await request(getTestApp()).get(API_ME_BOOKS_URL);
 
       expect(response.status).toBe(401);
       expect(response.body).toHaveProperty('message');
@@ -17,7 +15,7 @@ describe('GET /me/books', () => {
 
     test('Given an invalid token, should return 401 status code', async () => {
       const response = await request(getTestApp())
-        .get(ME_BOOKS_URL)
+        .get(API_ME_BOOKS_URL)
         .set('Authorization', `Bearer invalid-token`);
 
       expect(response.status).toBe(401);
@@ -25,7 +23,7 @@ describe('GET /me/books', () => {
 
     test('Given a malformed authorization header, should return 401 status code', async () => {
       const response = await request(getTestApp())
-        .get(ME_BOOKS_URL)
+        .get(API_ME_BOOKS_URL)
         .set('Authorization', 'Invalid-header invalid-token');
 
       expect(response.status).toBe(401);
@@ -36,7 +34,7 @@ describe('GET /me/books', () => {
     const token = await getAuthToken();
 
     const response = await request(getTestApp())
-      .get(ME_BOOKS_URL)
+      .get(API_ME_BOOKS_URL)
       .set('Authorization', `Bearer ${token}`);
 
     expect(response.status).toBe(200);
@@ -46,7 +44,7 @@ describe('GET /me/books', () => {
     const token = await getAuthToken();
 
     const response = await request(getTestApp())
-      .get(ME_BOOKS_URL)
+      .get(API_ME_BOOKS_URL)
       .set('Authorization', `Bearer ${token}`);
     const validateResponse = getUserBooksResponseSchema.parse(response.body);
 
@@ -65,16 +63,19 @@ describe('GET /me/books', () => {
       author: faker.book.author(),
     };
 
-    await request(getTestApp())
-      .post('/books')
+    const book2Response = await request(getTestApp())
+      .post('/api/v1/books')
       .set('Authorization', `Bearer ${tokenUserA}`)
       .send(book2Payload);
+
+    // TODO: FIX this lint error
+    const book2CreatedTitle = (book2Response.body as { content: { title: string } }).content.title;
 
     const { book: bookUserTwo } = await createBookWithUser();
     const titleBookUserTwo = bookUserTwo.title;
 
     const response = await request(getTestApp())
-      .get(ME_BOOKS_URL)
+      .get(API_ME_BOOKS_URL)
       .set('Authorization', `Bearer ${tokenUserA}`);
     const validateResponse = getUserBooksResponseSchema.parse(response.body);
 
@@ -83,7 +84,7 @@ describe('GET /me/books', () => {
 
     const titles = validateResponse.content.map(b => b.title);
     expect(titles).toContain(titleBookUserOne);
-    expect(titles).toContain(book2Payload.title);
+    expect(titles).toContain(book2CreatedTitle);
 
     expect(titles).not.toContain(titleBookUserTwo);
   });
@@ -92,7 +93,7 @@ describe('GET /me/books', () => {
     const { token } = await createBookWithUser();
 
     const response = await request(getTestApp())
-      .get(ME_BOOKS_URL)
+      .get(API_ME_BOOKS_URL)
       .set('Authorization', `Bearer ${token}`);
     const validateResponse = getUserBooksResponseSchema.parse(response.body);
 
@@ -115,11 +116,14 @@ describe('GET /me/books', () => {
     }));
 
     for (const book of booksToCreate) {
-      await request(getTestApp()).post('/books').set('Authorization', `Bearer ${token}`).send(book);
+      await request(getTestApp())
+        .post('/api/v1/books')
+        .set('Authorization', `Bearer ${token}`)
+        .send(book);
     }
 
     const response = await request(getTestApp())
-      .get(`${ME_BOOKS_URL}?page=1&limit=10`)
+      .get(`${API_ME_BOOKS_URL}?page=1&limit=10`)
       .set('Authorization', `Bearer ${token}`);
 
     const validateResponse = getUserBooksResponseSchema.parse(response.body);
@@ -134,7 +138,7 @@ describe('GET /me/books', () => {
     const token = await getAuthToken();
 
     const response = await request(getTestApp())
-      .get(`${ME_BOOKS_URL}?page=-1`)
+      .get(`${API_ME_BOOKS_URL}?page=-1`)
       .set('Authorization', `Bearer ${token}`);
 
     const validateResponse = getUserBooksResponseSchema.parse(response.body);
@@ -147,7 +151,7 @@ describe('GET /me/books', () => {
     const token = await getAuthToken();
 
     const response = await request(getTestApp())
-      .get(`${ME_BOOKS_URL}?limit=-10`)
+      .get(`${API_ME_BOOKS_URL}?limit=-10`)
       .set('Authorization', `Bearer ${token}`);
 
     const validateResponse = getUserBooksResponseSchema.parse(response.body);
@@ -160,7 +164,7 @@ describe('GET /me/books', () => {
     const token = await getAuthToken();
 
     const response = await request(getTestApp())
-      .get(`${ME_BOOKS_URL}?limit=9999`)
+      .get(`${API_ME_BOOKS_URL}?limit=9999`)
       .set('Authorization', `Bearer ${token}`);
 
     const validateResponse = getUserBooksResponseSchema.parse(response.body);
@@ -173,7 +177,7 @@ describe('GET /me/books', () => {
     const token = await getAuthToken();
 
     const response = await request(getTestApp())
-      .get(`${ME_BOOKS_URL}?page=0&limit=0`)
+      .get(`${API_ME_BOOKS_URL}?page=0&limit=0`)
       .set('Authorization', `Bearer ${token}`);
 
     expect(response.status).toBe(200);
@@ -183,7 +187,7 @@ describe('GET /me/books', () => {
     const token = await getAuthToken();
 
     const response = await request(getTestApp())
-      .get(`${ME_BOOKS_URL}?page=abc&limit=abc`)
+      .get(`${API_ME_BOOKS_URL}?page=abc&limit=abc`)
       .set('Authorization', `Bearer ${token}`);
 
     expect(response.status).toBe(200);
@@ -193,7 +197,7 @@ describe('GET /me/books', () => {
     const token = await getAuthToken();
 
     const response = await request(getTestApp())
-      .get(`${ME_BOOKS_URL}?page=0.5&limit=0.5`)
+      .get(`${API_ME_BOOKS_URL}?page=0.5&limit=0.5`)
       .set('Authorization', `Bearer ${token}`);
 
     const validateResponse = getUserBooksResponseSchema.parse(response.body);

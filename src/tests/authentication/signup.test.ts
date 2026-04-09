@@ -3,20 +3,19 @@ import { faker } from '@faker-js/faker';
 
 import { getTestApp } from '@tests/setup';
 import { signupResponseSchema } from '@tests/schemas/test-schemas';
-import { VALID_PASSWORD } from '@tests/helpers';
+import { VALID_PASSWORD, API_SIGNUP_URL } from '@tests/helpers';
 
 describe('POST /authentication/signup', () => {
-  const AUTHENTICATION_URL = '/authentication/signup';
   test('Email is mandatory', async () => {
     const response = await request(getTestApp())
-      .post(AUTHENTICATION_URL)
+      .post(API_SIGNUP_URL)
       .send({ password: VALID_PASSWORD });
 
     expect(response.status).toBe(400);
   });
   test('Password is mandatory', async () => {
     const response = await request(getTestApp())
-      .post(AUTHENTICATION_URL)
+      .post(API_SIGNUP_URL)
       .send({ email: faker.internet.email() });
 
     expect(response.status).toBe(400);
@@ -25,13 +24,13 @@ describe('POST /authentication/signup', () => {
   test('Email should be unique', async () => {
     const email = faker.internet.email();
 
-    const firstAttempResponse = await request(getTestApp()).post(AUTHENTICATION_URL).send({
+    const firstAttempResponse = await request(getTestApp()).post(API_SIGNUP_URL).send({
       email,
       password: VALID_PASSWORD,
     });
     expect(firstAttempResponse.status).toBe(201);
 
-    const secondAttempResponse = await request(getTestApp()).post(AUTHENTICATION_URL).send({
+    const secondAttempResponse = await request(getTestApp()).post(API_SIGNUP_URL).send({
       email,
       password: VALID_PASSWORD,
     });
@@ -39,7 +38,7 @@ describe('POST /authentication/signup', () => {
   });
 
   test('Should rejet invalid email format', async () => {
-    const response = await request(getTestApp()).post(AUTHENTICATION_URL).send({
+    const response = await request(getTestApp()).post(API_SIGNUP_URL).send({
       email: 'not-an-email',
       password: VALID_PASSWORD,
     });
@@ -48,7 +47,7 @@ describe('POST /authentication/signup', () => {
   });
 
   test('Should reject short passwords', async () => {
-    const response = await request(getTestApp()).post(AUTHENTICATION_URL).send({
+    const response = await request(getTestApp()).post(API_SIGNUP_URL).send({
       email: faker.internet.email(),
       password: '123',
     });
@@ -60,7 +59,7 @@ describe('POST /authentication/signup', () => {
     const email = faker.internet.email();
     const password = VALID_PASSWORD;
 
-    const response = await request(getTestApp()).post(AUTHENTICATION_URL).send({
+    const response = await request(getTestApp()).post(API_SIGNUP_URL).send({
       email,
       password,
     });
@@ -68,7 +67,7 @@ describe('POST /authentication/signup', () => {
   });
 
   test('Should not return password in response body', async () => {
-    const response = await request(getTestApp()).post(AUTHENTICATION_URL).send({
+    const response = await request(getTestApp()).post(API_SIGNUP_URL).send({
       email: faker.internet.email(),
       password: VALID_PASSWORD,
     });
@@ -83,7 +82,7 @@ describe('POST /authentication/signup', () => {
     const email = faker.internet.email();
     const invalidPassword = '123456789qwerqwer';
 
-    const response = await request(getTestApp()).post(AUTHENTICATION_URL).send({
+    const response = await request(getTestApp()).post(API_SIGNUP_URL).send({
       email,
       password: invalidPassword,
     });
@@ -95,7 +94,7 @@ describe('POST /authentication/signup', () => {
     const email = faker.internet.email();
     const invalidPassword = '123456789QWERQWER';
 
-    const response = await request(getTestApp()).post(AUTHENTICATION_URL).send({
+    const response = await request(getTestApp()).post(API_SIGNUP_URL).send({
       email,
       password: invalidPassword,
     });
@@ -107,7 +106,7 @@ describe('POST /authentication/signup', () => {
     const email = faker.internet.email();
     const invalidPassword = 'QwerQwer';
 
-    const response = await request(getTestApp()).post(AUTHENTICATION_URL).send({
+    const response = await request(getTestApp()).post(API_SIGNUP_URL).send({
       email,
       password: invalidPassword,
     });
@@ -119,7 +118,7 @@ describe('POST /authentication/signup', () => {
     const email = faker.internet.email();
     const invalidPassword = '123456789123456789';
 
-    const response = await request(getTestApp()).post(AUTHENTICATION_URL).send({
+    const response = await request(getTestApp()).post(API_SIGNUP_URL).send({
       email,
       password: invalidPassword,
     });
