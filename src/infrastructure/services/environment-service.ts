@@ -12,6 +12,7 @@ const environmentVariablesValidator = z.object({
   MAILTRAP_TOKEN: z.string(),
   INBOXID: z.string(),
   IS_SANDBOX: z.string(),
+  CORS_ORIGIN: z.string().optional(),
 });
 
 type EnvironmentVariables = z.infer<typeof environmentVariablesValidator>;

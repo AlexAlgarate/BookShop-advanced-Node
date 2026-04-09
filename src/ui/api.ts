@@ -1,20 +1,46 @@
 import express, { Application, json } from 'express';
+import helmet from 'helmet';
+import cors from 'cors';
 
 import bookRouter from './routes/book-routes';
 import authenticationRouter from './routes/authentication-routes';
 import { errorHandlerMiddleware } from './middlewares/error-handler-middleware';
+import { httpsRedirectMiddleware } from './middlewares/https-redirect-middleware';
 import { environmentService } from '@infrastructure/services/environment-service';
 import userBookRouter from './routes/user-book-routes';
 import { LoggerService } from '@domain/services/LoggerService';
 
 export const createApp = (): Application => {
+  const API_VERSION = '/api/v1';
+
   const app = express();
 
-  app.use(json());
+  const { ENVIRONMENT } = environmentService.get();
+  const helmetConfig = {
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true,
+    },
+  };
 
-  app.use('/books', bookRouter);
-  app.use('/authentication', authenticationRouter);
-  app.use('/me', userBookRouter);
+  app.use(helmet(ENVIRONMENT === 'production' ? helmetConfig : { hsts: false }));
+
+  app.use(
+    cors({
+      origin: environmentService.get().CORS_ORIGIN || '*',
+      methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+    })
+  );
+
+  app.use(json({ limit: '10kb' }));
+
+  app.use(httpsRedirectMiddleware);
+
+  app.use(`${API_VERSION}/books`, bookRouter);
+  app.use(`${API_VERSION}/authentication`, authenticationRouter);
+  app.use(`${API_VERSION}/me`, userBookRouter);
 
   app.use(errorHandlerMiddleware);
 

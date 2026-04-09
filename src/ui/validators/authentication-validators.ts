@@ -2,8 +2,18 @@ import * as z from 'zod';
 
 const MIN_PASSWORD_LENGTH = 8;
 
+const sanitizeString = (val: string): string => {
+  return val
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
+    .replace(/\//g, '&#x2F;');
+};
+
 export const authenticationBodySchema = z.object({
-  email: z.email('Invalid email format'),
+  email: z.email('Invalid email format').transform(sanitizeString),
   password: z
     .string()
     .min(MIN_PASSWORD_LENGTH, 'Password must be at least 4 characters')
