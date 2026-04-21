@@ -1,6 +1,3 @@
-import 'reflect-metadata';
-import { injectable, inject } from 'inversify';
-
 import { Book } from '@domain/entities/Book';
 import { BookRepository } from '@domain/repositories/BookRepository';
 import { UserRepository } from '@domain/repositories/UserRepository';
@@ -9,23 +6,14 @@ import { NotificationTemplateService } from '@domain/services/NotificationTempla
 import { LoggerService } from '@domain/services/LoggerService';
 import { EmailServiceError, EntityNotFoundError } from '@domain/types/errors';
 import { BuyBookQuery } from '@domain/types/book/BuyBookQuery';
-import {
-  BOOK_REPOSITORY,
-  USER_REPOSITORY,
-  EMAIL_SERVICE,
-  NOTIFICATION_TEMPLATE_SERVICE,
-  LOGGER_SERVICE,
-} from '@di/tokens';
 
-@injectable()
 export class BuyBookUseCase {
   constructor(
-    @inject(BOOK_REPOSITORY) private readonly bookRepository: BookRepository,
-    @inject(USER_REPOSITORY) private readonly userRepository: UserRepository,
-    @inject(EMAIL_SERVICE) private readonly emailService: EmailService,
-    @inject(NOTIFICATION_TEMPLATE_SERVICE)
+    private readonly bookRepository: BookRepository,
+    private readonly userRepository: UserRepository,
+    private readonly emailService: EmailService,
     private readonly templateService: NotificationTemplateService,
-    @inject(LOGGER_SERVICE) private readonly loggerService: LoggerService
+    private readonly loggerService: LoggerService
   ) {}
 
   public async execute({ bookId, buyerId }: BuyBookQuery): Promise<Book | null> {

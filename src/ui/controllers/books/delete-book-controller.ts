@@ -1,6 +1,6 @@
 import { container } from '@di/container';
 import { DELETE_BOOK_USE_CASE } from '@di/tokens';
-import { DeleteBookUseCase } from '@domain/use-cases/books/delete-book-usecase';
+import { DeleteBookUseCase } from '@application/use-cases/books/delete-book-usecase';
 import { authenticatedUserSchema, bookIdParamsSchema } from '@ui/validators/book-validators';
 import { Request, Response } from 'express';
 

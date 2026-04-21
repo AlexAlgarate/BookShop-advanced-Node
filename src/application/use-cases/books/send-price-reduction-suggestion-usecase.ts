@@ -1,22 +1,17 @@
-import 'reflect-metadata';
-import { injectable, inject } from 'inversify';
-
 import { Book, BookStatus } from '@domain/entities/Book';
 import { BookRepository } from '@domain/repositories/BookRepository';
 import { UserRepository } from '@domain/repositories/UserRepository';
 import { EmailService } from '@domain/services/EmailService';
 import { NotificationTemplateService } from '@domain/services/NotificationTemplateService';
-import { BOOK_REPOSITORY, USER_REPOSITORY, EMAIL_SERVICE, NOTIFICATION_TEMPLATE_SERVICE } from '@di/tokens';
 
-@injectable()
 export class SendPriceReductionSuggestionUseCase {
   private readonly limitDays: number = 7;
 
   constructor(
-    @inject(BOOK_REPOSITORY) private readonly bookRepository: BookRepository,
-    @inject(USER_REPOSITORY) private readonly userRepository: UserRepository,
-    @inject(EMAIL_SERVICE) private readonly emailService: EmailService,
-    @inject(NOTIFICATION_TEMPLATE_SERVICE) private readonly templateService: NotificationTemplateService
+    private readonly bookRepository: BookRepository,
+    private readonly userRepository: UserRepository,
+    private readonly emailService: EmailService,
+    private readonly templateService: NotificationTemplateService
   ) {}
 
   public async execute(): Promise<void> {

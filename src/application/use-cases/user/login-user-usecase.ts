@@ -1,17 +1,12 @@
-import 'reflect-metadata';
-import { injectable, inject } from 'inversify';
-
 import { UserRepository } from '@domain/repositories/UserRepository';
 import { SecurityService } from '@domain/services/SecurityService';
 import { EntityNotFoundError, UnauthorizedError } from '@domain/types/errors';
 import { LoginUserQuery } from '@domain/types/user/LoginUserQuery';
-import { USER_REPOSITORY, SECURITY_SERVICE } from '@di/tokens';
 
-@injectable()
 export class LoginUserUseCase {
   constructor(
-    @inject(USER_REPOSITORY) private readonly userRepository: UserRepository,
-    @inject(SECURITY_SERVICE) private readonly securityService: SecurityService
+    private readonly userRepository: UserRepository,
+    private readonly securityService: SecurityService
   ) {}
 
   async execute(query: LoginUserQuery): Promise<{

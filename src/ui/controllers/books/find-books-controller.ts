@@ -1,6 +1,6 @@
 import { container } from '@di/container';
 import { FIND_BOOKS_USE_CASE } from '@di/tokens';
-import { FindBooksUseCase } from '@domain/use-cases/books/find-books-usecase';
+import { FindBooksUseCase } from '@application/use-cases/books/find-books-usecase';
 import { findBooksBodySchema } from '@ui/validators/book-validators';
 import { Response, Request } from 'express';
 

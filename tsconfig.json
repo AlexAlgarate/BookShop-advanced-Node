@@ -30,6 +30,7 @@
     "baseUrl": "./src",
     "paths": {
       "@domain/*": ["domain/*"],
+      "@application/*": ["application/*"],
       "@infrastructure/*": ["infrastructure/*"],
       "@ui/*": ["ui/*"],
       "@di/*": ["di/*"],

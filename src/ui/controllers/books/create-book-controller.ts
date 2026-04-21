@@ -1,6 +1,6 @@
 import { container } from '@di/container';
 import { CREATE_BOOK_USE_CASE } from '@di/tokens';
-import { CreateBookUseCase } from '@domain/use-cases/books/create-book-usecase';
+import { CreateBookUseCase } from '@application/use-cases/books/create-book-usecase';
 import { authenticatedUserSchema, createBookBodySchema } from '@ui/validators/book-validators';
 import { Request, Response } from 'express';
 

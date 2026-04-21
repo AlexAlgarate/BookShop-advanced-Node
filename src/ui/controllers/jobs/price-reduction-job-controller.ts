@@ -1,6 +1,6 @@
 import { container } from '@di/container';
 import { SEND_PRICE_REDUCTION_USE_CASE } from '@di/tokens';
-import { SendPriceReductionSuggestionUseCase } from '@domain/use-cases/books/send-price-reduction-suggestion-usecase';
+import { SendPriceReductionSuggestionUseCase } from '@application/use-cases/books/send-price-reduction-suggestion-usecase';
 import { getLogger } from '@infrastructure/services/logger-init';
 
 const logger = getLogger();

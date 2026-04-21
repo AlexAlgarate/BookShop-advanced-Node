@@ -1,6 +1,6 @@
 import { container } from '@di/container';
 import { UPDATE_BOOK_USE_CASE } from '@di/tokens';
-import { UpdateBookUseCase } from '@domain/use-cases/books/update-book-usecase';
+import { UpdateBookUseCase } from '@application/use-cases/books/update-book-usecase';
 import {
   authenticatedUserSchema,
   bookIdParamsSchema,

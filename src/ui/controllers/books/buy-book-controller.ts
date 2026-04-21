@@ -1,6 +1,6 @@
 import { container } from '@di/container';
 import { BUY_BOOK_USE_CASE } from '@di/tokens';
-import { BuyBookUseCase } from '@domain/use-cases/books/buy-book-usecase';
+import { BuyBookUseCase } from '@application/use-cases/books/buy-book-usecase';
 import { authenticatedUserSchema, bookIdParamsSchema } from '@ui/validators/book-validators';
 import { Request, Response } from 'express';
 

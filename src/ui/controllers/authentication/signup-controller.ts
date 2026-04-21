@@ -1,6 +1,6 @@
 import { container } from '@di/container';
 import { CREATE_USER_USE_CASE } from '@di/tokens';
-import { CreateUserUseCase } from '@domain/use-cases/user/create-user-usecase';
+import { CreateUserUseCase } from '@application/use-cases/user/create-user-usecase';
 import { authenticationBodySchema } from '@ui/validators/authentication-validators';
 import { Request, Response } from 'express';
 

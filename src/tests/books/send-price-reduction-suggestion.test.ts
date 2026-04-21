@@ -1,5 +1,5 @@
 import { vi, type Mocked } from 'vitest';
-import { SendPriceReductionSuggestionUseCase } from '@domain/use-cases/books/send-price-reduction-suggestion-usecase';
+import { SendPriceReductionSuggestionUseCase } from '@application/use-cases/books/send-price-reduction-suggestion-usecase';
 import { BookRepository } from '@domain/repositories/BookRepository';
 import { UserRepository } from '@domain/repositories/UserRepository';
 import { EmailService } from '@domain/services/EmailService';

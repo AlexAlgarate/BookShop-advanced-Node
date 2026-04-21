@@ -1,6 +1,6 @@
 import { container } from '@di/container';
 import { LOGIN_USER_USE_CASE } from '@di/tokens';
-import { LoginUserUseCase } from '@domain/use-cases/user/login-user-usecase';
+import { LoginUserUseCase } from '@application/use-cases/user/login-user-usecase';
 import { authenticationBodySchema } from '@ui/validators/authentication-validators';
 import { Request, Response } from 'express';
 

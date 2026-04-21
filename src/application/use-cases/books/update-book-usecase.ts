@@ -1,15 +1,10 @@
-import 'reflect-metadata';
-import { injectable, inject } from 'inversify';
-
 import { Book } from '@domain/entities/Book';
 import { BookRepository } from '@domain/repositories/BookRepository';
 import { UpdateBookQuery } from '@domain/types/book/UpdateBookQuery';
 import { EntityNotFoundError, ForbiddenOperation } from '@domain/types/errors';
-import { BOOK_REPOSITORY } from '@di/tokens';
 
-@injectable()
 export class UpdateBookUseCase {
-  constructor(@inject(BOOK_REPOSITORY) private readonly bookRepository: BookRepository) {}
+  constructor(private readonly bookRepository: BookRepository) {}
 
   public async execute(
     bookId: string,
