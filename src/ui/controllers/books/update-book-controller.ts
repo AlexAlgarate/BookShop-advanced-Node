@@ -1,4 +1,6 @@
-import { getControllers } from '@di/controller-factory';
+import { container } from '@di/container';
+import { UPDATE_BOOK_USE_CASE } from '@di/tokens';
+import { UpdateBookUseCase } from '@domain/use-cases/books/update-book-usecase';
 import {
   authenticatedUserSchema,
   bookIdParamsSchema,
@@ -11,8 +13,8 @@ export const updateBookController = async (request: Request, response: Response)
   const { title, description, author, price } = updateBookBodySchema.parse(request.body);
   const { id: userId } = authenticatedUserSchema.parse(request.user);
 
-  const { updateBookUseCase } = getControllers();
-  const updateBook = await updateBookUseCase().execute(
+  const updateBookUseCase = container.get<UpdateBookUseCase>(UPDATE_BOOK_USE_CASE);
+  const updateBook = await updateBookUseCase.execute(
     bookId,
     { title, description, author, price },
     userId

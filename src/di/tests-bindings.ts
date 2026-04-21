@@ -19,10 +19,10 @@ import {
   SECURITY_SERVICE,
   NOTIFICATION_TEMPLATE_SERVICE,
 } from './tokens';
-import { registerUseCaseBindings } from './usecase-bindings';
+import { registerUseCases } from './usecase-bindings';
 
 export function registerTestBindings(): void {
-  registerUseCaseBindings();
+  registerUseCases();
   container.bind<BookRepository>(BOOK_REPOSITORY).to(BookMongoRepository).inSingletonScope();
   container.bind<UserRepository>(USER_REPOSITORY).to(UserMongoRepository).inSingletonScope();
   container.bind<SecurityService>(SECURITY_SERVICE).to(SecurityBcryptService).inSingletonScope();

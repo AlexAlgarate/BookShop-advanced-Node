@@ -5,8 +5,8 @@ import { createApp, startHttpApi } from './ui/api';
 import { environmentService } from '@infrastructure/services/environment-service';
 import { startCronJobs } from '@ui/cron';
 import { initializeSentry } from '@infrastructure/monitoring/sentry.initializer';
-import { registerInfrastructureBindings } from '@di/infrastructure-bindings';
-import { registerUseCaseBindings } from '@di/usecase-bindings';
+import { registerInfrastructure } from '@di/infrastructure-bindings';
+import { registerUseCases } from '@di/usecase-bindings';
 import { getLogger } from './infrastructure/services/logger-init';
 
 const logger = getLogger();
@@ -19,8 +19,8 @@ const executeApp = async (): Promise<void> => {
 
     initializeSentry();
 
-    registerInfrastructureBindings();
-    registerUseCaseBindings();
+    registerInfrastructure();
+    registerUseCases();
 
     await connectToMongoDb();
     startCronJobs();

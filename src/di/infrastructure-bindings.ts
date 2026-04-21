@@ -22,14 +22,11 @@ import {
   NOTIFICATION_TEMPLATE_SERVICE,
 } from './tokens';
 
-export function registerInfrastructureBindings(): void {
+export function registerInfrastructure(): void {
   container.bind<BookRepository>(BOOK_REPOSITORY).to(BookMongoRepository).inSingletonScope();
   container.bind<UserRepository>(USER_REPOSITORY).to(UserMongoRepository).inSingletonScope();
   container.bind<EmailService>(EMAIL_SERVICE).to(MailtrapService).inSingletonScope();
   container.bind<LoggerService>(LOGGER_SERVICE).to(ConsoleLoggerService).inSingletonScope();
   container.bind<SecurityService>(SECURITY_SERVICE).to(SecurityBcryptService).inSingletonScope();
-  container
-    .bind<NotificationTemplateService>(NOTIFICATION_TEMPLATE_SERVICE)
-    .to(NotificationTemplateServiceImpl)
-    .inSingletonScope();
+  container.bind<NotificationTemplateService>(NOTIFICATION_TEMPLATE_SERVICE).to(NotificationTemplateServiceImpl).inSingletonScope();
 }

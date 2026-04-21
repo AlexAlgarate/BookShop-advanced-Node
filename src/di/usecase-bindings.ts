@@ -8,13 +8,6 @@ import { SendPriceReductionSuggestionUseCase } from '@domain/use-cases/books/sen
 import { CreateUserUseCase } from '@domain/use-cases/user/create-user-usecase';
 import { LoginUserUseCase } from '@domain/use-cases/user/login-user-usecase';
 
-import { BookRepository } from '@domain/repositories/BookRepository';
-import { UserRepository } from '@domain/repositories/UserRepository';
-import { EmailService } from '@domain/services/EmailService';
-import { LoggerService } from '@domain/services/LoggerService';
-import { SecurityService } from '@domain/services/SecurityService';
-import { NotificationTemplateService } from '@domain/services/NotificationTemplateService';
-
 import { container } from './container';
 import {
   CREATE_BOOK_USE_CASE,
@@ -29,63 +22,36 @@ import {
   BOOK_REPOSITORY,
   USER_REPOSITORY,
   EMAIL_SERVICE,
+  NOTIFICATION_TEMPLATE_SERVICE,
   LOGGER_SERVICE,
   SECURITY_SERVICE,
-  NOTIFICATION_TEMPLATE_SERVICE,
 } from './tokens';
 
-export function registerUseCaseBindings(): void {
-  container.bind(CREATE_BOOK_USE_CASE).toDynamicValue(context => {
-    const bookRepo = context.get<BookRepository>(BOOK_REPOSITORY);
-    return new CreateBookUseCase(bookRepo);
-  });
-
-  container.bind(FIND_BOOKS_USE_CASE).toDynamicValue(context => {
-    const bookRepo = context.get<BookRepository>(BOOK_REPOSITORY);
-    return new FindBooksUseCase(bookRepo);
-  });
-
-  container.bind(FIND_USER_BOOKS_USE_CASE).toDynamicValue(context => {
-    const bookRepo = context.get<BookRepository>(BOOK_REPOSITORY);
-    return new FindUserBooksUseCase(bookRepo);
-  });
-
-  container.bind(UPDATE_BOOK_USE_CASE).toDynamicValue(context => {
-    const bookRepo = context.get<BookRepository>(BOOK_REPOSITORY);
-    return new UpdateBookUseCase(bookRepo);
-  });
-
-  container.bind(DELETE_BOOK_USE_CASE).toDynamicValue(context => {
-    const bookRepo = context.get<BookRepository>(BOOK_REPOSITORY);
-    return new DeleteBookUseCase(bookRepo);
-  });
-
-  container.bind(BUY_BOOK_USE_CASE).toDynamicValue(context => {
-    const bookRepo = context.get<BookRepository>(BOOK_REPOSITORY);
-    const userRepo = context.get<UserRepository>(USER_REPOSITORY);
-    const emailSvc = context.get<EmailService>(EMAIL_SERVICE);
-    const templateSvc = context.get<NotificationTemplateService>(NOTIFICATION_TEMPLATE_SERVICE);
-    const loggerSvc = context.get<LoggerService>(LOGGER_SERVICE);
-    return new BuyBookUseCase(bookRepo, userRepo, emailSvc, templateSvc, loggerSvc);
-  });
-
-  container.bind(SEND_PRICE_REDUCTION_USE_CASE).toDynamicValue(context => {
-    const bookRepo = context.get<BookRepository>(BOOK_REPOSITORY);
-    const userRepo = context.get<UserRepository>(USER_REPOSITORY);
-    const emailSvc = context.get<EmailService>(EMAIL_SERVICE);
-    const templateSvc = context.get<NotificationTemplateService>(NOTIFICATION_TEMPLATE_SERVICE);
-    return new SendPriceReductionSuggestionUseCase(bookRepo, userRepo, emailSvc, templateSvc);
-  });
-
-  container.bind(CREATE_USER_USE_CASE).toDynamicValue(context => {
-    const userRepo = context.get<UserRepository>(USER_REPOSITORY);
-    const securitySvc = context.get<SecurityService>(SECURITY_SERVICE);
-    return new CreateUserUseCase(userRepo, securitySvc);
-  });
-
-  container.bind(LOGIN_USER_USE_CASE).toDynamicValue(context => {
-    const userRepo = context.get<UserRepository>(USER_REPOSITORY);
-    const securitySvc = context.get<SecurityService>(SECURITY_SERVICE);
-    return new LoginUserUseCase(userRepo, securitySvc);
-  });
+export function registerUseCases(): void {
+  container.bind(CREATE_BOOK_USE_CASE).toDynamicValue(ctx => new CreateBookUseCase(ctx.get(BOOK_REPOSITORY)));
+  container.bind(FIND_BOOKS_USE_CASE).toDynamicValue(ctx => new FindBooksUseCase(ctx.get(BOOK_REPOSITORY)));
+  container.bind(FIND_USER_BOOKS_USE_CASE).toDynamicValue(ctx => new FindUserBooksUseCase(ctx.get(BOOK_REPOSITORY)));
+  container.bind(UPDATE_BOOK_USE_CASE).toDynamicValue(ctx => new UpdateBookUseCase(ctx.get(BOOK_REPOSITORY)));
+  container.bind(DELETE_BOOK_USE_CASE).toDynamicValue(ctx => new DeleteBookUseCase(ctx.get(BOOK_REPOSITORY)));
+  container.bind(BUY_BOOK_USE_CASE).toDynamicValue(ctx => new BuyBookUseCase(
+    ctx.get(BOOK_REPOSITORY),
+    ctx.get(USER_REPOSITORY),
+    ctx.get(EMAIL_SERVICE),
+    ctx.get(NOTIFICATION_TEMPLATE_SERVICE),
+    ctx.get(LOGGER_SERVICE)
+  ));
+  container.bind(SEND_PRICE_REDUCTION_USE_CASE).toDynamicValue(ctx => new SendPriceReductionSuggestionUseCase(
+    ctx.get(BOOK_REPOSITORY),
+    ctx.get(USER_REPOSITORY),
+    ctx.get(EMAIL_SERVICE),
+    ctx.get(NOTIFICATION_TEMPLATE_SERVICE)
+  ));
+  container.bind(CREATE_USER_USE_CASE).toDynamicValue(ctx => new CreateUserUseCase(
+    ctx.get(USER_REPOSITORY),
+    ctx.get(SECURITY_SERVICE)
+  ));
+  container.bind(LOGIN_USER_USE_CASE).toDynamicValue(ctx => new LoginUserUseCase(
+    ctx.get(USER_REPOSITORY),
+    ctx.get(SECURITY_SERVICE)
+  ));
 }

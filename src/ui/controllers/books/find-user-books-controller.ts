@@ -1,4 +1,6 @@
-import { getControllers } from '@di/controller-factory';
+import { container } from '@di/container';
+import { FIND_USER_BOOKS_USE_CASE } from '@di/tokens';
+import { FindUserBooksUseCase } from '@domain/use-cases/books/find-user-book-usecase';
 import { authenticatedUserSchema, findBooksBodySchema } from '@ui/validators/book-validators';
 import { Request, Response } from 'express';
 
@@ -9,8 +11,8 @@ export const findUserBooksController = async (
   const { page, limit, search, author, title } = findBooksBodySchema.parse(request.query);
   const { id: userId } = authenticatedUserSchema.parse(request.user);
 
-  const { findUserBooksUseCase } = getControllers();
-  const paginatedUserBooks = await findUserBooksUseCase().execute({
+  const findUserBooksUseCase = container.get<FindUserBooksUseCase>(FIND_USER_BOOKS_USE_CASE);
+  const paginatedUserBooks = await findUserBooksUseCase.execute({
     page,
     limit,
     search,
