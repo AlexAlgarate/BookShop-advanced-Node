@@ -19,39 +19,16 @@ import {
   SEND_PRICE_REDUCTION_USE_CASE,
   CREATE_USER_USE_CASE,
   LOGIN_USER_USE_CASE,
-  BOOK_REPOSITORY,
-  USER_REPOSITORY,
-  EMAIL_SERVICE,
-  NOTIFICATION_TEMPLATE_SERVICE,
-  LOGGER_SERVICE,
-  SECURITY_SERVICE,
 } from './tokens';
 
 export function registerUseCases(): void {
-  container.bind(CREATE_BOOK_USE_CASE).toDynamicValue(ctx => new CreateBookUseCase(ctx.get(BOOK_REPOSITORY)));
-  container.bind(FIND_BOOKS_USE_CASE).toDynamicValue(ctx => new FindBooksUseCase(ctx.get(BOOK_REPOSITORY)));
-  container.bind(FIND_USER_BOOKS_USE_CASE).toDynamicValue(ctx => new FindUserBooksUseCase(ctx.get(BOOK_REPOSITORY)));
-  container.bind(UPDATE_BOOK_USE_CASE).toDynamicValue(ctx => new UpdateBookUseCase(ctx.get(BOOK_REPOSITORY)));
-  container.bind(DELETE_BOOK_USE_CASE).toDynamicValue(ctx => new DeleteBookUseCase(ctx.get(BOOK_REPOSITORY)));
-  container.bind(BUY_BOOK_USE_CASE).toDynamicValue(ctx => new BuyBookUseCase(
-    ctx.get(BOOK_REPOSITORY),
-    ctx.get(USER_REPOSITORY),
-    ctx.get(EMAIL_SERVICE),
-    ctx.get(NOTIFICATION_TEMPLATE_SERVICE),
-    ctx.get(LOGGER_SERVICE)
-  ));
-  container.bind(SEND_PRICE_REDUCTION_USE_CASE).toDynamicValue(ctx => new SendPriceReductionSuggestionUseCase(
-    ctx.get(BOOK_REPOSITORY),
-    ctx.get(USER_REPOSITORY),
-    ctx.get(EMAIL_SERVICE),
-    ctx.get(NOTIFICATION_TEMPLATE_SERVICE)
-  ));
-  container.bind(CREATE_USER_USE_CASE).toDynamicValue(ctx => new CreateUserUseCase(
-    ctx.get(USER_REPOSITORY),
-    ctx.get(SECURITY_SERVICE)
-  ));
-  container.bind(LOGIN_USER_USE_CASE).toDynamicValue(ctx => new LoginUserUseCase(
-    ctx.get(USER_REPOSITORY),
-    ctx.get(SECURITY_SERVICE)
-  ));
+  container.bind(CREATE_BOOK_USE_CASE).to(CreateBookUseCase);
+  container.bind(FIND_BOOKS_USE_CASE).to(FindBooksUseCase);
+  container.bind(FIND_USER_BOOKS_USE_CASE).to(FindUserBooksUseCase);
+  container.bind(UPDATE_BOOK_USE_CASE).to(UpdateBookUseCase);
+  container.bind(DELETE_BOOK_USE_CASE).to(DeleteBookUseCase);
+  container.bind(BUY_BOOK_USE_CASE).to(BuyBookUseCase);
+  container.bind(SEND_PRICE_REDUCTION_USE_CASE).to(SendPriceReductionSuggestionUseCase);
+  container.bind(CREATE_USER_USE_CASE).to(CreateUserUseCase);
+  container.bind(LOGIN_USER_USE_CASE).to(LoginUserUseCase);
 }

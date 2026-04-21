@@ -28,5 +28,8 @@ export function registerInfrastructure(): void {
   container.bind<EmailService>(EMAIL_SERVICE).to(MailtrapService).inSingletonScope();
   container.bind<LoggerService>(LOGGER_SERVICE).to(ConsoleLoggerService).inSingletonScope();
   container.bind<SecurityService>(SECURITY_SERVICE).to(SecurityBcryptService).inSingletonScope();
-  container.bind<NotificationTemplateService>(NOTIFICATION_TEMPLATE_SERVICE).to(NotificationTemplateServiceImpl).inSingletonScope();
+  container
+    .bind<NotificationTemplateService>(NOTIFICATION_TEMPLATE_SERVICE)
+    .to(NotificationTemplateServiceImpl)
+    .inSingletonScope();
 }
